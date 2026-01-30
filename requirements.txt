@@ -11,7 +11,12 @@ whitenoise==6.8.2
 # Interface e Frontend
 django-htmx==1.21.0
 django-ckeditor==6.7.1
+django-crispy-forms==2.3
+crispy-bootstrap5==2024.10
 
 # Integrações e Utilidades (Necessários para CRM e Assinatura Digital)
 requests==2.32.3
 python-dateutil==2.9.0
+sqlparse==0.5.3
+tzdata==2025.1
+asgiref==3.8.1
