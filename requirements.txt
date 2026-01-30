@@ -14,6 +14,9 @@ django-ckeditor==6.7.1
 django-crispy-forms==2.3
 crispy-bootstrap5==2024.10
 
+# Relatórios e PDF
+xhtml2pdf==0.2.16
+
 # Integrações e Utilidades (Necessários para CRM e Assinatura Digital)
 requests==2.32.3
 python-dateutil==2.9.0
