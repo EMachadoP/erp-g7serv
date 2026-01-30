@@ -18,7 +18,7 @@ crispy-bootstrap5==2024.10
 xhtml2pdf==0.2.16
 
 # Assinatura Digital e Segurança
-signxml==3.5.0
+signxml==4.2.2
 
 # Integrações e Utilidades (Necessários para CRM e Assinatura Digital)
 requests==2.32.3
