@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Nota Fiscal de Entrada #{{ nota.numero_nota }}</h2>
+        <div>
+            <a href="{% url 'faturamento:nota_entrada_list' %}" class="btn btn-outline-secondary">Voltar</a>
+            {% if nota.status == 'IMPORTADA' %}
+            <form action="{% url 'faturamento:nota_entrada_launch' nota.id %}" method="post" class="d-inline"
+                onsubmit="return confirm('Confirma o lançamento da nota? Isso atualizará o estoque e gerará contas a pagar.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Confirmar Lançamento
+                </button>
+            </form>
+            <a href="{% url 'faturamento:nota_entrada_delete' nota.id %}" class="btn btn-outline-danger ms-2"
+                onclick="return confirm('Tem certeza que deseja excluir esta nota importada?');">
+                <i class="bi bi-trash"></i> Excluir
+            </a>
+            {% else %}
+            <span class="badge bg-success fs-6 me-2">Nota Lançada</span>
+            <a href="{% url 'faturamento:nota_entrada_revert' nota.id %}" class="btn btn-outline-danger btn-sm"
+                onclick="return confirm('ATENÇÃO: Estornar esta nota removerá todas as contas a pagar geradas e criará movimentos de saída no estoque para compensar a entrada. Confirmar?');">
+                <i class="bi bi-arrow-counterclockwise"></i> Estornar Lançamento
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Header Info -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Dados Gerais</strong>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Fornecedor:</strong> {{ nota.fornecedor.fantasy_name|default:nota.fornecedor.name }}</p>
+                    <p><strong>CNPJ:</strong> {{ nota.fornecedor.document }}</p>
+                    <p><strong>Chave de Acesso:</strong> {{ nota.chave_acesso }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Número:</strong> {{ nota.numero_nota }} - <strong>Série:</strong> {{ nota.serie }}</p>
+                    <p><strong>Emissão:</strong> {{ nota.data_emissao|date:"d/m/Y" }}</p>
+                    <p><strong>Entrada:</strong> {{ nota.data_entrada|date:"d/m/Y" }}</p>
+                    <p><strong>Valor Total:</strong> <span class="fs-5 text-primary">R$ {{ nota.valor_total }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Itens da Nota</strong>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Produto (Sistema)</th>
+                        <th>CFOP</th>
+                        <th class="text-center">Quantidade</th>
+                        <th class="text-end">Vlr. Unit.</th>
+                        <th class="text-end">Vlr. Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in nota.itens.all %}
+                    <tr>
+                        <td>
+                            {{ item.produto.sku }} - {{ item.produto.name }}
+{% if item.produto.created_at|date:"Y-m-d H:i" == item.produto.updated_at|date:"Y-m-d H:i" %}
+                            <span class="badge bg-info text-dark" title="Produto criado nesta importação">Novo</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.cfop }}</td>
+                        <td class="text-center">{{ item.quantidade }}</td>
+                        <td class="text-end">R$ {{ item.valor_unitario }}</td>
+                        <td class="text-end">R$ {{ item.valor_total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Planejamentos Orçamentários</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <div class="list-group-item bg-light fw-bold">Anos</div>
+                {% for plan in plans %}
+                <a href="{% url 'financeiro:budget_plan_detail' plan.id %}"
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-calendar-event me-2"></i> {{ plan.year }}
+                        <div class="text-muted small">{{ plan.description }}</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {% empty %}
+                <div class="list-group-item text-muted text-center py-4">
+                    Nenhum planejamento encontrado.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card h-100 d-flex justify-content-center align-items-center p-5 text-center">
+                <div>
+                    <i class="bi bi-search display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">Selecione um ano para visualizar o planejamento</h4>
+                    <p class="text-muted mb-4">Ou crie um novo planejamento para começar.</p>
+
+                    <form method="post" action="{% url 'financeiro:budget_plan_create' %}" class="d-inline-block">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="number" name="year" class="form-control" placeholder="Ano (ex: 2026)" required
+                                min="2020" max="2100" value="2026">
+                            <input type="text" name="description" class="form-control" placeholder="Descrição" required>
+                            <button type="submit" class="btn btn-warning text-white">
+                                <i class="bi bi-plus-lg me-1"></i> Criar Planejamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

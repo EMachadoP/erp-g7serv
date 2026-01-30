@@ -1,0 +1,210 @@
+{% load operacional_tags %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #0d6efd;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin: 0;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 5px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+
+        .section-title {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .question-row {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .answer-text {
+            font-size: 12px;
+            float: right;
+        }
+
+        .bad-answer {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .comment-text {
+            font-style: italic;
+            color: #666;
+            font-size: 11px;
+            margin-left: 10px;
+            margin-top: 3px;
+        }
+
+        .photo-row {
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        .photo-thumbnail {
+            width: 150px;
+            border: 1px solid #ccc;
+            padding: 2px;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .signature-img {
+            max-width: 250px;
+            border-bottom: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="width: 150px; border: none; vertical-align: middle;">
+                    {% if company.logo %}
+                    <img src="{{ company.logo.path }}" style="max-width: 150px; max-height: 80px;">
+                    {% else %}
+                    <div style="font-weight: bold; color: #0d6efd; font-size: 24px;">{{ company.name|default:"G7 Serv" }}</div>
+                    {% endif %}
+                </td>
+                <td style="text-align: right; border: none; vertical-align: middle;">
+                    <h1 class="title">Relatório de Manutenção Preventiva</h1>
+                    <p style="margin: 5px 0; font-size: 14px;">OS #{{ order.id }} - {{ order.client.name }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="summary-section" style="margin-bottom: 20px;">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 10px 0;">
+            <tr>
+                <td
+                    style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; text-align: center; width: 25%;">
+                    <div style="font-size: 10px; color: #6c757d; text-transform: uppercase;">Total Itens</div>
+                    <div style="font-size: 18px; font-weight: bold;">{{ summary.total }}</div>
+                </td>
+                <td
+                    style="background-color: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 5px; padding: 10px; text-align: center; width: 25%;">
+                    <div style="font-size: 10px; color: #2e7d32; text-transform: uppercase;">Itens OK</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #2e7d32;">{{ summary.ok }}</div>
+                </td>
+                <td
+                    style="background-color: #ffebee; border: 1px solid #ffcdd2; border-radius: 5px; padding: 10px; text-align: center; width: 25%;">
+                    <div style="font-size: 10px; color: #c62828; text-transform: uppercase;">Com Defeito</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #c62828;">{{ summary.fail }}</div>
+                </td>
+                <td
+                    style="background-color: #fff3e0; border: 1px solid #ffe0b2; border-radius: 5px; padding: 10px; text-align: center; width: 25%;">
+                    <div style="font-size: 10px; color: #ef6c00; text-transform: uppercase;">N/D</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #ef6c00;">{{ summary.nd }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td style="width: 50%;"><strong>Cliente:</strong> {{ order.client.name }}</td>
+            <td style="width: 50%;"><strong>Data Conclusão:</strong> {{ order.checkout_time|date:"d/m/Y H:i" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Técnico:</strong> {{ order.technician.get_full_name|default:order.technician.username }}</td>
+            <td><strong>Contrato:</strong> {{ order.contract.number|default:"Avulso" }}</td>
+        </tr>
+        {% if order.checkout_lat %}
+        <tr>
+            <td colspan="2"><strong>Localização (GPS):</strong> {{ order.checkout_lat }}, {{ order.checkout_long }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    {% for category in categories %}
+    <div class="section-title">{{ category.name }}</div>
+
+    {% for pergunta in category.perguntas.all %}
+    {% with resp=responses|get_item:pergunta.id %}
+    {% if resp %}
+    <div class="question-row">
+        <div>
+            <span class="question-text">{{ pergunta.texto }}</span>
+            <span class="answer-text {% if resp.resposta_valor == 'NÃO' %}bad-answer{% endif %}">
+                {{ resp.resposta_valor|default:"-" }}
+            </span>
+        </div>
+
+        {% if resp.comentario %}
+        <div class="comment-text">Obs: {{ resp.comentario }}</div>
+        {% endif %}
+
+        {% if resp.foto %}
+        <div class="photo-row">
+            <img src="{{ resp.foto.path }}" class="photo-thumbnail">
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endfor %}
+    {% endfor %}
+
+    <div class="signature-section">
+        <p><strong>Assinatura do Cliente</strong></p>
+        {% if order.signature_image %}
+        <img src="{{ order.signature_image.path }}" class="signature-img">
+        {% else %}
+        <div style="height: 100px; border-bottom: 1px solid #ccc; width: 300px; margin: 0 auto; margin-top: 50px;">
+        </div>
+        {% endif %}
+        <p style="font-size: 10px; color: #999;">Documento gerado eletronicamente via Sistema G7 Serv</p>
+    </div>
+</body>
+
+</html>

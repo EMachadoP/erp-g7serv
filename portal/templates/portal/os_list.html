@@ -1,0 +1,33 @@
+{% extends 'portal/base_portal.html' %}
+{% block content %}
+<h2>Minhas Ordens de Serviço</h2>
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Serviço/Produto</th>
+            <th>Data Início</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for os in service_orders %}
+        <tr>
+            <td>{{ os.id }}</td>
+            <td>{{ os.product }}</td>
+            <td>{{ os.start_date }}</td>
+            <td><span class="badge bg-secondary">{{ os.get_status_display }}</span></td>
+            <td>
+                <a href="{% url 'operacional:service_order_detail' os.id %}" class="btn btn-sm btn-info"
+                    target="_blank">Ver Detalhes</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">Nenhuma OS encontrada.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

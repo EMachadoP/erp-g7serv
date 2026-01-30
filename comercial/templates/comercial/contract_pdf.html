@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #000;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 18pt;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 16pt;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 14pt;
+        }
+
+        p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        ul,
+        ol {
+            margin-bottom: 10px;
+            margin-left: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .signature-section {
+            margin-top: 50px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            margin-top: 20px;
+            border-top: 1px solid #000;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-top: 10px;
+            text-align: center;
+        }
+
+        .signature-img {
+            max-width: 200px;
+            max-height: 100px;
+            margin-bottom: -10px;
+            /* Overlap line slightly */
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .info-table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Contrato de Prestação de Serviços</h1>
+    </div>
+
+    <div class="content">
+        {{ content|safe }}
+    </div>
+
+    {% if contract.signature_image %}
+    <div class="signature-section">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <img src="{{ contract.signature_image.path }}" class="signature-img">
+        </div>
+        <div class="signature-box">
+            <p><strong>{{ contract.client.name }}</strong></p>
+            <p style="font-size: 10pt; color: #666;">
+                Assinado digitalmente em {{ contract.signed_at|date:"d/m/Y H:i" }}<br>
+                IP: {{ contract.signed_ip }}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</body>
+
+</html>

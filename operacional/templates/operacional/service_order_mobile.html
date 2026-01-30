@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">OS #{{ order.id }} - Mobile</h5>
+        </div>
+        <div class="card-body">
+            <h6 class="text-muted">Cliente</h6>
+            <p class="fw-bold">{{ order.client.name }}</p>
+
+            <h6 class="text-muted">Descrição</h6>
+            <p>{{ order.description }}</p>
+
+            <h6 class="text-muted">Itens</h6>
+            <ul class="list-group mb-3">
+                {% for item in order.items.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ item.product.name }}
+                    <span class="badge bg-secondary rounded-pill">{{ item.quantity }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">Sem itens</li>
+                {% endfor %}
+            </ul>
+
+            <hr>
+
+            <form method="post" id="signature-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="status" id="status-field" value="{{ order.status }}">
+                <input type="hidden" name="signature_data" id="signature-data">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Assinatura do Cliente</label>
+                    <div class="border rounded bg-light" style="height: 200px;">
+                        <canvas id="signature-pad" class="w-100 h-100"></canvas>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="clear-signature">Limpar
+                        Assinatura</button>
+                </div>
+
+                <div class="d-grid gap-2">
+                    {% if order.status != 'COMPLETED' %}
+                    <button type="button" class="btn btn-success btn-lg" onclick="submitForm('COMPLETED')">
+                        <i class="bi bi-check-circle"></i> Finalizar OS
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'operacional:service_order_list' %}" class="btn btn-secondary">Voltar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    var canvas = document.getElementById('signature-pad');
+
+    // Resize canvas correctly
+    function resizeCanvas() {
+        var ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+    }
+    window.onresize = resizeCanvas;
+    resizeCanvas();
+
+    var signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'rgba(255, 255, 255, 0)'
+    });
+
+    document.getElementById('clear-signature').addEventListener('click', function () {
+        signaturePad.clear();
+    });
+
+    function submitForm(status) {
+        if (signaturePad.isEmpty()) {
+            alert("Por favor, colete a assinatura do cliente.");
+            return;
+        }
+
+        document.getElementById('status-field').value = status;
+        document.getElementById('signature-data').value = signaturePad.toDataURL();
+        document.getElementById('signature-form').submit();
+    }
+</script>
+{% endblock %}

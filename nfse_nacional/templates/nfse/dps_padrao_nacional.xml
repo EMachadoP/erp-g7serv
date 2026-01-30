@@ -1,0 +1,87 @@
+<DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.00">
+    <infDPS Id="{{ inf_dps_id }}">
+        <tpAmb>{{ nfse.empresa.ambiente }}</tpAmb>
+        <dhEmi>{{ dh_emi_formatted }}</dhEmi>
+        <verAplic>ERP_G7_1.0</verAplic>
+        <serie>{{ serie_formatted }}</serie>
+        <nDPS>{{ num_dps_simples }}</nDPS>
+        <dCompet>{{ nfse.data_emissao|date:"Y-m-d" }}</dCompet>
+        <tpEmit>1</tpEmit>
+        <cLocEmi>{{ cod_mun_ibge }}</cLocEmi>
+
+        <prest>
+            <CNPJ>{{ prestador_cnpj }}</CNPJ>
+            <IM>{{ nfse.empresa.inscricao_municipal }}</IM>
+            {% if prest_fone %}
+            <fone>{{ prest_fone }}</fone>
+            {% endif %}
+            {% if prest_email %}
+            <email>{{ prest_email }}</email>
+            {% endif %}
+            <regTrib>
+                <opSimpNac>{{ op_simp_nac }}</opSimpNac>
+                <regApTribSN>{{ reg_ap_trib_sn }}</regApTribSN>
+                <regEspTrib>{{ reg_esp_trib }}</regEspTrib>
+            </regTrib>
+        </prest>
+
+        <toma>
+            {% if tomador_cnpj %}
+            <CNPJ>{{ tomador_cnpj }}</CNPJ>
+            {% else %}
+            <CPF>{{ tomador_cpf }}</CPF>
+            {% endif %}
+            <xNome>{{ nfse.cliente.name|truncatechars:60 }}</xNome>
+
+            <end>
+                <endNac>
+                    <cMun>{{ tomador_c_mun }}</cMun>
+                    <CEP>{{ tomador_endereco.cep }}</CEP>
+                </endNac>
+                <xLgr>{{ tomador_endereco.logradouro|default:""|truncatechars:255 }}</xLgr>
+                <nro>{{ tomador_endereco.numero|default:"S/N"|truncatechars:60 }}</nro>
+                {% if tomador_endereco.complemento %}
+                <xCpl>{{ tomador_endereco.complemento|truncatechars:156 }}</xCpl>
+                {% endif %}
+                <xBairro>{{ tomador_endereco.bairro|default:""|truncatechars:60 }}</xBairro>
+            </end>
+
+            {% if tomador_fone %}
+            <fone>{{ tomador_fone }}</fone>
+            {% endif %}
+            {% if nfse.cliente.email %}
+            <email>{{ nfse.cliente.email }}</email>
+            {% endif %}
+        </toma>
+
+        <serv>
+            <locPrest>
+                <cLocPrestacao>{{ cod_mun_ibge }}</cLocPrestacao>
+            </locPrest>
+            <cServ>
+                <cTribNac>{{ c_trib_nac }}</cTribNac>
+                {% if c_trib_mun %}<cTribMun>{{ c_trib_mun }}</cTribMun>{% endif %}
+                <xDescServ>{{ nfse.servico.description|default:nfse.servico.name|truncatechars:2000 }}</xDescServ>
+            </cServ>
+        </serv>
+
+        <valores>
+            <vServPrest>
+                <vServ>{{ v_serv }}</vServ>
+            </vServPrest>
+            <trib>
+                <tribMun>
+                    <tribISSQN>1</tribISSQN>
+                    <tpRetISSQN>1</tpRetISSQN>
+                </tribMun>
+                <totTrib>
+                    <vTotTrib>
+                        <vTotTribFed>0.00</vTotTribFed>
+                        <vTotTribEst>0.00</vTotTribEst>
+                        <vTotTribMun>0.00</vTotTribMun>
+                    </vTotTrib>
+                </totTrib>
+            </trib>
+        </valores>
+    </infDPS>
+</DPS>

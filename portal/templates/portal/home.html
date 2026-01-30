@@ -1,0 +1,45 @@
+{% extends 'portal/base_portal.html' %}
+{% block content %}
+<h2>Bem-vindo, {{ person.name }}</h2>
+<p class="lead">Este é o seu painel de cliente.</p>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Últimas Faturas</div>
+            <ul class="list-group list-group-flush">
+                {% for invoice in recent_invoices %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Fatura #{{ invoice.number }} - {{ invoice.issue_date }}
+                    <span class="badge bg-{{ invoice.status|yesno:'success,warning' }}">{{ invoice.get_status_display
+                        }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item">Nenhuma fatura recente.</li>
+                {% endfor %}
+            </ul>
+            <div class="card-body">
+                <a href="{% url 'portal:invoice_list' %}" class="btn btn-sm btn-primary">Ver todas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">Últimas OS</div>
+            <ul class="list-group list-group-flush">
+                {% for os in recent_os %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    OS #{{ os.id }} - {{ os.start_date }}
+                    <span class="badge bg-secondary">{{ os.get_status_display }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item">Nenhuma OS recente.</li>
+                {% endfor %}
+            </ul>
+            <div class="card-body">
+                <a href="{% url 'portal:os_list' %}" class="btn btn-sm btn-warning">Ver todas</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

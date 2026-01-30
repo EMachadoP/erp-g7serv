@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Ações de Vendas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Ações de Vendas</h2>
+    <p class="text-muted">Orçamentos pendentes há mais de 7 dias</p>
+</div>
+
+<div class="row">
+    <!-- Automatic Follow-up Section -->
+    <div class="col-12 mb-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-robot me-2"></i>Follow-up Automático</h5>
+                {% if automatic_budgets %}
+                <button class="btn btn-light btn-sm text-primary fw-bold" disabled title="Em breve: Envio em massa">
+                    <i class="bi bi-send-fill me-2"></i>Processar Todos
+                </button>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if automatic_budgets %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Último Follow-up</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for budget in automatic_budgets %}
+                            <tr>
+                                <td><a href="{% url 'comercial:budget_detail' budget.pk %}"
+                                        class="text-decoration-none fw-bold">#{{ budget.id|stringformat:"06d" }}</a>
+                                </td>
+                                <td>{{ budget.client.name }}</td>
+                                <td>{{ budget.date|date:"d/m/Y" }}</td>
+                                <td>R$ {{ budget.total_value|floatformat:2 }}</td>
+                                <td>{{ budget.last_followup|date:"d/m/Y H:i"|default:"-" }}</td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="{% url 'comercial:budget_send_email' budget.pk %}"
+                                            class="btn btn-sm btn-outline-primary" title="Enviar Email">
+                                            <i class="bi bi-envelope"></i>
+                                        </a>
+                                        {% if budget.client.phone or budget.client.mobile %}
+                                        <a href="https://wa.me/55{{ budget.client.mobile|default:budget.client.phone|cut:' '|cut:'-'|cut:'('|cut:')' }}?text=Olá {{ budget.client.name }}, gostaríamos de saber se teve chance de analisar o orçamento #{{ budget.id|stringformat:'06d' }}."
+                                            target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="{% url 'comercial:toggle_followup_strategy' budget.pk %}"
+                                            class="btn btn-sm btn-outline-secondary" title="Mudar para Manual">
+                                            <i class="bi bi-hand-index-thumb"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <p class="mb-0">Nenhum orçamento para follow-up automático.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Follow-up Section -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-hand-index-thumb me-2"></i>Follow-up Manual</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if manual_budgets %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Último Follow-up</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for budget in manual_budgets %}
+                            <tr>
+                                <td><a href="{% url 'comercial:budget_detail' budget.pk %}"
+                                        class="text-decoration-none fw-bold">#{{ budget.id|stringformat:"06d" }}</a>
+                                </td>
+                                <td>{{ budget.client.name }}</td>
+                                <td>{{ budget.date|date:"d/m/Y" }}</td>
+                                <td>R$ {{ budget.total_value|floatformat:2 }}</td>
+                                <td>{{ budget.last_followup|date:"d/m/Y H:i"|default:"-" }}</td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="{% url 'comercial:budget_send_email' budget.pk %}"
+                                            class="btn btn-sm btn-outline-primary" title="Enviar Email">
+                                            <i class="bi bi-envelope"></i>
+                                        </a>
+                                        {% if budget.client.phone or budget.client.mobile %}
+                                        <a href="https://wa.me/55{{ budget.client.mobile|default:budget.client.phone|cut:' '|cut:'-'|cut:'('|cut:')' }}?text=Olá {{ budget.client.name }}, gostaríamos de saber se teve chance de analisar o orçamento #{{ budget.id|stringformat:'06d' }}."
+                                            target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="{% url 'comercial:toggle_followup_strategy' budget.pk %}"
+                                            class="btn btn-sm btn-outline-secondary" title="Mudar para Automático">
+                                            <i class="bi bi-robot"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <p class="mb-0">Nenhum orçamento para follow-up manual.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

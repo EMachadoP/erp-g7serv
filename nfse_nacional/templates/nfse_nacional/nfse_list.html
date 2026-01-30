@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}NFS-e Nacional{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-primary"><i class="bi bi-receipt me-2"></i>NFS-e Nacional</h2>
+                <p class="text-muted">Gerencie suas Notas Fiscais de Serviço Eletrônicas.</p>
+            </div>
+            <a href="{% url 'nfse_nacional:nfse_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Nova NFS-e
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>DPS</th>
+                            <th>Série</th>
+                            <th>Data Emissão</th>
+                            <th>Tomador</th>
+                            <th>Serviço</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nfse in nfses %}
+                        <tr>
+                            <td>{{ nfse.numero_dps }}</td>
+                            <td>{{ nfse.serie_dps }}</td>
+                            <td>{{ nfse.data_emissao|date:"d/m/Y H:i" }}</td>
+                            <td>{{ nfse.cliente.nome }}</td>
+                            <td>{{ nfse.servico.codigo_tributacao_nacional }}</td>
+                            <td>
+                                {% if nfse.status == 'Autorizada' %}
+                                <span class="badge bg-success">Autorizada</span>
+                                {% elif nfse.status == 'Rejeitada' %}
+                                <span class="badge bg-danger">Rejeitada</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        Ações
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i
+                                                    class="bi bi-eye me-2"></i>Visualizar</a></li>
+                                        {% if nfse.status == 'Pendente' %}
+                                        <li><a class="dropdown-item" href="#"><i
+                                                    class="bi bi-send me-2"></i>Transmitir</a></li>
+                                        {% endif %}
+                                        {% if nfse.xml_retorno %}
+                                        <li><a class="dropdown-item" href="#"><i
+                                                    class="bi bi-file-earmark-code me-2"></i>XML</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                Nenhuma NFS-e encontrada.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

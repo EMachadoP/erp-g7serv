@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h4 class="mb-0">{% if user_obj %}Editar Usuário{% else %}Novo Usuário{% endif %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ user_obj.username }}"
+                            required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ user_obj.email }}">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nome</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user_obj.first_name }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sobrenome</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user_obj.last_name }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Perfil de Acesso</label>
+                    <select name="group" class="form-select">
+                        <option value="">Selecione...</option>
+                        {% for group in groups %}
+                        <option value="{{ group.id }}" {% if user_group.id==group.id %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Senha {% if user_obj %}(Deixe em branco para manter){% endif %}</label>
+                    <input type="password" name="password" class="form-control" {% if not user_obj %}required{% endif
+                        %}>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" name="is_active" id="isActive" {% if not user_obj or
+                        user_obj.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="isActive">Ativo</label>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'core:user_list' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-success">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

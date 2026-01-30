@@ -1,0 +1,135 @@
+content = """{% extends 'base.html' %}
+
+{% block title %}Contratos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Contratos</h2>
+    <a href="{% url 'comercial:contract_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Novo Contrato
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0"
+                        placeholder="Buscar por cliente..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">Todos os Status</option>
+                    <option value="Ativo" {% if status_filter == 'Ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="Encerrado" {% if status_filter == 'Encerrado' %}selected{% endif %}>Encerrado</option>
+                    <option value="Cancelado" {% if status_filter == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="bi bi-filter me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Cliente</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Data Início</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contract in page_obj %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">
+                            <a href="{% url 'comercial:contract_detail' contract.pk %}" class="text-decoration-none">
+                                {{ contract.id }}
+                            </a>
+                        </td>
+                        <td>{{ contract.client.name }}</td>
+                        <td>R$ {{ contract.value|floatformat:2 }}</td>
+                        <td>
+                            {% if contract.status == 'Ativo' %}
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Ativo</span>
+                            {% elif contract.status == 'Encerrado' %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">Encerrado</span>
+                            {% elif contract.status == 'Cancelado' %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Cancelado</span>
+                            {% else %}
+                            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">{{ contract.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ contract.start_date|date:"d/m/Y"|default:"-" }}</td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group">
+                                <a href="{% url 'comercial:contract_detail' contract.pk %}" class="btn btn-sm btn-outline-primary" title="Detalhes">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'comercial:contract_update' contract.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'comercial:contract_pdf' contract.pk %}" class="btn btn-sm btn-outline-secondary" title="PDF" target="_blank">
+                                    <i class="bi bi-file-pdf"></i>
+                                </a>
+                                <a href="{% url 'comercial:contract_delete' contract.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-file-text display-4 mb-3 d-block"></i>
+                            Nenhum contrato encontrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white border-top-0 py-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Anterior</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Próximo</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+"""
+with open(r'g:\Meu Drive\11 - Empresa - Descartex\Projetos IA\comercial\templates\comercial\contract_list.html', 'w', encoding='utf-8') as f:
+    f.write(content)

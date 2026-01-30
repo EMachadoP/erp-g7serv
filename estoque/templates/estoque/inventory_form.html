@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="card-title mb-0">Novo Balanço de Estoque</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Data do Balanço</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{% now 'Y-m-d' %}"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrição (Opcional)</label>
+                        <input type="text" class="form-control" id="description" name="description"
+                            placeholder="Ex: Balanço Mensal">
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Ao iniciar, todos os produtos ativos serão carregados com suas quantidades atuais do sistema.
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'estoque:inventory_list' %}" class="btn btn-light me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Iniciar Balanço</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

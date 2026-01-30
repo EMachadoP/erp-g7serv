@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Faturamento de Contratos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary"><i class="bi bi-receipt-cutoff me-2"></i>Faturamento de Contratos</h2>
+            <p class="text-muted">Selecione os critérios para buscar contratos a faturar.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                    <label for="month" class="form-label">Mês de Competência</label>
+                    <select class="form-select" id="month" name="month" required>
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="year" class="form-label">Ano</label>
+                    <input type="number" class="form-control" id="year" name="year" value="{{ current_year }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="billing_group" class="form-label">Grupo de Faturamento</label>
+                    <select class="form-select" id="billing_group" name="billing_group">
+                        <option value="">Todos</option>
+                        {% for group in billing_groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary w-100" onclick="searchContracts()">
+                        <i class="bi bi-search me-2"></i>Buscar Contratos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="resultsContainer" style="display: none;">
+        <form id="billingForm" method="post" action="{% url 'faturamento:process_contract_billing' %}">
+            {% csrf_token %}
+            <input type="hidden" name="competence_month" id="hidden_month">
+            <input type="hidden" name="competence_year" id="hidden_year">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Contratos Encontrados</h5>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-cash-coin me-2"></i>Faturar Selecionados
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;">
+                                        <input type="checkbox" class="form-check-input" id="selectAll"
+                                            onclick="toggleAll(this)">
+                                    </th>
+                                    <th>Cliente</th>
+                                    <th>Contrato</th>
+                                    <th>Grupo</th>
+                                    <th>Dia Venc.</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractsTableBody">
+                                <!-- Rows will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Set current month
+    document.getElementById('month').value = new Date().getMonth() + 1;
+
+    function toggleAll(source) {
+        checkboxes = document.getElementsByName('selected_contracts');
+        for (var i = 0, n = checkboxes.length; i < n; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+
+    function searchContracts() {
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        const group = document.getElementById('billing_group').value;
+
+        // Update hidden fields
+        document.getElementById('hidden_month').value = month;
+        document.getElementById('hidden_year').value = year;
+
+        const resultsContainer = document.getElementById('resultsContainer');
+        const tbody = document.getElementById('contractsTableBody');
+
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>';
+        resultsContainer.style.display = 'block';
+
+        fetch(`{% url 'faturamento:search_contracts' %}?month=${month}&year=${year}&group=${group}`)
+            .then(response => response.json())
+            .then(data => {
+                tbody.innerHTML = '';
+                if (data.contracts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Nenhum contrato encontrado para os critérios selecionados.</td></tr>';
+                    return;
+                }
+
+                data.contracts.forEach(contract => {
+                    const row = `
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input" name="selected_contracts" value="${contract.id}" checked>
+                            </td>
+                            <td>${contract.client_name}</td>
+                            <td>#${contract.id}</td>
+                            <td>${contract.group_name || '-'}</td>
+                            <td>${contract.due_day}</td>
+                            <td>R$ ${contract.value}</td>
+                            <td><span class="badge bg-success">Ativo</span></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Erro ao buscar contratos.</td></tr>';
+            });
+    }
+</script>
+{% endblock %}

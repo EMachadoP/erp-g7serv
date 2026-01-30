@@ -1,0 +1,297 @@
+{% extends 'base_mobile.html' %}
+{% load static %}
+{% load operacional_tags %}
+
+{% block content %}
+<div class="container mobile-container mt-3 pb-5 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Checklist Preventiva</h5>
+        <span class="badge bg-primary">OS #{{ order.id }}</span>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-3">
+            <h6 class="fw-bold text-dark mb-1">{{ order.client.name }}</h6>
+            <p class="small text-muted mb-0">{{ order.scheduled_date|date:"d/m/Y H:i"|default:order.created_at|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Accordion start -->
+    <div class="accordion" id="checklistAccordion">
+        {% for category in categories %}
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded overflow-hidden">
+            <h2 class="accordion-header" id="heading{{ category.id }}">
+                <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ category.id }}" aria-expanded="false"
+                    aria-controls="collapse{{ category.id }}">
+                    {{ category.name }}
+                </button>
+            </h2>
+            <div id="collapse{{ category.id }}" class="accordion-collapse collapse"
+                aria-labelledby="heading{{ category.id }}" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for pergunta in category.perguntas.all %}
+                        {% with resp=responses|get_item:pergunta.id %}
+                        <li class="list-group-item p-3 border-bottom" data-pergunta-id="{{ pergunta.id }}">
+                            <div class="fw-bold mb-2 text-dark fs-6">{{ pergunta.texto }}</div>
+
+                            <div class="checklist-input-group">
+                                {% if pergunta.tipo == 'options' %}
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="resp-{{ pergunta.id }}"
+                                        id="sim-{{ pergunta.id }}" value="SIM" {% if resp.resposta_valor == 'SIM' %}checked{% endif %} onchange="saveAnswer({{ pergunta.id }}, 'SIM')">
+                                    <label class="btn btn-outline-success" for="sim-{{ pergunta.id }}">SIM</label>
+
+                                    <input type="radio" class="btn-check" name="resp-{{ pergunta.id }}"
+                                        id="nao-{{ pergunta.id }}" value="NÃO" {% if resp.resposta_valor == 'NÃO' %}checked{% endif %} onchange="saveAnswer({{ pergunta.id }}, 'NÃO')">
+                                    <label class="btn btn-outline-danger" for="nao-{{ pergunta.id }}">NÃO</label>
+
+                                    <input type="radio" class="btn-check" name="resp-{{ pergunta.id }}"
+                                        id="nd-{{ pergunta.id }}" value="N/D" {% if resp.resposta_valor == 'N/D' %}checked{% endif %} onchange="saveAnswer({{ pergunta.id }}, 'N/D')">
+                                    <label class="btn btn-outline-secondary" for="nd-{{ pergunta.id }}">N/D</label>
+                                </div>
+                                {% elif pergunta.tipo == 'number' %}
+                                <input type="number" class="form-control" value="{{ resp.resposta_valor|default:'' }}"
+                                    onchange="saveAnswer({{ pergunta.id }}, this.value)"
+                                    placeholder="Digite o valor...">
+                                {% else %}
+                                <input type="text" class="form-control" value="{{ resp.resposta_valor|default:'' }}"
+                                    onchange="saveAnswer({{ pergunta.id }}, this.value)" placeholder="Digite...">
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex mt-3 gap-2">
+                                <button type="button"
+                                    class="btn btn-sm {% if resp.foto %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+                                    onclick="triggerPhoto({{ pergunta.id }})" id="btn-foto-{{ pergunta.id }}">
+                                    <i class="bi bi-camera-fill me-1"></i> <span class="photo-status">{% if resp.foto %}Foto OK{% else %}Foto{% endif %}</span>
+                                </button>
+                                <button type="button"
+                                    class="btn btn-sm {% if resp.comentario %}btn-warning{% else %}btn-outline-secondary{% endif %}"
+                                    onclick="toggleComment({{ pergunta.id }})" id="btn-comment-{{ pergunta.id }}">
+                                    <i class="bi bi-pencil-fill me-1"></i> Comentar
+                                </button>
+                                <input type="file" id="file-{{ pergunta.id }}" class="d-none" accept="image/*"
+                                    capture="camera" onchange="uploadPhoto({{ pergunta.id }}, this)">
+                            </div>
+
+                            <div id="comment-box-{{ pergunta.id }}"
+                                class="mt-2 {% if not resp.comentario %}d-none{% endif %}">
+                                <textarea class="form-control form-control-sm" rows="2" placeholder="Observação..."
+                                    onchange="saveComment({{ pergunta.id }}, this.value)">{{ resp.comentario|default:'' }}</textarea>
+                            </div>
+
+                            {% if resp.foto %}
+                            <div class="mt-2 img-preview-container" id="preview-{{ pergunta.id }}">
+                                <img src="{{ resp.foto.url }}" class="img-thumbnail" style="height: 60px;">
+                            </div>
+                            {% else %}
+                            <div class="mt-2 img-preview-container d-none" id="preview-{{ pergunta.id }}"></div>
+                            {% endif %}
+                        </li>
+                        {% endwith %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Final Section -->
+    <div class="card shadow-sm border-0 mt-4 mb-5">
+        <div class="card-body">
+            <label class="form-label fw-bold"><i class="bi bi-geo-alt-fill text-danger"></i> Localização da
+                Finalização</label>
+            <div id="gps-status" class="alert alert-light border small py-2 mb-3">
+                <i class="bi bi-info-circle me-1"></i> GPS não capturado
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-4" onclick="captureGPS()">
+                <i class="bi bi-crosshair me-1"></i> Capturar Localização Atual
+            </button>
+
+            <label class="form-label fw-bold"><i class="bi bi-pen-fill text-primary"></i> Assinatura do Cliente</label>
+            <div class="signature-wrapper border rounded bg-light mb-2" style="height: 200px; position: relative;">
+                <canvas id="signature-pad"
+                    style="width: 100%; height: 100%; touch-action: none; cursor: crosshair;"></canvas>
+            </div>
+            <div class="d-flex justify-content-between mb-4">
+                <button type="button" class="btn btn-sm btn-link text-muted p-0" id="clear-signature">Limpar
+                    Campo</button>
+            </div>
+
+            <div class="d-grid">
+                <button type="button" class="btn btn-success btn-lg py-3 fw-bold shadow" onclick="finalizeChecklist()">
+                    <i class="bi bi-check-all me-1"></i> FINALIZAR PREVENTIVA
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+    }
+
+    .list-group-item {
+        background: transparent;
+    }
+
+    .btn-check:checked+.btn-outline-success {
+        background-color: #198754;
+        color: white;
+    }
+
+    .btn-check:checked+.btn-outline-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-check:checked+.btn-outline-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script>
+    let lat = null, lng = null;
+    let canvas = document.getElementById('signature-pad');
+    let signaturePad = new SignaturePad(canvas);
+
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    document.getElementById('clear-signature').addEventListener('click', () => signaturePad.clear());
+
+    function saveAnswer(perguntaId, value) {
+        let formData = new FormData();
+        formData.append('pergunta_id', perguntaId);
+        formData.append('value', value);
+
+        fetch('{% url "operacional:save_checklist_api" order.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+    }
+
+    function saveComment(perguntaId, comment) {
+        let formData = new FormData();
+        formData.append('pergunta_id', perguntaId);
+        formData.append('comment', comment);
+
+        fetch('{% url "operacional:save_checklist_api" order.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        }).then(() => {
+            let btn = document.getElementById('btn-comment-' + perguntaId);
+            if (comment) {
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-warning');
+            } else {
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-outline-secondary');
+            }
+        });
+    }
+
+    function triggerPhoto(id) {
+        document.getElementById('file-' + id).click();
+    }
+
+    function uploadPhoto(perguntaId, input) {
+        if (!input.files || !input.files[0]) return;
+
+        let formData = new FormData();
+        formData.append('pergunta_id', perguntaId);
+        formData.append('photo', input.files[0]);
+
+        // Show loading state
+        let btn = document.getElementById('btn-foto-' + perguntaId);
+        btn.querySelector('.photo-status').innerText = 'Enviando...';
+
+        fetch('{% url "operacional:save_checklist_api" order.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-primary');
+                btn.querySelector('.photo-status').innerText = 'Foto OK';
+
+                let preview = document.getElementById('preview-' + perguntaId);
+                preview.innerHTML = `<img src="${data.photo_url}" class="img-thumbnail" style="height: 60px;">`;
+                preview.classList.remove('d-none');
+            }
+        });
+    }
+
+    function toggleComment(id) {
+        document.getElementById('comment-box-' + id).classList.toggle('d-none');
+    }
+
+    function captureGPS() {
+        const btn = event.target.closest('button');
+        const status = document.getElementById('gps-status');
+
+        if (!navigator.geolocation) {
+            alert("Geolocalização não suportada.");
+            return;
+        }
+
+        status.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i> Capturando...';
+
+        navigator.geolocation.getCurrentPosition((pos) => {
+            lat = pos.coords.latitude;
+            lng = pos.coords.longitude;
+            status.className = "alert alert-success border small py-2 mb-3";
+            status.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Localização capturada: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }, (err) => {
+            status.className = "alert alert-danger border small py-2 mb-3";
+            status.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i> Erro ao capturar GPS.`;
+        });
+    }
+
+    function finalizeChecklist() {
+        if (signaturePad.isEmpty()) {
+            alert("Por favor, peça ao cliente para assinar.");
+            return;
+        }
+
+        if (!confirm("Deseja finalizar esta Manutenção Preventiva?")) return;
+
+        let formData = new FormData();
+        formData.append('signature_data', signaturePad.toDataURL());
+        if (lat) formData.append('lat', lat);
+        if (lng) formData.append('lng', lng);
+
+        fetch('{% url "operacional:finalize_checklist_api" order.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                alert("Preventiva finalizada com sucesso!");
+                window.location.href = "{% url 'operacional:mobile_os_list' %}";
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Contas a Receber</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{% url 'financeiro:account_receivable_create' %}" class="btn btn-success text-white fw-bold">
+            <i class="bi bi-plus-lg me-2"></i>Nova Conta a Receber
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="col-md-3">
+        <label for="end_date" class="form-label">Vencimento Fim</label>
+        <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+    </form>
+</div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Vencimento</th>
+                        <th>Descrição</th>
+                        <th>Cliente</th>
+                        <th>Categoria</th>
+                        <th class="text-end">Valor</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for receivable in receivables %}
+                    <tr>
+                        <td class="ps-4">{{ receivable.due_date|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="fw-bold">{{ receivable.description }}</div>
+                            {% if receivable.document_number %}
+                            <small class="text-muted">Doc: {{ receivable.document_number }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ receivable.client.name|default:"-" }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ receivable.category.name|default:"-"
+                                }}</span></td>
+                        <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
+                        <td class="text-center">
+                            {% if receivable.status == 'PENDING' %}
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                            {% elif receivable.status == 'RECEIVED' %}
+                            <span class="badge bg-success">Recebido</span>
+                            {% elif receivable.status == 'OVERDUE' %}
+                            <span class="badge bg-danger">Vencido</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ receivable.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                            href="{% url 'financeiro:account_receivable_detail' receivable.id %}"><i
+                                                class="bi bi-eye me-2"></i>Detalhes</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a>
+                                    </li>
+                                    {% if receivable.status != 'RECEIVED' %}
+                                    <li>
+                                        <form action="{% url 'financeiro:account_receivable_receive' receivable.id %}"
+                                            method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-success"
+                                                onclick="return confirm('Confirmar recebimento?')">
+                                                <i class="bi bi-check-circle me-2"></i>Receber
+                                            </button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <form action="{% url 'financeiro:account_receivable_cancel' receivable.id %}"
+                                            method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger"
+                                                onclick="return confirm('Cancelar esta conta?')">
+                                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                            Nenhuma conta a receber encontrada.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

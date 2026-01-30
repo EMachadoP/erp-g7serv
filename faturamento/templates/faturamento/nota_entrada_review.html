@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Revisar Importação NFe #{{ nota.numero_nota }}</h2>
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Fornecedor:</strong> {{ nota.fornecedor.fantasy_name|default:nota.fornecedor.name }} ({{
+                nota.fornecedor.document }})</p>
+            <p><strong>Chave:</strong> {{ nota.chave_acesso }}</p>
+            <p><strong>Valor Total NFe:</strong> R$ {{ nota.valor_total }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- SECTION 1: PRODUTOS (DE/PARA) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <strong>1. Vincular Produtos (De/Para)</strong>
+            </div>
+            <div class="table-responsive">
+                {{ item_formset.management_form }}
+                <table class="table table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Produto no XML</th>
+                            <th style="width: 10%">Qtd.</th>
+                            <th style="width: 10%">Vlr. Unit.</th>
+                            <th style="width: 40%">Produto no Sistema</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in item_formset %}
+                        <tr>
+                            {{ form.id }} <!-- Hidden ID field -->
+                            <td>
+                                <strong>{{ form.instance.xProd }}</strong><br>
+                                <span class="text-muted small">Cód: {{ form.instance.cProd }} | EAN: {{
+                                    form.instance.cEAN|default:"--" }}</span>
+                            </td>
+                            <td>{{ form.instance.quantidade|floatformat:0 }}</td>
+                            <td>R$ {{ form.instance.valor_unitario }}</td>
+                            <td>
+                                <div class="row g-2">
+                                    <div class="col-md-8">
+                                        {{ form.produto }}
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-center">
+                                        <!-- Optional visual indicator or help text -->
+                                    </div>
+                                </div>
+                                {% if form.produto.errors %}
+                                <div class="text-danger small">{{ form.produto.errors }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 2: FINANCEIRO (PARCELAS) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <strong>2. Financeiro (Parcelas)</strong>
+            </div>
+            <div class="card-body">
+                {{ parcela_formset.management_form }}
+                {% if parcela_formset|length == 0 %}
+                <p class="text-muted">Nenhuma parcela identificada. Uma conta única será criada se não adicionar nada.
+                </p>
+                {% else %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Nº Parcela</th>
+                            <th>Vencimento</th>
+                            <th>Valor</th>
+                            <th>Forma Pagto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in parcela_formset %}
+                        <tr>
+                            {{ form.id }}
+                            <td>{{ form.numero_parcela }}</td>
+                            <td>{{ form.data_vencimento }}</td>
+                            <td>{{ form.valor }}</td>
+                            <td>{{ form.forma_pagamento }}</td>
+                        </tr>
+                        {% if form.errors %}
+                        <tr>
+                            <td colspan="4" class="text-danger small">{{ form.errors }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mb-5">
+            <a href="{% url 'faturamento:nota_entrada_create' %}" class="btn btn-outline-secondary me-2">Cancelar /
+                Voltar</a>
+            <button type="submit" class="btn btn-primary btn-lg"
+                onclick="return confirm('Confirma o lançamento definitivo?');">
+                <i class="bi bi-check-all"></i> Confirmar Lançamento
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Initialize Select2 if available
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%'
+            });
+        }
+    });
+</script>
+{% endblock %}

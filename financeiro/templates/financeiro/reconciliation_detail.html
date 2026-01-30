@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h3>Detalhes da Transação</h3>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ reconciliation.description }}</h5>
+        <p class="card-text"><strong>Data:</strong> {{ reconciliation.date }}</p>
+        <p class="card-text"><strong>Tipo:</strong> {{ reconciliation.get_transaction_type_display }}</p>
+        <p class="card-text"><strong>Valor:</strong> R$ {{ reconciliation.amount }}</p>
+        <a href="{% url 'financeiro:reconciliation_list' %}" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base_mobile.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mobile-container mt-3">
+    <h3 class="mb-3"><i class="fas fa-hammer"></i> Minhas Ordens</h3>
+    <p class="text-muted small">Logado como: <strong>{{ request.user.username }}</strong> (ID: {{ request.user.id }})
+    </p>
+
+    {% if not os_list %}
+    <div class="alert alert-info">
+        Nenhuma OS pendente para você.
+    </div>
+    {% else %}
+    {% for os in os_list %}
+    <div class="card mb-3 shadow-sm" onclick="window.location='{% url 'operacional:mobile_os_detail' os.id %}'"
+        style="cursor: pointer;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge {% if os.status == 'IN_PROGRESS' %}bg-primary{% else %}bg-secondary{% endif %}">
+                    {{ os.get_status_display }}
+                </span>
+                <small class="text-muted">{{ os.scheduled_date|date:"d/m H:i" }}</small>
+            </div>
+            <h5 class="card-title text-truncate">{{ os.client.fantasy_name|default:os.client.name }}</h5>
+            <p class="card-text text-muted small mb-1">
+                <i class="fas fa-map-marker-alt"></i> {{ os.client.city }} - {{ os.client.neighborhood }}
+            </p>
+            <p class="card-text text-truncate">{{ os.description }}</p>
+        </div>
+
+        {% if os.status == 'IN_PROGRESS' %}
+        <div class="card-footer bg-primary text-white text-center py-1 small">
+            <i class="fas fa-play-circle"></i> Em Execução
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<style>
+    .mobile-container {
+        max-width: 600px;
+        /* Limit width for desktop viewing to look "app-like" */
+    }
+</style>
+{% endblock %}

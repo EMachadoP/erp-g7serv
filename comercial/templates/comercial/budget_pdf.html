@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+{% load currency_filters %}
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .header-box {
+            border: 1px solid #999;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .header-table td {
+            vertical-align: top;
+        }
+
+        .budget-no-box {
+            border: 1px solid #999;
+            text-align: center;
+            width: 140px;
+            float: right;
+        }
+
+        .budget-no-title {
+            background-color: #eee;
+            border-bottom: 1px solid #999;
+            font-weight: bold;
+            padding: 4px;
+            font-size: 10px;
+        }
+
+        .budget-no-value {
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .client-box {
+            border: 1px solid #999;
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background-color: #eee;
+            border-bottom: 1px solid #999;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .info-table {
+            width: 100%;
+        }
+
+        .info-table td {
+            padding: 4px 8px;
+        }
+
+        .field-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #999;
+            margin-bottom: 20px;
+        }
+
+        .products-table th {
+            background-color: #eee;
+            border: 1px solid #999;
+            padding: 6px;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .products-table td {
+            border: 1px solid #999;
+            padding: 6px;
+            font-size: 10px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total-box {
+            float: right;
+            width: 250px;
+        }
+
+        .total-row {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .total-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .total-table td {
+            padding: 4px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .obs-box {
+            border: 1px solid #999;
+            min-height: 60px;
+            padding: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            font-size: 9px;
+            color: #777;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            margin-top: 20px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Grid -->
+    <table style="width: 100%; margin-bottom: 10px;">
+        <tr>
+            <!-- Company Info Box -->
+            <td style="vertical-align: top;">
+                <div class="header-box" style="height: 90px; margin-right: 10px;">
+                    <div class="company-name">G7 Serv</div>
+                    <div class="text-center" style="font-size: 10px;">
+                        56.035.499/0001-27<br>
+                        (81) 3019-5654<br>
+                        comercial@g7serv.com.br<br>
+                        Rua Dois de Fevereiro, 237 - Vasco da Gama, 52280-572, Recife - PE
+                    </div>
+                </div>
+            </td>
+            <!-- Budget Info Boxes -->
+            <td style="width: 150px; vertical-align: top;">
+                <div class="budget-no-box" style="margin-bottom: 5px;">
+                    <div class="budget-no-title">Orçamento Nº</div>
+                    <div class="budget-no-value">{{ budget.id }}</div>
+                </div>
+                <div class="budget-no-box" style="margin-bottom: 5px;">
+                    <div class="budget-no-title">Modalidade</div>
+                    <div class="budget-no-value" style="font-size: 12px;">Venda</div>
+                </div>
+                <div class="budget-no-box">
+                    <div class="budget-no-title">Válido até</div>
+                    <div class="budget-no-value" style="font-size: 12px;">{{ budget.validity_date|date:"d/m/Y" }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div
+        style="text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">
+        {{ budget.title|default:"Orçamento" }}
+    </div>
+
+    <!-- Client Info -->
+    <div class="client-box">
+        <table class="info-table">
+            <tr>
+                <td width="60%">
+                    <div class="field-label">Cliente</div>
+                    <div>{{ budget.client.name }}</div>
+                </td>
+                <td width="40%" style="border-left: 1px solid #ddd;">
+                    <div class="field-label">CPF/CNPJ</div>
+                    <div>{{ budget.client.document|default:"-" }}</div>
+                </td>
+            </tr>
+            <tr style="border-top: 1px solid #ddd;">
+                <td>
+                    <div class="field-label">Contato</div>
+                    <div>{{ budget.contact|default:"-" }}</div>
+                    <div class="field-label" style="margin-top: 4px;">Endereço</div>
+                    <div>{{ budget.address|default:budget.client.address|default:"-" }}</div>
+                </td>
+                <td style="border-left: 1px solid #ddd; vertical-align: top;">
+                    <div class="field-label">Telefone / E-mail</div>
+                    <div>{{ budget.client.phone|default:"-" }}</div>
+                    <div>{{ budget.client.email|default:"-" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Products Table -->
+    {% if budget.products.exists or budget.services.exists %}
+    <div
+        style="background-color: #eee; border: 1px solid #999; border-bottom: none; font-weight: bold; font-size: 12px; padding: 5px; text-align: center;">
+        PRODUTOS</div>
+    <table class="products-table">
+        <thead>
+            <tr>
+                <th class="text-left">Descrição</th>
+                <th width="10%">Quant.</th>
+                <th width="15%">Unitário</th>
+                <th width="10%">Desconto</th>
+                <th width="15%">Total Líquido</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in budget.products.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td class="text-center">{{ item.quantity }} UN</td>
+                <td class="text-right">R$ {{ item.unit_price|currency }}</td>
+                <td class="text-right">R$ 0,00</td>
+                <td class="text-right">R$ {{ item.total_price|currency }}</td>
+            </tr>
+            {% endfor %}
+            {% for item in budget.services.all %}
+            <tr>
+                <td>{{ item.service.name }}</td>
+                <td class="text-center">{{ item.quantity }} SV</td>
+                <td class="text-right">R$ {{ item.unit_price|currency }}</td>
+                <td class="text-right">R$ 0,00</td>
+                <td class="text-right">R$ {{ item.total_price|currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Totals -->
+    <div style="overflow: hidden;">
+        <div class="total-box">
+            <table class="total-table">
+                <tr>
+                    <td>Total Produtos</td>
+                    <td class="text-right">R$ {{ budget.total_value|currency }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total do Orçamento</td>
+                    <td class="text-right">R$ {{ budget.total_value|currency }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    {% if budget.payment_method or budget.observation %}
+    <!-- Observation / Payment -->
+    <div
+        style="background-color: #eee; border: 1px solid #999; font-weight: bold; font-size: 11px; padding: 4px; margin-top: 15px; border-bottom: none; text-transform: uppercase;">
+        Observação
+    </div>
+    <div class="obs-box" style="margin-top: 0;">
+        {% if budget.payment_method %}
+        <p style="margin: 0 0 5px 0;"><strong>Pagamento:</strong> {{ budget.payment_method }}</p>
+        {% endif %}
+        {{ budget.observation|default:""|safe|linebreaksbr }}
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        Data de Emissão: {{ budget.date|date:"d/m/Y" }} | Página 1/1
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Resumo de Faturamento de Contratos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-primary"><i class="bi bi-clock-history me-2"></i>Histórico de Faturamento</h2>
+                <p class="text-muted">Últimas faturas geradas via contrato.</p>
+            </div>
+            <a href="{% url 'faturamento:contract_billing' %}" class="btn btn-primary">
+                <i class="bi bi-play-circle me-2"></i>Novo Faturamento
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fatura</th>
+                            <th>Cliente</th>
+                            <th>Competência</th>
+                            <th>Vencimento</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Gerado em</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>{{ invoice.number }}</td>
+                            <td>{{ invoice.client.name }}</td>
+                            <td>{{ invoice.competence_month }}/{{ invoice.competence_year }}</td>
+                            <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
+                            <td>R$ {{ invoice.amount }}</td>
+                            <td>
+                                {% if invoice.status == 'PD' %}
+                                <span class="badge bg-warning text-dark">Pendente</span>
+                                {% elif invoice.status == 'PG' %}
+                                <span class="badge bg-success">Paga</span>
+                                {% else %}
+                                <span class="badge bg-danger">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                Nenhuma fatura de contrato gerada recentemente.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

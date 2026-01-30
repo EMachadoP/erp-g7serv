@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-4 justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>{% if invoice %}Editar{% else %}Nova{% endif %} Fatura</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Número da Fatura</label>
+                            {{ form.number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Grupo de Faturamento</label>
+                            {{ form.billing_group }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Cliente</label>
+                            {{ form.client }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Contrato Vinculado</label>
+                            {{ form.contract }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Data de Emissão</label>
+                            {{ form.issue_date }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data de Vencimento</label>
+                            {{ form.due_date }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Valor (R$)</label>
+                            {{ form.amount }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{% if invoice %}{% url 'faturamento:detail' invoice.id %}{% else %}{% url 'faturamento:list' %}{% endif %}"
+                            class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Salvar Fatura
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        if ($.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Selecione...'
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

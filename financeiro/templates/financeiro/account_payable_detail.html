@@ -1,0 +1,222 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Detalhes da Conta a Pagar</h2>
+            <div>
+                <a href="{% url 'financeiro:account_payable_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar
+                </a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-muted">InformaÃ§Ãµes Principais</h5>
+                    {% if payable.status == 'PENDING' %}
+                    <span class="badge bg-warning text-dark px-3 py-2">Pendente</span>
+                    {% elif payable.status == 'PAID' %}
+                    <span class="badge bg-success px-3 py-2">Pago</span>
+                    {% elif payable.status == 'OVERDUE' %}
+                    <span class="badge bg-danger px-3 py-2">Vencido</span>
+                    {% elif payable.status == 'CANCELLED' %}
+                    <span class="badge bg-secondary px-3 py-2">Cancelado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase">DescriÃ§Ã£o</label>
+                        <p class="fs-5 fw-bold mb-0">{{ payable.description }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-muted small text-uppercase">Valor</label>
+                        <p class="fs-5 fw-bold mb-0">R$ {{ payable.amount }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-muted small text-uppercase">Vencimento</label>
+                        <p class="fs-5 mb-0">{{ payable.due_date|date:"d/m/Y" }}</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase">Fornecedor</label>
+                        <p class="mb-0">{{ payable.supplier.name|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase">Categoria</label>
+                        <p class="mb-0">{{ payable.category.name|default:"-" }}</p>
+                    </div>
+
+                    {% if payable.notes %}
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase">ObservaÃ§Ãµes</label>
+                        <p class="mb-0 bg-light p-3 rounded">{{ payable.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if payable.status == 'PENDING' or payable.status == 'OVERDUE' %}
+            <div class="card-footer bg-white py-3">
+                <div class="d-flex gap-2">
+                    <!-- Button Trigger Modal -->
+                    <button type="button" class="btn btn-success text-white fw-bold" data-bs-toggle="modal" data-bs-target="#modalPagamento">
+                        <i class="bi bi-check-circle me-2"></i>Realizar Pagamento
+                    </button>
+
+                    <form action="{% url 'financeiro:account_payable_cancel' payable.id %}" method="post"
+                        onsubmit="return confirm('Tem certeza que deseja cancelar esta conta?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar Conta
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- History -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 text-muted">HistÃ³rico</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <i class="bi bi-clock text-muted me-2"></i>
+                                <span class="fw-bold">Criado em</span>
+                            </div>
+                            <span class="text-muted">{{ payable.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </li>
+                    {% if payable.payment_date %}
+                    <li class="list-group-item px-0">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <span class="fw-bold text-success">Pago em</span>
+                            </div>
+                            <span class="text-success">{{ payable.payment_date|date:"d/m/Y" }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Pagamento -->
+<div class="modal fade" id="modalPagamento" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'financeiro:account_payable_pay' payable.id %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Pagamento para: <strong>{{ payable.supplier.name|default:"Fornecedor" }}</strong></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Valor Original</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" class="form-control" value="{{ payable.amount }}" readonly id="modalOriginalAmount">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            {{ payment_form.interest.label_tag }}
+                            {{ payment_form.interest }}
+                        </div>
+                        <div class="col-4">
+                            {{ payment_form.fine.label_tag }}
+                            {{ payment_form.fine }}
+                        </div>
+                        <div class="col-4">
+                            {{ payment_form.discount.label_tag }}
+                            {{ payment_form.discount }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 p-3 bg-light rounded border">
+                        {{ payment_form.amount.label_tag }}
+                        {{ payment_form.amount }}
+                        <div class="form-text">Calculado automaticamente.</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            {{ payment_form.payment_date.label_tag }}
+                            {{ payment_form.payment_date }}
+                        </div>
+                        <div class="col-6">
+                            {{ payment_form.account.label_tag }}
+                            {{ payment_form.account }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ payment_form.notes.label_tag }}
+                        {{ payment_form.notes }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputAmount = document.getElementById('id_amount');
+        const inputDate = document.getElementById('id_payment_date');
+        const inputInterest = document.getElementById('id_interest');
+        const inputFine = document.getElementById('id_fine');
+        const inputDiscount = document.getElementById('id_discount');
+        
+        // Get original amount from the rendered value, assuming standard format like '100,50' or '100.50'
+        // Django decimal rendering might use comma or dot depending on L10N.
+        // Safer to use the readonly input value we populated.
+        const originalValStr = document.getElementById('modalOriginalAmount').value;
+        const originalAmount = parseFloat(originalValStr.replace(',', '.')) || 0;
+
+        // Set default date to today if empty
+        if(inputDate && !inputDate.value) {
+            inputDate.valueAsDate = new Date();
+        }
+
+        function updateTotal() {
+            const interest = parseFloat(inputInterest.value.replace(',', '.')) || 0;
+            const fine = parseFloat(inputFine.value.replace(',', '.')) || 0;
+            const discount = parseFloat(inputDiscount.value.replace(',', '.')) || 0;
+            
+            const total = originalAmount + interest + fine - discount;
+            
+            inputAmount.value = total.toFixed(2).replace('.', ',');
+        }
+        
+        if(inputInterest) inputInterest.addEventListener('input', updateTotal);
+        if(inputFine) inputFine.addEventListener('input', updateTotal);
+        if(inputDiscount) inputDiscount.addEventListener('input', updateTotal);
+        
+        // Initial calc
+        updateTotal();
+    });
+</script>
+{% endblock %}

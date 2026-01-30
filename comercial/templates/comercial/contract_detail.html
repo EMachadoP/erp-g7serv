@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #printable-area,
+        #printable-area * {
+            visibility: visible;
+        }
+
+        #printable-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .card-header {
+            background-color: transparent !important;
+            color: black !important;
+            border-bottom: 2px solid #000;
+        }
+    }
+</style>
+
+<div id="printable-area" class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h3>Contrato #{{ contract.id }}</h3>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Cliente: {{ contract.client.name }}</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Modalidade:</strong> {{ contract.modality }}</p>
+                <p><strong>Valor:</strong> R$ {{ contract.value }}</p>
+                <p><strong>Dia de Vencimento:</strong> {{ contract.due_day }}</p>
+                <p><strong>Status:</strong> {{ contract.status }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Início:</strong> {{ contract.start_date }}</p>
+                <p><strong>Término:</strong> {{ contract.end_date|default:"Indeterminado" }}</p>
+                <p><strong>Modelo:</strong> {{ contract.template.name }}</p>
+                <p><strong>Assinado em:</strong> {{ contract.signed_at|default:"Não assinado" }}</p>
+            </div>
+        </div>
+
+        {% if contract.signature_image %}
+        <div class="mt-3">
+            <h6>Assinatura Digital:</h6>
+            <img src="{{ contract.signature_image.url }}" alt="Assinatura"
+                style="max-width: 300px; border: 1px solid #ccc;">
+        </div>
+        {% endif %}
+
+        <div class="mt-4 no-print">
+            <a href="{% url 'comercial:contract_list' %}" class="btn btn-secondary">Voltar</a>
+
+            <!-- Download PDF Button -->
+            <a href="{% url 'comercial:contract_pdf' contract.pk %}" class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-download"></i> Baixar PDF
+            </a>
+
+            <!-- Print Button -->
+            <button onclick="window.print()" class="btn btn-outline-dark">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
+
+            <a href="{% url 'comercial:contract_signing' contract.token %}" class="btn btn-primary" target="_blank">
+                Link de Assinatura
+            </a>
+
+            {% if contract.signed_at %}
+            <a href="{% url 'comercial:contract_send_email' contract.pk %}" class="btn btn-success">
+                <i class="bi bi-envelope"></i> Enviar por E-mail
+            </a>
+            {% endif %}
+
+            <a href="{% url 'comercial:contract_update' contract.pk %}" class="btn btn-warning">Editar</a>
+            <a href="{% url 'comercial:contract_delete' contract.pk %}" class="btn btn-danger">Excluir</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

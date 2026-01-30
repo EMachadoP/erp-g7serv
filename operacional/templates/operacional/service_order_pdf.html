@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>OS #{{ order.id }}</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .info-header {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: #eee;
+        }
+
+        .totals {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .signature-section {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .signature-box {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 10px;
+        }
+
+        .signature-img {
+            max-width: 300px;
+            max-height: 150px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Ordem de Serviço #{{ order.id }}</h1>
+        <p>Descartex Soluções</p>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td class="info-header">Cliente</td>
+            <td>{{ order.client.name }}</td>
+            <td class="info-header">Data</td>
+            <td>{{ order.created_at|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+            <td class="info-header">Endereço</td>
+            <td colspan="3">{{ order.address|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="info-header">Descrição</td>
+            <td colspan="3">{{ order.description|linebreaksbr }}</td>
+        </tr>
+    </table>
+
+    <h3>Itens / Serviços</h3>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Produto/Serviço</th>
+                <th>Qtd</th>
+                <th>Unitário</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>R$ {{ item.unit_price }}</td>
+                <td>R$ {{ item.total_price }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Nenhum item registrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <h3>Total: R$ {{ order.value }}</h3>
+    </div>
+
+    <div class="signature-section">
+        {% if order.signature_image %}
+        <p>Assinatura do Cliente:</p>
+        <div class="signature-box">
+            <img src="{{ order.signature_image.path }}" class="signature-img">
+        </div>
+        <p>Assinado em: {{ order.updated_at|date:"d/m/Y H:i" }}</p>
+        {% else %}
+        <p>__________________________________________</p>
+        <p>Assinatura do Cliente</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>

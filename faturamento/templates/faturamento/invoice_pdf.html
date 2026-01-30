@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Fatura {{ invoice.number }}{% endblock %}
+{% block content %}
+<h1>Fatura {{ invoice.number }}</h1>
+<p><strong>Empresa:</strong> {{ invoice.billing_group.name }}</p>
+<p><strong>Cliente:</strong> {{ invoice.billing_group.name }}</p>
+<p><strong>Data de Emissão:</strong> {{ invoice.issue_date }}</p>
+<p><strong>Vencimento:</strong> {{ invoice.due_date }}</p>
+<p><strong>Valor:</strong> R$ {{ invoice.amount }}</p>
+<p><strong>Status:</strong> {{ invoice.get_status_display }}</p>
+<hr>
+<p>Obrigado por utilizar nossos serviços.</p>
+{% endblock %}

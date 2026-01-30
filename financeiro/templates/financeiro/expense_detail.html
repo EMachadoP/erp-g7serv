@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header bg-danger text-white">
+        <h3>Detalhes da Despesa</h3>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ expense.description }}</h5>
+        <p class="card-text"><strong>Valor:</strong> R$ {{ expense.amount }}</p>
+        <p class="card-text"><strong>Vencimento:</strong> {{ expense.due_date }}</p>
+        <p class="card-text"><strong>Status:</strong> 
+            {% if expense.paid %}
+                <span class="badge bg-success">Pago</span>
+            {% else %}
+                <span class="badge bg-warning text-dark">Pendente</span>
+            {% endif %}
+        </p>
+        <a href="{% url 'financeiro:expense_list' %}" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>
+{% endblock %}

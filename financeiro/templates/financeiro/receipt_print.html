@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo #{{ receipt.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 150px;
+            margin-right: 20px;
+        }
+
+        .company-info {
+            flex-grow: 1;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .company-details {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .receipt-number {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .title {
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .amount {
+            font-size: 24px;
+        }
+
+        .content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 60px;
+            text-align: justify;
+        }
+
+        .date-location {
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 60px;
+        }
+
+        .signature {
+            text-align: center;
+            border-top: 1px solid #000;
+            width: 60%;
+            margin: 0 auto;
+            padding-top: 10px;
+            font-size: 12px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <!-- Placeholder for Logo -->
+                <svg width="100" height="50" viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="50" fill="#2c3e50" />
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white"
+                        font-size="14">G7SERV</text>
+                </svg>
+            </div>
+            <div class="company-info">
+                <div class="company-name">G7 SERVIÇOS E COMÉRCIO DE PRODUTOS ELETRÔNICOS LTDA</div>
+                <div class="company-details">
+                    23.037.411/0001-57<br>
+                    Rua Dois de Fevereiro, 237 - Vasco da Gama, Recife - PE, 52280572
+                </div>
+            </div>
+            <div class="receipt-number">
+                Nº {{ receipt.id }}/{{ receipt.issue_date|date:"Y" }}
+            </div>
+        </div>
+
+        <div class="title-row">
+            <div class="title">RECIBO</div>
+            <div class="amount">R$ {{ receipt.amount }}</div>
+        </div>
+
+        <div class="content">
+            Recebi(emos) de <strong>{{ receipt.person.name }}</strong>
+            {% if receipt.person.document %}
+            inscrito(a) no CPF/CNPJ sob nº <strong>{{ receipt.person.document }}</strong>
+            {% endif %}
+            a quantia de <strong>{{ receipt.amount }}</strong>, referente a <strong>{{ receipt.description }}</strong> e
+            para clareza firmo(amos) o presente.
+        </div>
+
+        <div class="date-location">
+            Recife, {{ receipt.issue_date|date:"d \d\e F \d\e Y" }}.
+        </div>
+
+        <div class="signature">
+            G7 SERVIÇOS E COMÉRCIO DE PRODUTOS ELETRÔNICOS LTDA<br>
+            23.037.411/0001-57
+        </div>
+    </div>
+    <script>
+        window.onload = function () {
+            window.print();
+        }
+    </script>
+</body>
+
+</html>
