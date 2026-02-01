@@ -112,13 +112,12 @@ if DATABASE_URL:
         )
     }
 else:
-    # Development Fallback (only used if DATABASE_URL is not set)
+    # Development Fallback to SQLite (Easier for local tests/dev if no Postgres is available)
     DATABASES = {
-        'default': dj_database_url.config(
-            default='postgres://user:pass@localhost:5432/dbname',
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 
 

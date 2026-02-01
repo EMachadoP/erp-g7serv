@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AtendimentoAI',
             fields=[
-                ('id', models.BigAutoField(auto_now_add=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(primary_key=True, serialize=False, verbose_name='ID')),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('cliente_nome', models.CharField(default='Anônimo', max_length=100)),
                 ('mensagem_usuario', models.TextField()),
