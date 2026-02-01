@@ -5,6 +5,7 @@ Django settings for erp project.
 import os
 import dj_database_url
 from pathlib import Path
+from urllib.parse import urlparse
 from decouple import config, Csv
 
 # Em produção, o Railway define a variável PORT
@@ -90,12 +91,34 @@ TEMPLATES = [
 WSGI_APPLICATION = 'erp.wsgi.application'
 
 
-DATABASES = {
-    'default': dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Database Configuration - Hardened for Railway/Production
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+
+if DATABASE_URL:
+    # Fail-fast if DATABASE_URL is pointing to local "db" host
+    parsed_url = urlparse(DATABASE_URL)
+    if parsed_url.hostname == 'db':
+        raise RuntimeError(
+            "DATABASE_URL is pointing to host 'db' (docker-compose). "
+            "Please fix the DATABASE_URL in Railway Variables to use the correct Postgres host."
+        )
+    
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Development Fallback (only used if DATABASE_URL is not set)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default='postgres://user:pass@localhost:5432/dbname',
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 
 
 # Password validation
