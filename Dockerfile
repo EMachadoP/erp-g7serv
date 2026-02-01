@@ -26,6 +26,12 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /app/
 
-# Run migrations and start gunicorn
-# Note: Using sh -c to allow multiple commands
-CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 erp.wsgi:application"]
+# Copy and set execution permissions for the entrypoint script
+RUN chmod +x /app/run-migrations.sh
+
+# Ensure migrations run before starting the app
+ENTRYPOINT ["/app/run-migrations.sh"]
+
+# Command to start the app using Gunicorn
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 \
+    --access-logfile - --error-logfile - erp.wsgi:application
