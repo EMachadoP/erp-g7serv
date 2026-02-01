@@ -186,7 +186,12 @@ def get_permissions_from_mapping():
                 app_label, codename = perm_str.split('.')
                 # We want to get all permissions for this model (view, add, change, delete)
                 # Assuming the codename is like 'view_modelname'
-                action, model_name = codename.split('_', 1)
+                parts = codename.split('_', 1)
+                if len(parts) == 2:
+                    action, model_name = parts
+                else:
+                    action = parts[0]
+                    model_name = ''
                 
                 perms = Permission.objects.filter(
                     content_type__app_label=app_label,
@@ -214,7 +219,12 @@ def get_permissions_from_mapping():
             # Top level menu item
             perm_str = menu['perm']
             app_label, codename = perm_str.split('.')
-            action, model_name = codename.split('_', 1)
+            parts = codename.split('_', 1)
+            if len(parts) == 2:
+                action, model_name = parts
+            else:
+                action = parts[0]
+                model_name = ''
             
             perms = Permission.objects.filter(
                 content_type__app_label=app_label,
