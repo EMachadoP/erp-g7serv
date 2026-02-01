@@ -5,7 +5,7 @@ python-decouple==3.8
 
 # Banco de Dados e Infra
 dj-database-url==2.1.0
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 whitenoise==6.8.2
 
 # Interface e Frontend
