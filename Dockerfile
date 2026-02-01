@@ -29,5 +29,5 @@ COPY . /app/
 # Copy and set execution permissions for the entrypoint script
 RUN chmod +x /app/run-migrations.sh
 
-# Ensure migrations run before starting the app
-CMD ["/app/run-migrations.sh"]
+# Ensure migrations run before starting the app (One-line failsafe)
+CMD ["bash", "-lc", "python manage.py migrate --noinput && exec gunicorn erp.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 4 --timeout 120 --access-logfile - --error-logfile -"]
