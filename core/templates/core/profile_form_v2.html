@@ -15,25 +15,53 @@
                 </div>
 
                 <h5 class="mb-3">Permissões de Acesso</h5>
-                
+
                 <div class="accordion" id="permissionsAccordion">
                     {% for menu in grouped_permissions %}
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{ forloop.counter }}">
-                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
+                                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                aria-controls="collapse{{ forloop.counter }}">
                                 {{ menu.name }}
                             </button>
                         </h2>
-                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#permissionsAccordion">
+                        <div id="collapse{{ forloop.counter }}"
+                            class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                            aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#permissionsAccordion">
                             <div class="accordion-body">
+                                <div class="d-flex justify-content-end mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input select-all-main" type="checkbox"
+                                            id="selectAll{{ forloop.counter }}"
+                                            data-target="collapse{{ forloop.counter }}">
+                                        <label class="form-check-label fw-bold"
+                                            for="selectAll{{ forloop.counter }}">Marcar Todos em {{ menu.name }}</label>
+                                    </div>
+                                </div>
+                                <hr>
                                 {% for submenu in menu.submenus %}
-                                <div class="mb-3">
-                                    <h6 class="fw-bold">{{ submenu.name }}</h6>
+                                <div class="mb-3 permission-group"
+                                    id="subgroup-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold mb-0">{{ submenu.name }}</h6>
+                                        <div class="form-check">
+                                            <input class="form-check-input select-all-sub" type="checkbox"
+                                                id="selectAllSub{{ forloop.parentloop.counter }}{{ forloop.counter }}"
+                                                data-target="subgroup-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                                            <label class="form-check-label small text-muted"
+                                                for="selectAllSub{{ forloop.parentloop.counter }}{{ forloop.counter }}">Marcar
+                                                Grupo</label>
+                                        </div>
+                                    </div>
                                     <div class="row">
                                         {% for perm in submenu.perms %}
                                         <div class="col-md-4">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm.id }}" id="perm{{ perm.id }}" {% if perm.id in current_permissions %}checked{% endif %}>
+                                                <input class="form-check-input permission-checkbox" type="checkbox"
+                                                    name="permissions" value="{{ perm.id }}" id="perm{{ perm.id }}" {%
+                                                    if perm.id in current_permissions %}checked{% endif %}>
                                                 <label class="form-check-label" for="perm{{ perm.id }}">
                                                     {{ perm.name }}
                                                 </label>
@@ -42,7 +70,8 @@
                                         {% endfor %}
                                     </div>
                                 </div>
-                                {% if not forloop.last %}<hr>{% endif %}
+                                {% if not forloop.last %}
+                                <hr>{% endif %}
                                 {% endfor %}
                             </div>
                         </div>
@@ -58,4 +87,79 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Select All Sub (Group level)
+        document.querySelectorAll('.select-all-sub').forEach(function (selectAllSub) {
+            selectAllSub.addEventListener('change', function () {
+                const targetId = this.dataset.target;
+                const checkboxes = document.querySelectorAll(`#${targetId} .permission-checkbox`);
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                    cb.dispatchEvent(new Event('change'));
+                });
+            });
+        });
+
+        // Select All Main (Category level)
+        document.querySelectorAll('.select-all-main').forEach(function (selectAllMain) {
+            selectAllMain.addEventListener('change', function () {
+                const targetId = this.dataset.target;
+                const checkboxes = document.querySelectorAll(`#${targetId} .permission-checkbox`);
+                const subToggleCheckboxes = document.querySelectorAll(`#${targetId} .select-all-sub`);
+
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                subToggleCheckboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+        });
+
+        // Update masters when children change (Uncheck "Select All" if a child is unchecked)
+        document.querySelectorAll('.permission-checkbox').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                const group = this.closest('.permission-group');
+                const subToggle = group.querySelector('.select-all-sub');
+                const allInGroup = group.querySelectorAll('.permission-checkbox');
+                const allCheckedInGroup = group.querySelectorAll('.permission-checkbox:checked');
+
+                if (subToggle) {
+                    subToggle.checked = (allInGroup.length === allCheckedInGroup.length);
+                }
+
+                // Also check/uncheck main category toggle
+                const accordionBody = this.closest('.accordion-body');
+                const mainToggle = accordionBody.querySelector('.select-all-main');
+                const allInMain = accordionBody.querySelectorAll('.permission-checkbox');
+                const allCheckedInMain = accordionBody.querySelectorAll('.permission-checkbox:checked');
+
+                if (mainToggle) {
+                    mainToggle.checked = (allInMain.length === allCheckedInMain.length);
+                }
+            });
+        });
+
+        // Initial check for master toggles on page load (for edit view)
+        document.querySelectorAll('.select-all-sub').forEach(function (subToggle) {
+            const group = subToggle.closest('.permission-group');
+            const allInGroup = group.querySelectorAll('.permission-checkbox');
+            const allCheckedInGroup = group.querySelectorAll('.permission-checkbox:checked');
+            if (allInGroup.length > 0) {
+                subToggle.checked = (allInGroup.length === allCheckedInGroup.length);
+            }
+        });
+
+        document.querySelectorAll('.select-all-main').forEach(function (mainToggle) {
+            const accordionBody = mainToggle.closest('.accordion-body');
+            const allInMain = accordionBody.querySelectorAll('.permission-checkbox');
+            const allCheckedInMain = accordionBody.querySelectorAll('.permission-checkbox:checked');
+            if (allInMain.length > 0) {
+                mainToggle.checked = (allInMain.length === allCheckedInMain.length);
+            }
+        });
+    });
+</script>
 {% endblock %}
