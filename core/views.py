@@ -256,21 +256,26 @@ def get_permissions_from_mapping():
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_create(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        permission_ids = request.POST.getlist('permissions')
-        
-        group = Group.objects.create(name=name)
-        group.permissions.set(permission_ids)
-        
-        messages.success(request, 'Perfil criado com sucesso.')
-        return redirect('core:profile_list')
-        
-    grouped_permissions = get_permissions_from_mapping()
-    return render(request, 'core/profile_form_v2.html', {
-        'grouped_permissions': grouped_permissions,
-        'current_permissions': []
-    })
+    import traceback
+    from django.http import HttpResponse
+    try:
+        if request.method == 'POST':
+            name = request.POST.get('name')
+            permission_ids = request.POST.getlist('permissions')
+            
+            group = Group.objects.create(name=name)
+            group.permissions.set(permission_ids)
+            
+            messages.success(request, 'Perfil criado com sucesso.')
+            return redirect('core:profile_list')
+            
+        grouped_permissions = get_permissions_from_mapping()
+        return render(request, 'core/profile_form_v2.html', {
+            'grouped_permissions': grouped_permissions,
+            'current_permissions': []
+        })
+    except Exception as e:
+        return HttpResponse(f"Error: {e}\n{traceback.format_exc()}", status=500, content_type="text/plain")
 
 @login_required
 @user_passes_test(is_socio_diretor)
