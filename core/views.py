@@ -10,28 +10,65 @@ from .utils import MENU_PERMISSIONS
 def is_socio_diretor(user):
     return user.is_superuser or user.groups.filter(name='SÓCIO-DIRETOR').exists()
 
+from django.utils import timezone
+from django.db.models import Sum
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
 from ai_core.models import AtendimentoAI
 from operacional.models import ServiceOrder
+from comercial.models import Person, Contract
+from financeiro.models import AccountPayable
 
 @login_required
 def home(request):
-    # Dados para Dashboard IA
-    ai_data = {
-        'ai_comercial': AtendimentoAI.objects.filter(categoria_detectada='orcamento').count(),
-        'ai_suporte': AtendimentoAI.objects.filter(categoria_detectada='suporte').count(),
-        'ai_financeiro': AtendimentoAI.objects.filter(categoria_detectada='financeiro').count(),
-        'ai_outros': AtendimentoAI.objects.filter(categoria_detectada='outro').count(),
-    }
-    
-    # Dados para Dashboard Operacional
-    os_data = {
-        'os_pendente': ServiceOrder.objects.filter(status='PENDING').count(),
-        'os_andamento': ServiceOrder.objects.filter(status='IN_PROGRESS').count(),
-        'os_concluida': ServiceOrder.objects.filter(status='COMPLETED').count(),
-    }
+    # Redirect to dashboard as it's the new standard entry point
+    return redirect('core:dashboard')
 
-    context = {**ai_data, **os_data}
-    return render(request, 'core/home.html', context)
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'dashboard/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hoje = timezone.now().date()
+        mes_atual = timezone.now().month
+        ano_atual = timezone.now().year
+
+        # Métricas Dashboard BI
+        context['total_clientes'] = Person.objects.filter(is_client=True).count()
+        
+        # Faturamento do Mês
+        faturamento = Contract.objects.filter(
+            created_at__month=mes_atual, 
+            created_at__year=ano_atual,
+            status='Ativo'
+        ).aggregate(total=Sum('value'))['total'] or 0
+        context['faturamento_mes'] = faturamento
+
+        # Operacional
+        context['os_pendentes'] = ServiceOrder.objects.filter(status='PENDING').count()
+        context['os_andamento'] = ServiceOrder.objects.filter(status='IN_PROGRESS').count()
+
+        # Financeiro
+        context['contas_vencer'] = AccountPayable.objects.filter(
+            status='PENDING', 
+            due_date__gte=hoje
+        ).count()
+
+        # AI Triage
+        context['atendimentos_hoje'] = AtendimentoAI.objects.filter(timestamp__date=hoje).count()
+        context['ultimos_atendimentos'] = AtendimentoAI.objects.order_by('-timestamp')[:5]
+
+        # Pizza Charts Data (Compatibility)
+        context['ai_comercial'] = AtendimentoAI.objects.filter(categoria_detectada='orcamento').count()
+        context['ai_suporte'] = AtendimentoAI.objects.filter(categoria_detectada='suporte').count()
+        context['ai_financeiro'] = AtendimentoAI.objects.filter(categoria_detectada='financeiro').count()
+        context['ai_outros'] = AtendimentoAI.objects.filter(categoria_detectada='outro').count()
+        
+        context['os_pendente'] = context['os_pendentes']
+        context['os_andamento'] = context['os_andamento']
+        context['os_concluida'] = ServiceOrder.objects.filter(status='COMPLETED').count()
+
+        return context
 
 # --- User Management ---
 

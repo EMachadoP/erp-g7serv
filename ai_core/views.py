@@ -7,6 +7,9 @@ import json
 @csrf_exempt
 def processar_ia(request):
     if request.method == "POST":
+        if request.headers.get('Content-Type') != 'application/json':
+            return JsonResponse({"status": "erro", "mensagem": "Content-Type deve ser application/json"}, status=415)
+            
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
