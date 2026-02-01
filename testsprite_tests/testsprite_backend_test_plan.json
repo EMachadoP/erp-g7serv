@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC001",
+    "title": "test_admin_login_access_control",
+    "description": "Verify that the /admin/ endpoint restricts access to authorized users only and properly logs login attempts."
+  },
+  {
+    "id": "TC002",
+    "title": "test_crm_dashboard_access_and_data_integrity",
+    "description": "Verify that the /comercial/ endpoint provides access to the CRM dashboard and correctly displays client, quotation, and contract data according to business rules."
+  },
+  {
+    "id": "TC003",
+    "title": "test_operational_dashboard_and_work_order_management",
+    "description": "Verify that the /operacional/ endpoint provides access to the Field Service dashboard and supports work order state transitions, geolocation recording, and checklist validation during check-in and check-out."
+  },
+  {
+    "id": "TC004",
+    "title": "test_finance_dashboard_and_transaction_reconciliation",
+    "description": "Verify that the /financeiro/ endpoint provides access to the Finance dashboard and accurately records and reconciles financial transactions including cash flow, accounts payable/receivable, and bank statements."
+  },
+  {
+    "id": "TC005",
+    "title": "test_ai_processar_endpoint_message_triage",
+    "description": "Verify that the /ai/processar/ POST endpoint correctly processes AI message triage and status queries, returning valid responses and routing messages appropriately based on AI processing."
+  }
+]

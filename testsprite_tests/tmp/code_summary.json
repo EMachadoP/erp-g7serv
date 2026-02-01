@@ -1,0 +1,128 @@
+{
+    "tech_stack": [
+        "Python 3.13",
+        "Django 5.1.5",
+        "PostgreSQL",
+        "Railway",
+        "Gunicorn",
+        "WhiteNoise",
+        "TestSprite MCP"
+    ],
+    "features": [
+        {
+            "name": "Authentication",
+            "description": "Admin and technical access control at /admin/. Uses standard Django auth.",
+            "files": [
+                "erp/settings.py",
+                "erp/urls.py"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Auth API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/admin/": {
+                        "get": {
+                            "summary": "Admin login page"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "Comercial & CRM",
+            "description": "Management of clients, budgets, and contracts. Handles the flow from quote to OS.",
+            "files": [
+                "comercial/models.py",
+                "comercial/views.py",
+                "comercial/urls.py"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "CRM API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/comercial/": {
+                        "get": {
+                            "summary": "CRM Dashboard"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "Operacional (Field Service)",
+            "description": "Work Order (OS) management with check-in/out, geolocation, and checklists.",
+            "files": [
+                "operacional/models.py",
+                "operacional/views.py",
+                "operacional/urls.py",
+                "operacional/signals.py"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Operational API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/operacional/": {
+                        "get": {
+                            "summary": "Field Service Dashboard"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "Financeiro",
+            "description": "Cash flow, accounts payable/receivable, and bank reconciliation.",
+            "files": [
+                "financeiro/models.py",
+                "financeiro/views.py",
+                "financeiro/urls.py"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Finance API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/financeiro/": {
+                        "get": {
+                            "summary": "Finance Dashboard"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "Portal AI (Studio AI)",
+            "description": "AI-powered message triage and status queries.",
+            "files": [
+                "portal/models.py",
+                "portal/views.py",
+                "portal/urls.py"
+            ],
+            "api_doc": {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "AI API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/ai/processar/": {
+                        "post": {
+                            "summary": "Process AI query"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

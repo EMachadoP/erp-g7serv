@@ -10,9 +10,28 @@ from .utils import MENU_PERMISSIONS
 def is_socio_diretor(user):
     return user.is_superuser or user.groups.filter(name='SÓCIO-DIRETOR').exists()
 
+from ai_core.models import AtendimentoAI
+from operacional.models import ServiceOrder
+
 @login_required
 def home(request):
-    return render(request, 'core/home.html')
+    # Dados para Dashboard IA
+    ai_data = {
+        'ai_comercial': AtendimentoAI.objects.filter(categoria_detectada='orcamento').count(),
+        'ai_suporte': AtendimentoAI.objects.filter(categoria_detectada='suporte').count(),
+        'ai_financeiro': AtendimentoAI.objects.filter(categoria_detectada='financeiro').count(),
+        'ai_outros': AtendimentoAI.objects.filter(categoria_detectada='outro').count(),
+    }
+    
+    # Dados para Dashboard Operacional
+    os_data = {
+        'os_pendente': ServiceOrder.objects.filter(status='PENDING').count(),
+        'os_andamento': ServiceOrder.objects.filter(status='IN_PROGRESS').count(),
+        'os_concluida': ServiceOrder.objects.filter(status='COMPLETED').count(),
+    }
+
+    context = {**ai_data, **os_data}
+    return render(request, 'core/home.html', context)
 
 # --- User Management ---
 

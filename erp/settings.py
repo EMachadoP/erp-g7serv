@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'reports',
     'nfse_nacional',
     'integracao_cora',
+    'ai_core',
     # Third party
     'django_htmx',
     'ckeditor',
