@@ -92,8 +92,8 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='postgres://user:pass@localhost:5432/dbname'),
-        conn_max_age=600
+        conn_max_age=600,
+        conn_health_checks=True,
     )
 }
 
