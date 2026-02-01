@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '.railway.app',
+    '.up.railway.app',
     'web-production-34bc.up.railway.app',
 ]
 
@@ -186,8 +187,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+WHITENOISE_MANIFEST_STRICT = False
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
@@ -211,6 +213,7 @@ CKEDITOR_CONFIGS = {
 # SEGURANÇA - PRODUÇÃO
 if not DEBUG:
     # SSL/HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -219,7 +222,11 @@ if not DEBUG:
     # Cookies
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://web-production-34bc.up.railway.app']
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.railway.app', 
+        'https://*.up.railway.app',
+        'https://web-production-34bc.up.railway.app'
+    ]
 
     # Headers
     SECURE_BROWSER_XSS_FILTER = True
