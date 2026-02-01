@@ -12,7 +12,11 @@ echo "Running database migrations..."
 python manage.py migrate --noinput
 
 echo "Migrations completed successfully!"
-echo "Starting Gunicorn..."
+
+echo "Ensuring superuser exists..."
+python create_admin.py
+
+echo "Starting Gunicorn on port ${PORT:-8000}..."
 
 # Use exec to replace the shell process with Gunicorn
 exec gunicorn erp.wsgi:application \
