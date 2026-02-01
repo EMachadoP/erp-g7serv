@@ -1,39 +1,87 @@
-# ERP G7Serv - Gestão Inteligente Studio AI
+# 🏢 ERP G7Serv
 
-Sistema ERP modular para gestão comercial, operacional e financeira com triagem automatizada via Inteligência Artificial.
+Sistema de Gestão Empresarial completo desenvolvido em Django.
+
+[![Django](https://img.shields.io/badge/Django-5.1.5-green.svg)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
+[![Railway](https://img.shields.io/badge/Deploy-Railway-purple.svg)](https://railway.app/)
+
+---
+
+## 📋 Módulos do Sistema
+
+| Módulo | Descrição | Status |
+|--------|-----------|--------|
+| 🔐 Auth | Autenticação e permissões | ✅ Funcional |
+| 📊 Dashboard | BI Dashboard com métricas | ✅ Funcional |
+| 💼 Comercial | Clientes, Orçamentos, Contratos | ✅ Funcional |
+| 🔧 Operacional | Ordens de Serviço (OS) | ✅ Funcional |
+| 💰 Financeiro | Contas a Pagar/Receber | ✅ Funcional |
+| 🤖 AI Core | Triagem e Protocolo de Atendimento | ✅ Funcional |
+
+---
+
+## 🚀 URLs de Acesso
+
+### Produção (Railway)
+- **Dashboard:** https://web-production-34bc.up.railway.app/dashboard/
+- **Admin:** https://web-production-34bc.up.railway.app/admin/
+- **Comercial:** https://web-production-34bc.up.railway.app/comercial/clientes/
+- **Operacional:** https://web-production-34bc.up.railway.app/operacional/os/
+- **Financeiro:** https://web-production-34bc.up.railway.app/financeiro/contas-a-pagar/
+- **AI API:** https://web-production-34bc.up.railway.app/ai/processar/
+
+### Local
+- **Dashboard:** http://localhost:8000/dashboard/
+- **Admin:** http://localhost:8000/admin/
+
+---
 
 ## 🛠️ Stack Tecnológica
-- **Backend**: Python 3.13 / Django 5.1.5
-- **Banco de Dados**: PostgreSQL 16 (Railway)
-- **Frontend**: Bootstrap 5 / HTMX / Chart.js
-- **Segurança**: WhiteNoise (Static Files) / SSL Hardening / HSTS
-- **Infra**: Docker / Railway
 
-## 🚀 URLs de Acesso Rápido
-| Módulo | Endpoint | Descrição |
-| :--- | :--- | :--- |
-| **Admin** | `/admin/` | Gestão administrativa do sistema |
-| **Dashboard** | `/dashboard/` | Painel BI com indicadores e gráficos |
-| **Clientes** | `/comercial/clientes/` | Gestão da base de clientes |
-| **Orçamentos** | `/comercial/orcamentos/` | Criação e acompanhamento comercial |
-| **Operacional** | `/operacional/os/` | Ordens de Serviço e Checklist |
-| **Financeiro** | `/financeiro/contas-a-pagar/` | Fluxo de caixa e obrigações |
-| **AI Triage** | `/ai/processar/` | Endpoint de integração para triagem |
+### Backend
+- Python 3.13
+- Django 5.1.5
+- PostgreSQL 16
+- WhiteNoise (static files)
+- django-htmx
+- crispy-forms
 
-## ⚙️ Instalação Local
-1. Clone o repositório.
-2. Crie e ative um ambiente virtual (`.venv`).
-3. Instale as dependências: `pip install -r requirements.txt`.
-4. Configure o `.env` (use `.env.example` como base).
-5. Execute as migrações: `python manage.py migrate`.
-6. Rode o servidor: `python manage.py runserver`.
+### Frontend
+- Bootstrap 5
+- HTMX
+- Font Awesome
 
-## 🧪 Testes de Integração
-Para garantir a estabilidade dos módulos críticos, execute:
+### DevOps
+- Railway (deploy)
+- GitHub (versionamento)
+
+---
+
+## 💻 Instalação Local
+
 ```bash
-python manage.py test erp.tests_integration
-```
+# 1. Clone
+git clone <url-do-repositorio>
+cd erp-g7serv
 
-## ☁️ Deploy via Railway
-O deploy é automático ao realizar push para a branch `main`.
-Consulte o arquivo `DEPLOY_CHECKLIST.md` para mais detalhes.
+# 2. Ambiente virtual
+python -m venv venv
+source venv/bin/activate
+
+# 3. Dependências
+pip install -r requirements.txt
+
+# 4. Migrações
+python manage.py migrate
+
+# 5. Superusuário
+python manage.py createsuperuser
+
+# 6. Estáticos
+python manage.py collectstatic --noinput
+
+# 7. Rode
+python manage.py runserver
+```

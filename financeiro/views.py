@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.db import models, transaction
 from decimal import Decimal
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_payable_list(request):
     payables = AccountPayable.objects.all().order_by('due_date')
     
@@ -48,7 +48,7 @@ def account_payable_list(request):
         'end_date': end_date
     })
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_payable_create(request):
     if request.method == 'POST':
         form = AccountPayableForm(request.POST)
@@ -61,7 +61,7 @@ def account_payable_create(request):
     
     return render(request, 'financeiro/account_payable_form.html', {'form': form})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_payable_detail(request, pk):
     payable = get_object_or_404(AccountPayable, pk=pk)
     payment_form = PaymentPayableForm()
@@ -70,7 +70,7 @@ def account_payable_detail(request, pk):
         'payment_form': payment_form
     })
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def baixa_conta_pagar(request, pk):
     payable = get_object_or_404(AccountPayable, pk=pk)
     
@@ -120,7 +120,7 @@ def baixa_conta_pagar(request, pk):
     
     return redirect('financeiro:account_payable_list')
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def realizar_baixa_conta(request, pk):
     payable = get_object_or_404(AccountPayable, pk=pk)
     
@@ -185,7 +185,7 @@ def realizar_baixa_conta(request, pk):
     return redirect('financeiro:account_payable_list')
 
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def estornar_conta_pagar(request, pk):
     payable = get_object_or_404(AccountPayable, pk=pk)
     
@@ -221,7 +221,7 @@ def estornar_conta_pagar(request, pk):
     return redirect('financeiro:account_payable_list')
 
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def cancelar_conta_pagar(request, pk):
     payable = get_object_or_404(AccountPayable, pk=pk)
     if request.method == 'POST':
@@ -237,7 +237,7 @@ def cancelar_conta_pagar(request, pk):
         return redirect('financeiro:account_payable_list')
     return redirect('financeiro:account_payable_list')
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_receivable_list(request):
     receivables = AccountReceivable.objects.all().order_by('due_date')
     
@@ -254,7 +254,7 @@ def account_receivable_list(request):
         
     return render(request, 'financeiro/account_receivable_list.html', {'receivables': receivables})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_receivable_create(request):
     if request.method == 'POST':
         form = AccountReceivableForm(request.POST)
@@ -267,12 +267,12 @@ def account_receivable_create(request):
     
     return render(request, 'financeiro/account_receivable_form.html', {'form': form})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_receivable_detail(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)
     return render(request, 'financeiro/account_receivable_detail.html', {'receivable': receivable})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_receivable_receive(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)
     if request.method == 'POST':
@@ -283,7 +283,7 @@ def account_receivable_receive(request, pk):
         return redirect('financeiro:account_receivable_detail', pk=pk)
     return redirect('financeiro:account_receivable_detail', pk=pk)
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def account_receivable_cancel(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)
     if request.method == 'POST':
@@ -293,7 +293,7 @@ def account_receivable_cancel(request, pk):
         return redirect('financeiro:account_receivable_list')
     return redirect('financeiro:account_receivable_detail', pk=pk)
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def financial_dashboard(request):
     total_payables = sum(p.amount for p in AccountPayable.objects.filter(status='PENDING'))
     total_receivables = sum(r.amount for r in AccountReceivable.objects.filter(status='PENDING'))
@@ -311,7 +311,7 @@ def financial_dashboard(request):
     }
     return render(request, 'financeiro/dashboard.html', context)
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def receipt_list(request):
     receipts = Receipt.objects.all().order_by('-issue_date')
     
@@ -325,7 +325,7 @@ def receipt_list(request):
         
     return render(request, 'financeiro/receipt_list.html', {'receipts': receipts})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def receipt_create(request):
     if request.method == 'POST':
         form = ReceiptForm(request.POST)
@@ -338,17 +338,17 @@ def receipt_create(request):
     
     return render(request, 'financeiro/receipt_form.html', {'form': form})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def receipt_print(request, pk):
     receipt = get_object_or_404(Receipt, pk=pk)
     return render(request, 'financeiro/receipt_print.html', {'receipt': receipt})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def budget_plan_list(request):
     plans = BudgetPlan.objects.all().order_by('-year')
     return render(request, 'financeiro/budget_plan_list.html', {'plans': plans})
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def budget_plan_create(request):
     if request.method == 'POST':
         year = request.POST.get('year')
@@ -362,7 +362,7 @@ def budget_plan_create(request):
                 messages.error(request, f'Erro ao criar planejamento: {e}')
     return redirect('financeiro:budget_plan_list')
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def budget_plan_detail(request, pk):
     plan = get_object_or_404(BudgetPlan, pk=pk)
     categories = FinancialCategory.objects.filter(parent__isnull=True).prefetch_related('subcategories')
