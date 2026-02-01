@@ -88,17 +88,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ).count()
 
         # ==================== MÉTRICAS AI CORE ====================
-        # Usando 'created_at' conforme o model original
+        # Usando 'timestamp' conforme o model original
         context['atendimentos_hoje'] = AtendimentoAI.objects.filter(
-            created_at__date=hoje
+            timestamp__date=hoje
         ).count()
-        context['ultimos_atendimentos'] = AtendimentoAI.objects.order_by('-created_at')[:5]
+        context['ultimos_atendimentos'] = AtendimentoAI.objects.order_by('-timestamp')[:5]
 
-        # Dados para gráficos (usando 'categoria' conforme o model original)
-        context['ai_comercial'] = AtendimentoAI.objects.filter(categoria='orcamento').count()
-        context['ai_suporte'] = AtendimentoAI.objects.filter(categoria='suporte').count()
-        context['ai_financeiro'] = AtendimentoAI.objects.filter(categoria='financeiro').count()
-        context['ai_outros'] = AtendimentoAI.objects.filter(categoria='outro').count()
+        # Dados para gráficos (usando 'categoria_detectada' conforme o model original)
+        context['ai_comercial'] = AtendimentoAI.objects.filter(categoria_detectada='orcamento').count()
+        context['ai_suporte'] = AtendimentoAI.objects.filter(categoria_detectada='suporte').count()
+        context['ai_financeiro'] = AtendimentoAI.objects.filter(categoria_detectada='financeiro').count()
+        context['ai_outros'] = AtendimentoAI.objects.filter(categoria_detectada='outro').count()
         
         # Alias para compatibilidade com template
         context['os_pendente'] = context['os_pendentes']
