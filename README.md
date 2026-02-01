@@ -85,3 +85,9 @@ python manage.py collectstatic --noinput
 # 7. Rode
 python manage.py runserver
 ```
+
+---
+
+## 📄 Licença
+
+Projeto proprietário G7Serv.

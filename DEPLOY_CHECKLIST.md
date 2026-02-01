@@ -1,34 +1,34 @@
-# Checklist de Deploy - ERP G7Serv
+# ✅ DEPLOY CHECKLIST - ERP G7Serv
 
-Siga este checklist para garantir deploys seguros no ambiente Railway.
+## 📋 PRÉ-DEPLOY
 
-## 1. Pré-Deploy (Local)
-- [ ] Rodar testes: `python manage.py test erp.tests_integration`
-- [ ] Verificar `settings.py`: Garantir que `DEBUG` use `config('DEBUG')` e headers de segurança estejam ativos.
-- [ ] Validar migrations: `python manage.py makemigrations`.
-- [ ] Commitar mudanças: `git commit -m "feat/fix: descrição"`
+- [ ] DEBUG=False
+- [ ] SECRET_KEY em variável de ambiente
+- [ ] ALLOWED_HOSTS configurado
+- [ ] Todos os testes passando
+- [ ] Migrações aplicadas
+- [ ] requirements.txt atualizado
 
-## 2. Configurações Railway (Dash)
-- [ ] Variáveis obrigatórias:
-  - `SECRET_KEY`
-  - `DATABASE_URL`
-  - `ALLOWED_HOSTS`
-  - `CSRF_TRUSTED_ORIGINS`
-- [ ] Variáveis opcionais:
-  - `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (Para auto-criação).
+## 🚀 DEPLOY
 
-## 3. Deploy
-- [ ] Push para produção: `git push origin main`.
-- [ ] Monitorar logs de build no Railway: `https://railway.app/project/.../service/...`.
-- [ ] Verificar logs de execução (Deploy > Logs).
+```bash
+git push origin main
+```
 
-## 4. Pós-Deploy e Validação
-- [ ] Acessar `/admin/` e validar login.
-- [ ] Acessar `/dashboard/` e verificar se os gráficos carregam.
-- [ ] Testar triagem AI: Enviar POST JSON para `/ai/processar/` e conferir retorno do protocolo.
-- [ ] Rodar auditoria básica: `python manage.py check --deploy`.
+## ✅ PÓS-DEPLOY
 
-## 5. Rollback (Se necessário)
-- Reverter commit problemático: `git revert <hash>`.
-- Push para GitHub.
-- Verificar status do banco de dados (se houve migração destrutiva).
+- [ ] Aplicação online
+- [ ] Login funciona
+- [ ] Dashboard carrega
+- [ ] Módulos funcionam
+- [ ] AI Core responde
+- [ ] Segurança validada
+
+## 🧪 TESTES MANUAIS
+
+```bash
+# Teste AI
+curl -X POST https://web-production-34bc.up.railway.app/ai/processar/ \
+  -H "Content-Type: application/json" \
+  -d '{"mensagem": "teste", "nome": "teste"}'
+```
