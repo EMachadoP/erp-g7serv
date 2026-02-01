@@ -257,7 +257,10 @@ def profile_create(request):
         return redirect('core:profile_list')
         
     grouped_permissions = get_permissions_from_mapping()
-    return render(request, 'core/profile_form_v2.html', {'grouped_permissions': grouped_permissions})
+    return render(request, 'core/profile_form_v2.html', {
+        'grouped_permissions': grouped_permissions,
+        'current_permissions': []
+    })
 
 @login_required
 @user_passes_test(is_socio_diretor)
