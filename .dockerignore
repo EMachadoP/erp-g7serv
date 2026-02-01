@@ -1,0 +1,12 @@
+.git
+.env
+db.sqlite3
+__pycache__
+*.pyc
+staticfiles
+media
+.venv
+.agent
+.temp_ag_kit
+node_modules
+*.log
