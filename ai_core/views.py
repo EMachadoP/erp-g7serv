@@ -28,7 +28,7 @@ def processar_ia(request):
     categoria = 'outro'
     if any(word in msg for word in ['preço', 'valor', 'comprar', 'orçamento', 'precos', 'valores']):
         categoria = 'orcamento'
-    elif any(word in msg for word in ['quebrou', 'conserto', 'visita', 'os', 'manutenção', 'manutencao']):
+    elif any(word in msg for word in ['quebrou', 'conserto', 'visita', 'os', 'manutenção', 'manutencao', 'funcional', 'sistema']):
         categoria = 'suporte'
     elif any(word in msg for word in ['boleto', 'pagar', 'vencimento', 'nota', 'fatura']):
         categoria = 'financeiro'
@@ -44,7 +44,7 @@ def processar_ia(request):
     )
 
     return JsonResponse({
-        "status": "sucesso",
+        "success": True,
         "protocolo": protocolo_num,
         "categoria": categoria,
         "resposta": f"Olá {nome}, seu atendimento foi triado para o setor {categoria.upper()}. Protocolo: {protocolo_num}"
