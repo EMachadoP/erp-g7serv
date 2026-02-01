@@ -28,6 +28,7 @@ urlpatterns = [
     path('relatorios/', include('reports.urls')),
     path('portal/', include('portal.urls')),
     path('financeiro/', include('financeiro.urls')),
+    path('ai/', include('ai_core.urls')),
     path('', include('integracao_cora.urls')),
     path('nfse-nacional/', include('nfse_nacional.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
