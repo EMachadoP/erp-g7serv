@@ -259,6 +259,7 @@ def get_permissions_from_mapping():
         'contenttypes': 'Tipos de Dados',
     }
 
+    # Mapeamento de termos técnicos para nomes amigáveis em Português
     MODEL_NAMES_BR = {
         'user': 'usuário',
         'group': 'perfil/grupo',
@@ -268,7 +269,26 @@ def get_permissions_from_mapping():
         'log entry': 'log de auditoria',
         'configuracao': 'configuração',
         'perfilusuario': 'dados do perfil',
-        # Adicione outros conforme necessário
+        'budget product': 'produto do orçamento',
+        'budget service': 'serviço do orçamento',
+        'invoice': 'fatura/cobrança',
+        'nota entrada item': 'item de nota de entrada',
+        'nota entrada parcela': 'parcela de nota de entrada',
+        'client profile': 'perfil do cliente',
+        'budget': 'orçamento',
+        'contract': 'contrato',
+        'service': 'serviço',
+        'product': 'produto',
+        'category': 'categoria',
+        'billing group': 'grupo de faturamento',
+        'entry': 'lançamento',
+        'transaction': 'transação',
+        'bank account': 'conta bancária',
+        'attachment': 'anexo',
+        'contact': 'contato',
+        'address': 'endereço',
+        'phone': 'telefone',
+        'email': 'e-mail',
     }
 
     try:
@@ -281,15 +301,15 @@ def get_permissions_from_mapping():
                     continue
                     
                 app_label = perm.content_type.app_label
-                app_name = APP_LABELS_BR.get(app_label, app_label.upper())
+                app_name = APP_LABELS_BR.get(app_label, app_label.title().replace('_', ' '))
                 
                 if app_name not in apps_permissions:
                     apps_permissions[app_name] = []
                 
-                # Traduz nome da permissão
+                # Nome original da permissão
                 p_name = str(perm.name or '')
                 
-                # Traduz prefixos
+                # 1. Traduz prefixos padrões do Django
                 translations = [
                     ('Can add ', 'Adicionar '),
                     ('Can change ', 'Editar '),
@@ -298,22 +318,26 @@ def get_permissions_from_mapping():
                 ]
                 
                 for eng, pt in translations:
-                    if p_name.startswith(eng):
-                        p_name = p_name.replace(eng, pt)
+                    if p_name.lower().startswith(eng.lower()):
+                        p_name = pt + p_name[len(eng):]
                         break
                 
-                # Traduz nomes de modelos (case insensitive replace)
-                for eng_m, pt_m in MODEL_NAMES_BR.items():
-                    # Usando regex para garantir que substitui palavras inteiras ou no final
-                    p_name = re.sub(rf'\b{eng_m}\b', pt_m, p_name, flags=re.IGNORECASE)
+                # 2. Traduz nomes de modelos específicos
+                # Ordenamos por tamanho descendente para evitar que 'budget' substitua parte de 'budget product'
+                sorted_models = sorted(MODEL_NAMES_BR.items(), key=lambda x: len(x[0]), reverse=True)
+                
+                for eng_m, pt_m in sorted_models:
+                    # Usando regex para garantir que substitui termos exatos respeitando limites de palavras
+                    pattern = re.compile(rf'\b{re.escape(eng_m)}\b', re.IGNORECASE)
+                    p_name = pattern.sub(pt_m, p_name)
                 
                 perm.name = p_name
                 apps_permissions[app_name].append(perm)
             except Exception:
                 continue
         
-        # Opcional: Ordenar dicionário por nome de app
-        return dict(sorted(apps_permissions.items()))
+        # Opcional: Ordenar dicionário por nome de app (case insensitive)
+        return dict(sorted(apps_permissions.items(), key=lambda x: x[0].lower()))
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
