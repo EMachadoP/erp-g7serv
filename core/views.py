@@ -238,9 +238,39 @@ def profile_list(request):
 
 def get_permissions_from_mapping():
     """
-    Retorna permissões organizadas por app_label.
-    Versão simplificada - não depende de MENU_PERMISSIONS.
+    Retorna permissões organizadas por app_label com nomes traduzidos.
     """
+    import re
+    APP_LABELS_BR = {
+        'core': 'Sistema Core',
+        'comercial': 'Comercial',
+        'financeiro': 'Financeiro',
+        'operacional': 'Operacional',
+        'portal': 'Portal do Cliente',
+        'estoque': 'Estoque',
+        'faturamento': 'Faturamento',
+        'reports': 'Relatórios',
+        'nfse_nacional': 'NFSe Nacional',
+        'integracao_cora': 'Integração Cora',
+        'ai_core': 'Inteligência Artificial',
+        'auth': 'Usuários e Perfis',
+        'admin': 'Administração Django',
+        'sessions': 'Sessões de Sistema',
+        'contenttypes': 'Tipos de Dados',
+    }
+
+    MODEL_NAMES_BR = {
+        'user': 'usuário',
+        'group': 'perfil/grupo',
+        'permission': 'permissão',
+        'content type': 'tipo de conteúdo',
+        'session': 'sessão',
+        'log entry': 'log de auditoria',
+        'configuracao': 'configuração',
+        'perfilusuario': 'dados do perfil',
+        # Adicione outros conforme necessário
+    }
+
     try:
         permissions = Permission.objects.all().select_related('content_type')
         apps_permissions = {}
@@ -250,28 +280,40 @@ def get_permissions_from_mapping():
                 if not perm.content_type:
                     continue
                     
-                app = perm.content_type.app_label
-                if app not in apps_permissions:
-                    apps_permissions[app] = []
+                app_label = perm.content_type.app_label
+                app_name = APP_LABELS_BR.get(app_label, app_label.upper())
+                
+                if app_name not in apps_permissions:
+                    apps_permissions[app_name] = []
                 
                 # Traduz nome da permissão
                 p_name = str(perm.name or '')
-                if p_name.startswith('Can add '):
-                    p_name = p_name.replace('Can add ', 'Adicionar ')
-                elif p_name.startswith('Can change '):
-                    p_name = p_name.replace('Can change ', 'Editar ')
-                elif p_name.startswith('Can delete '):
-                    p_name = p_name.replace('Can delete ', 'Excluir ')
-                elif p_name.startswith('Can view '):
-                    p_name = p_name.replace('Can view ', 'Visualizar ')
+                
+                # Traduz prefixos
+                translations = [
+                    ('Can add ', 'Adicionar '),
+                    ('Can change ', 'Editar '),
+                    ('Can delete ', 'Excluir '),
+                    ('Can view ', 'Visualizar '),
+                ]
+                
+                for eng, pt in translations:
+                    if p_name.startswith(eng):
+                        p_name = p_name.replace(eng, pt)
+                        break
+                
+                # Traduz nomes de modelos (case insensitive replace)
+                for eng_m, pt_m in MODEL_NAMES_BR.items():
+                    # Usando regex para garantir que substitui palavras inteiras ou no final
+                    p_name = re.sub(rf'\b{eng_m}\b', pt_m, p_name, flags=re.IGNORECASE)
                 
                 perm.name = p_name
-                apps_permissions[app].append(perm)
-            except Exception as e:
-                # Silently ignore one bad permission
+                apps_permissions[app_name].append(perm)
+            except Exception:
                 continue
         
-        return apps_permissions
+        # Opcional: Ordenar dicionário por nome de app
+        return dict(sorted(apps_permissions.items()))
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
