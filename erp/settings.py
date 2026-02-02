@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -32,6 +32,16 @@ ALLOWED_HOSTS = [
     '.railway.app',
     '.up.railway.app',
     'web-production-34bc.up.railway.app',
+]
+
+# CSRF Trusted Origins - Consolidated for Dev and Production stability
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'https://web-production-34bc.up.railway.app',
+    'http://web-production-34bc.up.railway.app'
 ]
 
 
@@ -219,33 +229,28 @@ CKEDITOR_CONFIGS = {
 }
 
 # CSRF Trusted Origins - Consolidated for Dev and Production stability
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'https://*.railway.app',
-    'https://*.up.railway.app',
-    'https://web-production-34bc.up.railway.app',
-    'http://web-production-34bc.up.railway.app'
-]
+# (Moved to top near ALLOWED_HOSTS)
 
-# SEGURANÇA - PRODUÇÃO
-if not DEBUG:
-    # SSL/HTTPS
-    SECURE_SSL_REDIRECT = True
+# SEGURANÇA E COOKIES
+# Em produção (Railway), forçamos cookies seguros mesmo se DEBUG estiver ligado
+if not DEBUG or os.environ.get('PORT'):
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-
-    # Cookies
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    # Headers
-    SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
 else:
-    X_FRAME_OPTIONS = 'SAMEORIGIN' # For Admin/CKEditor compatibility in dev
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Configurações de Cookie para compatibilidade moderna
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False  # Facilitar HTMX se necessário
 
 # Silenciar avisos do CKEditor 4 (LTS/Suporte) para limpar os logs de deploy
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
