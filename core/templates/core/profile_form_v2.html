@@ -34,8 +34,7 @@
                                             id="selectAll{{ forloop.counter }}"
                                             data-target="collapse{{ forloop.counter }}">
                                         <label class="form-check-label fw-bold"
-                                            for="selectAll{{ forloop.counter }}">Marcar Todos em {{ app_name|upper
-                                            }}</label>
+                                            for="selectAll{{ forloop.counter }}">Marcar Todos em {{ app_name|upper }}</label>
                                     </div>
                                 </div>
                                 <hr>
@@ -45,10 +44,8 @@
                                         <div class="col-md-4">
                                             <div class="form-check">
                                                 <input class="form-check-input permission-checkbox" type="checkbox"
-                                                    name="permissions" value="{{ perm.id }}" id="perm{{ perm.id }}" {%
-                                                    if perm.id in current_permissions %}checked{% endif %}>
-                                                <label class="form-check-label" for="perm{{ perm.id }}">{{ perm.name
-                                                    }}</label>
+                                                    name="permissions" value="{{ perm.id }}" id="perm{{ perm.id }}" {% if perm.id in current_permissions %}checked{% endif %}>
+                                                <label class="form-check-label" for="perm{{ perm.id }}">{{ perm.name }}</label>
                                             </div>
                                         </div>
                                         {% endfor %}
