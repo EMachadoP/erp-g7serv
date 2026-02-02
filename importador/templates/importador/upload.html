@@ -74,6 +74,33 @@
                                         </label>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-clientes">
+                                        <input class="form-check-input d-none" type="radio" name="module_type"
+                                            id="mod-clientes" value="clientes">
+                                        <label class="form-check-label d-block cursor-pointer" for="mod-clientes">
+                                            <i class="bi bi-people text-primary"></i> Clientes
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-orcamentos">
+                                        <input class="form-check-input d-none" type="radio" name="module_type"
+                                            id="mod-orcamentos" value="orcamentos">
+                                        <label class="form-check-label d-block cursor-pointer" for="mod-orcamentos">
+                                            <i class="bi bi-file-earmark-text text-secondary"></i> Orçamentos
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-contratos">
+                                        <input class="form-check-input d-none" type="radio" name="module_type"
+                                            id="mod-contratos" value="contratos">
+                                        <label class="form-check-label d-block cursor-pointer" for="mod-contratos">
+                                            <i class="bi bi-file-contract text-dark"></i> Contratos
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -273,6 +300,16 @@
             if (result.success) {
                 uploadData = result;
 
+                // Se for processamento especial (clientes/contratos), abrir preview direto
+                if (result.special_processing) {
+                    if (result.preview_type === 'clientes') {
+                        showClientesPreview(result);
+                    } else if (result.preview_type === 'contratos') {
+                        showContratosPreview(result);
+                    }
+                    return;
+                }
+
                 // Fetch module fields
                 const fieldsResp = await fetch(`{% url 'importador:api_fields' 'MODULE_TYPE' %}`.replace('MODULE_TYPE', uploadData.module_type));
                 const fieldsResult = await fieldsResp.json();
@@ -350,18 +387,18 @@
                 },
                 body: JSON.stringify({
                     file_path: uploadData.file_path,
-                    template_id: null, # Todo: handle if using template
-                    mapping: currentMapping, # We'll need to adapt the API to accept mapping directly or create a temp template
+                    template_id: null, // Todo: handle if using template
+                    mapping: currentMapping, // We'll need to adapt the API to accept mapping directly or create a temp template
                     module_type: uploadData.module_type
                 })
             });
-            
-            # Since our actual api_preview takes template_id, let's create a temporary template 
-            # OR better, update the API to accept direct mapping.
-            # For now, let's assume we create a quick template or use a simulation.
-            
-            # Simulação do preview(já que a API real precisa de template_id)
-            # Na versão real, enviaríamos o mapeamento para uma rota de pre - visualização
+
+            // Since our actual api_preview takes template_id, let's create a temporary template 
+            // OR better, update the API to accept direct mapping.
+            // For now, let's assume we create a quick template or use a simulation.
+
+            // Simulação do preview(já que a API real precisa de template_id)
+            // Na versão real, enviaríamos o mapeamento para uma rota de pre - visualização
 
             // Mock preview for demo if API fails
             renderPreviewTable(uploadData.analysis.preview, Object.keys(currentMapping));
