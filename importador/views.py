@@ -79,7 +79,7 @@ def api_upload_file(request):
             return JsonResponse({'success': False, 'detail': 'Tipo de arquivo não suportado'}, status=400)
             
         # Salvar arquivo temporariamente
-        file_path = file_service.save_upload_file(file)
+        file_path = file_service.save_upload_file(file, file.name)
         
         # Analisar estrutura
         file_type = file_service.detect_file_type(file_path)
