@@ -116,6 +116,10 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
+    # Adiciona timeout de conexão para evitar que a app trave se o banco estiver instável
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+    }
 else:
     # Development Fallback to SQLite (Easier for local tests/dev if no Postgres is available)
     DATABASES = {
