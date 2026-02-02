@@ -475,30 +475,106 @@ def profile_update(request, pk):
     })
 
 def csrf_failure(request, reason=""):
-    """View customizada para diagnosticar erros 403 de CSRF em produção."""
-    import logging
-    logger = logging.getLogger(__name__)
+    """View customizada para erro CSRF com diagnóstico."""
+    from django.http import HttpResponseForbidden
     
     context = {
         'reason': reason,
         'path': request.path,
         'method': request.method,
-        'origin': request.META.get('HTTP_ORIGIN'),
-        'referer': request.META.get('HTTP_REFERER'),
-        'cookie_present': 'csrftoken' in request.COOKIES,
+        'origin': request.META.get('HTTP_ORIGIN', 'N/A'),
+        'referer': request.META.get('HTTP_REFERER', 'N/A'),
+        'has_cookie_header': bool(request.META.get('HTTP_COOKIE')),
+        'cookies': list(request.COOKIES.keys()) if request.COOKIES else 'Nenhum'
     }
-    
-    logger.error(f"FALHA CSRF DETECTADA: {reason} | Path: {request.path} | Origin: {context['origin']} | Cookie: {context['cookie_present']}")
-    
-    from django.http import HttpResponseForbidden
+
     return HttpResponseForbidden(f"""
-        <h1>Erro de Segurança (403)</h1>
-        <p>A Verificação CSRF falhou.</p>
-        <p><b>Motivo:</b> {reason}</p>
+    <html>
+    <head><title>Erro de Segurança (403)</title></head>
+    <body style="font-family: Arial, sans-serif; padding: 40px; line-height: 1.6;">
+        <h1 style="color: #d9534f;">Erro de Segurança (403)</h1>
+        <p><strong>A Verificação CSRF falhou.</strong></p>
+        <p><strong>Motivo:</strong> {reason}</p>
+        <p><strong>Dica:</strong> Limpe os cookies do navegador (Ctrl+Shift+Del) para este site e tente novamente.</p>
         <hr>
-        <p><b>Dica:</b> Como renomeamos os cookies para isolamento, por favor <b>limpe o cache/cookies do seu navegador</b> e tente novamente. Isso garante que os cookies antigos '.railway.app' não interfiram no novo 'erp_csrftoken'.</p>
-        <p><b>Detalhes para Suporte:</b> Method: {context['method']} | Origin: {context['origin']} | Referer: {context['referer']} | Cookie: {context['cookie_present']}</p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
+            <h3>Detalhes para Suporte:</h3>
+            <ul>
+                <li><b>Method:</b> {context['method']}</li>
+                <li><b>Origin:</b> {context['origin']}</li>
+                <li><b>Referer:</b> {context['referer']}</li>
+                <li><b>Cookie Header Present:</b> {context['has_cookie_header']}</li>
+                <li><b>Cookies Received:</b> {context['cookies']}</li>
+            </ul>
+        </div>
+        <hr>
+        <p><a href="{request.path}" style="background: #0275d8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Tentar novamente</a></p>
+    </body>
+    </html>
     """)
+
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
+def debug_cookies(request):
+    """View de diagnóstico para testar cookies - REMOVER EM PRODUÇÃO."""
+    from django.conf import settings
+    from django.http import HttpResponse
+    
+    # Gerar lista de cookies formatada
+    cookies_list = ""
+    if request.COOKIES:
+        for k, v in request.COOKIES.items():
+            cookies_list += f'<li><b>{k}:</b> {v[:20]}...</li>'
+    else:
+        cookies_list = '<li><i>Nenhum cookie recebido</i></li>'
+
+    response = HttpResponse(f"""
+    <html>
+    <head><title>Debug Cookies</title></head>
+    <body style="font-family: monospace; padding: 20px; background: #eee;">
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="color: #333;">Diagnóstico de Cookies e Headers</h2>
+            
+            <h3 style="border-bottom: 1px solid #ccc;">1. Configurações Django:</h3>
+            <ul>
+                <li><b>IS_RAILWAY:</b> {getattr(settings, 'IS_RAILWAY', 'N/A')}</li>
+                <li><b>DEBUG:</b> {settings.DEBUG}</li>
+                <li><b>CSRF_COOKIE_SECURE:</b> {settings.CSRF_COOKIE_SECURE}</li>
+                <li><b>SESSION_COOKIE_SECURE:</b> {settings.SESSION_COOKIE_SECURE}</li>
+                <li><b>CSRF_COOKIE_SAMESITE:</b> {settings.CSRF_COOKIE_SAMESITE}</li>
+                <li><b>CSRF_USE_SESSIONS:</b> {getattr(settings, 'CSRF_USE_SESSIONS', False)}</li>
+            </ul>
+            
+            <h3 style="border-bottom: 1px solid #ccc;">2. Headers de Requisição (Proxy):</h3>
+            <ul>
+                <li><b>HTTP_X_FORWARDED_PROTO:</b> {request.META.get('HTTP_X_FORWARDED_PROTO', 'N/A')}</li>
+                <li><b>HTTP_ORIGIN:</b> {request.META.get('HTTP_ORIGIN', 'N/A')}</li>
+                <li><b>HTTP_HOST:</b> {request.META.get('HTTP_HOST', 'N/A')}</li>
+                <li><b>is_secure():</b> {request.is_secure()}</li>
+            </ul>
+            
+            <h3 style="border-bottom: 1px solid #ccc;">3. Cookies Recebidos do Navegador:</h3>
+            <ul>
+                {cookies_list}
+            </ul>
+            
+            <h3 style="border-bottom: 1px solid #ccc; color: #d9534f;">4. Teste de Set-Cookie:</h3>
+            <p>Enviando cookie <b>'debug_test'</b> agora. <b>Recarregue a página (F5)</b> para ver se ele aparece na seção 3 acima.</p>
+        </div>
+    </body>
+    </html>
+    """)
+    
+    # Tenta setar um cookie de teste
+    response.set_cookie(
+        'debug_test', 
+        'funcionando_corretamente',
+        secure=True,
+        samesite='Lax',
+        httponly=False
+    )
+    
+    return response
 
 from django.http import HttpResponse
 def fix_user_permissions(request):
