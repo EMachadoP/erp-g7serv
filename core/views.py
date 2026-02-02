@@ -520,11 +520,24 @@ def debug_cookies(request):
     from django.conf import settings
     from django.http import HttpResponse
     
+    # Ação de limpeza programática
+    reset_performed = False
+    if request.GET.get('reset') == 'true':
+        response = HttpResponse(redirect('/debug-cookies/'))
+        response.delete_cookie('erp_csrftoken', domain=settings.CSRF_COOKIE_DOMAIN if hasattr(settings, 'CSRF_COOKIE_DOMAIN') else None)
+        response.delete_cookie('erp_sessionid', domain=settings.SESSION_COOKIE_DOMAIN if hasattr(settings, 'SESSION_COOKIE_DOMAIN') else None)
+        # Tenta deletar sem domínio também por garantia
+        response.delete_cookie('erp_csrftoken')
+        response.delete_cookie('erp_sessionid')
+        messages.success(request, 'Cookies legados (erp_*) foram removidos via Set-Cookie!')
+        return response
+
     # Gerar lista de cookies formatada
     cookies_list = ""
     if request.COOKIES:
         for k, v in request.COOKIES.items():
-            cookies_list += f'<li><b>{k}:</b> {v[:20]}...</li>'
+            color = "#d9534f" if k.startswith('erp_') else "#5cb85c"
+            cookies_list += f'<li style="color: {color};"><b>{k}:</b> {v[:20]}... {"(DELETAR)" if k.startswith("erp_") else "(MANTER)"}</li>'
     else:
         cookies_list = '<li><i>Nenhum cookie recebido</i></li>'
 
@@ -532,47 +545,35 @@ def debug_cookies(request):
     <html>
     <head><title>Debug Cookies</title></head>
     <body style="font-family: monospace; padding: 20px; background: #eee;">
-        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto;">
             <h2 style="color: #333;">Diagnóstico de Cookies e Headers</h2>
             
+            <div style="background: #fff3cd; padding: 15px; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 20px;">
+                <strong>⚠️ Atenção:</strong> Se você vê cookies vermelhos (erp_*) abaixo, o login vai falhar. 
+                <br><br>
+                <a href="?reset=true" style="background: #d9534f; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">LIMPAR COOKIES LEGADOS AGORA</a>
+            </div>
+
             <h3 style="border-bottom: 1px solid #ccc;">1. Configurações Django:</h3>
             <ul>
                 <li><b>IS_RAILWAY:</b> {getattr(settings, 'IS_RAILWAY', 'N/A')}</li>
-                <li><b>DEBUG:</b> {settings.DEBUG}</li>
-                <li><b>CSRF_COOKIE_SECURE:</b> {settings.CSRF_COOKIE_SECURE}</li>
-                <li><b>SESSION_COOKIE_SECURE:</b> {settings.SESSION_COOKIE_SECURE}</li>
-                <li><b>CSRF_COOKIE_SAMESITE:</b> {settings.CSRF_COOKIE_SAMESITE}</li>
-                <li><b>CSRF_USE_SESSIONS:</b> {getattr(settings, 'CSRF_USE_SESSIONS', False)}</li>
+                <li><b>CSRF_COOKIE_NAME:</b> {settings.CSRF_COOKIE_NAME}</li>
             </ul>
             
-            <h3 style="border-bottom: 1px solid #ccc;">2. Headers de Requisição (Proxy):</h3>
-            <ul>
-                <li><b>HTTP_X_FORWARDED_PROTO:</b> {request.META.get('HTTP_X_FORWARDED_PROTO', 'N/A')}</li>
-                <li><b>HTTP_ORIGIN:</b> {request.META.get('HTTP_ORIGIN', 'N/A')}</li>
-                <li><b>HTTP_HOST:</b> {request.META.get('HTTP_HOST', 'N/A')}</li>
-                <li><b>is_secure():</b> {request.is_secure()}</li>
-            </ul>
-            
-            <h3 style="border-bottom: 1px solid #ccc;">3. Cookies Recebidos do Navegador:</h3>
+            <h3 style="border-bottom: 1px solid #ccc;">2. Cookies Recebidos do Seu Navegador:</h3>
             <ul>
                 {cookies_list}
             </ul>
             
-            <h3 style="border-bottom: 1px solid #ccc; color: #d9534f;">4. Teste de Set-Cookie:</h3>
-            <p>Enviando cookie <b>'debug_test'</b> agora. <b>Recarregue a página (F5)</b> para ver se ele aparece na seção 3 acima.</p>
+            <hr>
+            <p><a href="/accounts/login/">Voltar para o Login</a></p>
         </div>
     </body>
     </html>
     """)
     
-    # Tenta setar um cookie de teste
-    response.set_cookie(
-        'debug_test', 
-        'funcionando_corretamente',
-        secure=True,
-        samesite='Lax',
-        httponly=False
-    )
+    # Sempre tenta garantir que o cookie de teste e os novos existam
+    response.set_cookie('debug_test', 'okay', secure=True, samesite='Lax')
     
     return response
 
