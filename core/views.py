@@ -250,66 +250,81 @@ def profile_list(request):
 def get_permissions_from_mapping():
     mapped_permissions = []
     
-    for menu in MENU_PERMISSIONS:
-        menu_item = {'name': menu['name'], 'submenus': []}
-        
-        if 'submenus' in menu:
-            for submenu in menu['submenus']:
-                perm_str = submenu['perm']
-                app_label, codename = perm_str.split('.')
-                parts = codename.split('_', 1)
-                model_name = parts[1] if len(parts) == 2 else ''
+    try:
+        for menu in MENU_PERMISSIONS:
+            menu_item = {'name': menu.get('name', 'Sem Nome'), 'submenus': []}
+            
+            if 'submenus' in menu:
+                for submenu in menu['submenus']:
+                    perm_str = submenu.get('perm')
+                    if not perm_str or '.' not in perm_str:
+                        continue
+                        
+                    app_label, codename = perm_str.split('.', 1)
+                    parts = codename.split('_', 1)
+                    model_name = parts[1] if len(parts) == 2 else ''
+                    
+                    perms = Permission.objects.filter(
+                        content_type__app_label=app_label,
+                        content_type__model=model_name
+                    )
+                    
+                    perms_list = []
+                    for perm in perms:
+                        p_name = str(perm.name)
+                        if p_name.startswith('Can add '):
+                            p_name = p_name.replace('Can add ', 'Adicionar ')
+                        elif p_name.startswith('Can change '):
+                            p_name = p_name.replace('Can change ', 'Editar ')
+                        elif p_name.startswith('Can delete '):
+                            p_name = p_name.replace('Can delete ', 'Excluir ')
+                        elif p_name.startswith('Can view '):
+                            p_name = p_name.replace('Can view ', 'Visualizar ')
+                        
+                        perm.name = p_name
+                        perms_list.append(perm)
+                    
+                    menu_item['submenus'].append({
+                        'name': submenu.get('name', 'Sem Nome'),
+                        'perms': perms_list
+                    })
+            else:
+                perm_str = menu.get('perm')
+                if perm_str and '.' in perm_str:
+                    app_label, codename = perm_str.split('.', 1)
+                    parts = codename.split('_', 1)
+                    model_name = parts[1] if len(parts) == 2 else ''
+                    
+                    perms = Permission.objects.filter(
+                        content_type__app_label=app_label,
+                        content_type__model=model_name
+                    )
+                    
+                    perms_list = []
+                    for perm in perms:
+                        p_name = str(perm.name)
+                        if p_name.startswith('Can add '):
+                            p_name = p_name.replace('Can add ', 'Adicionar ')
+                        elif p_name.startswith('Can change '):
+                            p_name = p_name.replace('Can change ', 'Editar ')
+                        elif p_name.startswith('Can delete '):
+                            p_name = p_name.replace('Can delete ', 'Excluir ')
+                        elif p_name.startswith('Can view '):
+                            p_name = p_name.replace('Can view ', 'Visualizar ')
+                        
+                        perm.name = p_name
+                        perms_list.append(perm)
+                    
+                    menu_item['submenus'].append({
+                        'name': menu.get('name', 'Sem Nome'),
+                        'perms': perms_list
+                    })
                 
-                perms = Permission.objects.filter(
-                    content_type__app_label=app_label,
-                    content_type__model=model_name
-                )
-                
-                perms_list = []
-                for perm in perms:
-                    if perm.name.startswith('Can add '):
-                        perm.name = perm.name.replace('Can add ', 'Adicionar ')
-                    elif perm.name.startswith('Can change '):
-                        perm.name = perm.name.replace('Can change ', 'Editar ')
-                    elif perm.name.startswith('Can delete '):
-                        perm.name = perm.name.replace('Can delete ', 'Excluir ')
-                    elif perm.name.startswith('Can view '):
-                        perm.name = perm.name.replace('Can view ', 'Visualizar ')
-                    perms_list.append(perm)
-                
-                menu_item['submenus'].append({
-                    'name': submenu['name'],
-                    'perms': perms_list
-                })
-        else:
-            perm_str = menu['perm']
-            app_label, codename = perm_str.split('.')
-            parts = codename.split('_', 1)
-            model_name = parts[1] if len(parts) == 2 else ''
-            
-            perms = Permission.objects.filter(
-                content_type__app_label=app_label,
-                content_type__model=model_name
-            )
-            
-            perms_list = []
-            for perm in perms:
-                if perm.name.startswith('Can add '):
-                    perm.name = perm.name.replace('Can add ', 'Adicionar ')
-                elif perm.name.startswith('Can change '):
-                    perm.name = perm.name.replace('Can change ', 'Editar ')
-                elif perm.name.startswith('Can delete '):
-                    perm.name = perm.name.replace('Can delete ', 'Excluir ')
-                elif perm.name.startswith('Can view '):
-                    perm.name = perm.name.replace('Can view ', 'Visualizar ')
-                perms_list.append(perm)
-            
-            menu_item['submenus'].append({
-                'name': menu['name'],
-                'perms': perms_list
-            })
-            
-        mapped_permissions.append(menu_item)
+            mapped_permissions.append(menu_item)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erro em get_permissions_from_mapping: {e}", exc_info=True)
         
     return mapped_permissions
 
@@ -317,46 +332,79 @@ def get_permissions_from_mapping():
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_create(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        permission_ids = request.POST.getlist('permissions')
-        
-        group = Group.objects.create(name=name)
-        group.permissions.set(permission_ids)
-        
-        messages.success(request, 'Perfil criado com sucesso.')
+    try:
+        if request.method == 'POST':
+            name = request.POST.get('name')
+            permission_ids = request.POST.getlist('permissions')
+            
+            if not name:
+                messages.error(request, 'O nome do perfil é obrigatório.')
+                return redirect('core:profile_create')
+            
+            group = Group.objects.create(name=name)
+            group.permissions.set(permission_ids)
+            
+            messages.success(request, 'Perfil criado com sucesso.')
+            return redirect('core:profile_list')
+            
+        grouped_permissions = get_permissions_from_mapping()
+        return render(request, 'core/profile_form_v2.html', {
+            'group': None,
+            'grouped_permissions': grouped_permissions,
+            'current_permissions': []
+        })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erro em profile_create: {e}", exc_info=True)
+        # Em debug, mostra o erro. Em produção, mostra uma mensagem amigável.
+        if os.environ.get('DEBUG', 'False') == 'True':
+            from django.http import HttpResponse
+            import traceback
+            return HttpResponse(f"Erro Interno: {e}<br><pre>{traceback.format_exc()}</pre>", status=500)
+        messages.error(request, 'Ocorreu um erro interno ao tentar carregar esta página.')
         return redirect('core:profile_list')
-        
-    grouped_permissions = get_permissions_from_mapping()
-    return render(request, 'core/profile_form_v2.html', {
-        'grouped_permissions': grouped_permissions,
-        'current_permissions': []
-    })
 
 
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_update(request, pk):
-    group = get_object_or_404(Group, pk=pk)
-    
-    if request.method == 'POST':
-        group.name = request.POST.get('name')
-        permission_ids = request.POST.getlist('permissions')
+    try:
+        group = get_object_or_404(Group, pk=pk)
         
-        group.save()
-        group.permissions.set(permission_ids)
+        if request.method == 'POST':
+            name = request.POST.get('name')
+            if not name:
+                messages.error(request, 'O nome do perfil é obrigatório.')
+                return redirect('core:profile_update', pk=pk)
+                
+            group.name = name
+            permission_ids = request.POST.getlist('permissions')
+            
+            group.save()
+            group.permissions.set(permission_ids)
+            
+            messages.success(request, 'Perfil atualizado com sucesso.')
+            return redirect('core:profile_list')
+            
+        grouped_permissions = get_permissions_from_mapping()
+        current_permissions = group.permissions.values_list('id', flat=True)
         
-        messages.success(request, 'Perfil atualizado com sucesso.')
+        return render(request, 'core/profile_form_v2.html', {
+            'group': group,
+            'grouped_permissions': grouped_permissions,
+            'current_permissions': current_permissions
+        })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erro em profile_update: {e}", exc_info=True)
+        if os.environ.get('DEBUG', 'False') == 'True':
+            from django.http import HttpResponse
+            import traceback
+            return HttpResponse(f"Erro Interno: {e}<br><pre>{traceback.format_exc()}</pre>", status=500)
+        messages.error(request, 'Ocorreu um erro interno ao tentar carregar esta página.')
         return redirect('core:profile_list')
-        
-    grouped_permissions = get_permissions_from_mapping()
-    current_permissions = group.permissions.values_list('id', flat=True)
-    
-    return render(request, 'core/profile_form_v2.html', {
-        'group': group,
-        'grouped_permissions': grouped_permissions,
-        'current_permissions': current_permissions
-    })
 
 
 # ==============================================================================
