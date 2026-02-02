@@ -1,0 +1,147 @@
+{% extends "importador/base.html" %}
+
+{% block title %}Detalhes da Importação #{{ job.id }} - Importador Inteligente{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'importador:history_page' %}">Histórico</a></li>
+            <li class="breadcrumb-item active">Importação #{{ job.id }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Importação: {{ job.original_filename }}</h3>
+        <div>
+            {% if job.status == 'completed' %}
+            <span class="badge bg-success fs-6"><i class="bi bi-check-circle"></i> Concluído em {{
+                job.completed_at|date:"d/m/Y H:i" }}</span>
+            {% elif job.status == 'error' %}
+            <span class="badge bg-danger fs-6"><i class="bi bi-exclamation-triangle"></i> Erro</span>
+            {% elif job.status == 'processing' %}
+            <span class="badge bg-primary fs-6 processing"><i class="bi bi-arrow-repeat"></i> Processando...</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Resumo -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">Resumo da Execução</div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">ID do Job:</span>
+                    <span>#{{ job.id }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Template:</span>
+                    <span>{{ job.template.name | default:"N/A" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Módulo:</span>
+                    <span class="badge bg-secondary">{{ job.template.module_type }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Data de Início:</span>
+                    <span>{{ job.created_at|date:"d/m/Y H:i" }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-bold">Total de Linhas:</span>
+                    <span class="fw-bold">{{ job.total_rows }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1 text-success">
+                    <span>Inseridos:</span>
+                    <span>{{ job.inserted_rows }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1 text-danger">
+                    <span>Erros:</span>
+                    <span>{{ job.error_rows }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Visuais -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">Performance e Taxa de Sucesso</div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h1 class="display-4 text-primary">{{ job.get_success_rate|floatformat:1 }}%</h1>
+                    <p class="text-muted">Taxa de Sucesso</p>
+                </div>
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ job.get_success_rate }}%"
+                        title="Sucesso: {{ job.inserted_rows }}"></div>
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ job.get_error_rate }}%"
+                        title="Erros: {{ job.error_rows }}"></div>
+                </div>
+                <div class="mt-3 small d-flex justify-content-around">
+                    <span><i class="bi bi-circle-fill text-success"></i> Sucesso ({{ job.inserted_rows }})</span>
+                    <span><i class="bi bi-circle-fill text-danger"></i> Erros ({{ job.error_rows }})</span>
+                    {% if job.skipped_rows > 0 %}
+                    <span><i class="bi bi-circle-fill text-warning"></i> Ignorados ({{ job.skipped_rows }})</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs de Erro -->
+    {% if job.errors_log %}
+    <div class="col-12">
+        <div class="card text-white bg-dark">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-terminal"></i> Log de Erros Detalhado</span>
+                <span class="badge bg-danger">{{ job.errors_log|length }} erros</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-dark table-hover table-sm mb-0 small">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Linha</th>
+                                <th>Coluna</th>
+                                <th>Mensagem de Erro</th>
+                                <th>Valor Original</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in job.errors_log %}
+                            <tr>
+                                <td class="ps-3">{{ log.row }}</td>
+                                <td><code>{{ log.column }}</code></td>
+                                <td class="text-warning">{{ log.message }}</td>
+                                <td><code class="text-info">{{ log.value | truncatechars:50 }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Avisos (Warnings) -->
+    {% if job.warnings_log %}
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning-subtle fw-bold">
+                <i class="bi bi-exclamation-circle"></i> Avisos e Observações
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    {% for msg in job.warnings_log %}
+                    <li>{{ msg }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

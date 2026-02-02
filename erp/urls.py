@@ -32,4 +32,5 @@ urlpatterns = [
     path('', include('integracao_cora.urls')),
     path('nfse-nacional/', include('nfse_nacional.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('importador/', include('importador.urls')),
 ]

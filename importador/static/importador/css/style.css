@@ -1,0 +1,72 @@
+/* Custom styles for Importador Inteligente */
+
+/* Cards */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+/* Tables */
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+/* Code */
+code {
+    color: #d63384;
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+}
+
+/* Progress bars */
+.progress {
+    border-radius: 0.5rem;
+}
+
+/* utilities */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Animation for processing */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.processing {
+    animation: pulse 1.5s infinite;
+}
+
+/* Mapping section */
+.mapping-row {
+    padding: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.mapping-row:last-child {
+    border-bottom: none;
+}
+
+/* Preview tables */
+.preview-table {
+    font-size: 0.875rem;
+}
+
+.preview-table th {
+    background-color: #e9ecef;
+    position: sticky;
+    top: 0;
+}
