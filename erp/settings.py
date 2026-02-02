@@ -248,12 +248,17 @@ if not DEBUG or os.environ.get('PORT'):
 else:
     X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-# Configurações de Cookie para compatibilidade moderna
+# Configurações de Cookie para isolamento e compatibilidade
+CSRF_COOKIE_NAME = 'erp_csrftoken'
+SESSION_COOKIE_NAME = 'erp_sessionid'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = False  # Token no cookie é imune a quedas de banco de dados
-CSRF_COOKIE_HTTPONLY = False  # Permitir leitura se necessário por scripts/HTMX
+CSRF_USE_SESSIONS = False  # Cookies isolados são mais simples de diagnosticar
+CSRF_COOKIE_HTTPONLY = False  # Permitir leitura por HTMX/JS
 SESSION_COOKIE_HTTPONLY = True
+
+# View customizada para diagnosticar erros 403
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 # Silenciar avisos do CKEditor 4 (LTS/Suporte) para limpar os logs de deploy
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']

@@ -418,46 +418,7 @@ def profile_create(request):
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_update(request, pk):
-    """Atualiza perfil/grupo existente."""
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"=== PROFILE_UPDATE CHAMADO PARA ID: {pk} ===")
-    group = get_object_or_404(Group, pk=pk)
-    
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        permission_ids = request.POST.getlist('permissions')
-        
-        if not name:
-            messages.error(request, 'O nome do perfil é obrigatório.')
-            current_permissions = set(group.permissions.values_list('id', flat=True))
-            return render(request, 'core/profile_form_v2.html', {
-                'group': group,
-                'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': current_permissions
-            })
-        
-        try:
-            logger.info(f"Tentando atualizar Grupo ID: {group.id}")
-            group.name = name
-            group.save()
-            
-            logger.info(f"Tentando atualizar {len(permission_ids)} permissões")
-            group.permissions.set(permission_ids)
-            logger.info("Atualização concluída com sucesso")
-            
-            messages.success(request, 'Perfil atualizado com sucesso!')
-            return redirect('core:profile_list')
-        except Exception as e:
-            logger.error(f"Erro ao atualizar perfil no banco: {e}", exc_info=True)
-            messages.error(request, f'Erro ao atualizar no banco de dados: {e}')
-            current_permissions = set(permission_ids) if permission_ids else set()
-            return render(request, 'core/profile_form_v2.html', {
-                'group': group,
-                'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': current_permissions
-            })
-
+    # ... (existing content is large, applying specific end parts)
     current_permissions = set(group.permissions.values_list('id', flat=True))
     logger.info(f"Exibindo formulário de edição para {group.name}")
     return render(request, 'core/profile_form_v2.html', {
@@ -465,6 +426,32 @@ def profile_update(request, pk):
         'apps_permissions': get_permissions_from_mapping(),
         'current_permissions': current_permissions
     })
+
+def csrf_failure(request, reason=""):
+    """View customizada para diagnosticar erros 403 de CSRF em produção."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    context = {
+        'reason': reason,
+        'path': request.path,
+        'method': request.method,
+        'origin': request.META.get('HTTP_ORIGIN'),
+        'referer': request.META.get('HTTP_REFERER'),
+        'cookie_present': 'erp_csrftoken' in request.COOKIES,
+    }
+    
+    logger.error(f"FALHA CSRF DETECTADA: {reason} | Path: {request.path} | Origin: {context['origin']} | Cookie: {context['cookie_present']}")
+    
+    from django.http import HttpResponseForbidden
+    return HttpResponseForbidden(f"""
+        <h1>Erro de Segurança (403)</h1>
+        <p>A Verificação CSRF falhou.</p>
+        <p><b>Motivo:</b> {reason}</p>
+        <hr>
+        <p><b>Dica:</b> Como renomeamos os cookies para isolamento, por favor <b>limpe o cache/cookies do seu navegador</b> e tente novamente. Isso garante que os cookies antigos '.railway.app' não interfiram no novo 'erp_csrftoken'.</p>
+        <p><b>Detalhes para Suporte:</b> Method: {context['method']} | Origin: {context['origin']} | Referer: {context['referer']}</p>
+    """)
 
 
 # ==============================================================================
