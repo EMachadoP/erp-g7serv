@@ -259,7 +259,7 @@ def get_permissions_from_mapping():
         'contenttypes': 'Tipos de Dados',
     }
 
-    # Mapeamento de termos técnicos para nomes amigáveis em Português
+    # Mapeamento exaustivo de termos técnicos para nomes amigáveis em Português
     MODEL_NAMES_BR = {
         'user': 'usuário',
         'group': 'perfil/grupo',
@@ -275,13 +275,14 @@ def get_permissions_from_mapping():
         'nota entrada item': 'item de nota de entrada',
         'nota entrada parcela': 'parcela de nota de entrada',
         'client profile': 'perfil do cliente',
+        'client': 'cliente',
         'budget': 'orçamento',
         'contract': 'contrato',
         'service': 'serviço',
         'product': 'produto',
         'category': 'categoria',
         'billing group': 'grupo de faturamento',
-        'entry': 'lançamento',
+        'entry': 'lançamento/entrada',
         'transaction': 'transação',
         'bank account': 'conta bancária',
         'attachment': 'anexo',
@@ -289,6 +290,20 @@ def get_permissions_from_mapping():
         'address': 'endereço',
         'phone': 'telefone',
         'email': 'e-mail',
+        'supplier': 'fornecedor',
+        'stock': 'estoque',
+        'inventory': 'inventário',
+        'purchase order': 'pedido de compra',
+        'sale order': 'pedido de venda',
+        'registration': 'cadastro',
+        'employee': 'funcionário',
+        'department': 'departamento',
+        'unit': 'unidade',
+        'brand': 'marca',
+        'payment': 'pagamento',
+        'receipt': 'recebimento',
+        'cost center': 'centro de custo',
+        'plan of account': 'plano de contas',
     }
 
     try:

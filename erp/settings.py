@@ -243,3 +243,6 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
 else:
     X_FRAME_OPTIONS = 'SAMEORIGIN' # For Admin/CKEditor compatibility in dev
+
+# Silenciar avisos do CKEditor 4 (LTS/Suporte) para limpar os logs de deploy
+SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
