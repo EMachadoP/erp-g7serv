@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -251,8 +251,8 @@ else:
 # Configurações de Cookie para compatibilidade moderna
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = True  # Mais resiliente em ambientes com diversos proxies
-CSRF_COOKIE_HTTPONLY = True
+CSRF_USE_SESSIONS = False  # Token no cookie é imune a quedas de banco de dados
+CSRF_COOKIE_HTTPONLY = False  # Permitir leitura se necessário por scripts/HTMX
 SESSION_COOKIE_HTTPONLY = True
 
 # Silenciar avisos do CKEditor 4 (LTS/Suporte) para limpar os logs de deploy

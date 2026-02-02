@@ -369,6 +369,11 @@ def profile_create(request):
     logger.info("=== PROFILE_CREATE CHAMADO ===")
     
     logger.info("=== POST EM PROFILE_CREATE INICIADO ===")
+    # Diagnóstico de CSRF e Headers
+    logger.info(f"HTTP_ORIGIN: {request.META.get('HTTP_ORIGIN')}")
+    logger.info(f"HTTP_REFERER: {request.META.get('HTTP_REFERER')}")
+    logger.info(f"CSRF_COOKIE: {request.COOKIES.get('csrftoken')}")
+    
     if request.method == 'POST':
         name = request.POST.get('name')
         permission_ids = request.POST.getlist('permissions')
