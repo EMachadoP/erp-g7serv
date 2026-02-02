@@ -241,97 +241,140 @@ def get_permissions_from_mapping():
     Retorna permissões organizadas por app_label.
     Versão simplificada - não depende de MENU_PERMISSIONS.
     """
-    permissions = Permission.objects.all().select_related('content_type')
-    
-    apps_permissions = {}
-    for perm in permissions:
-        app = perm.content_type.app_label
-        if app not in apps_permissions:
-            apps_permissions[app] = []
+    try:
+        permissions = Permission.objects.all().select_related('content_type')
+        apps_permissions = {}
         
-        # Traduz nome da permissão
-        p_name = str(perm.name)
-        if p_name.startswith('Can add '):
-            p_name = p_name.replace('Can add ', 'Adicionar ')
-        elif p_name.startswith('Can change '):
-            p_name = p_name.replace('Can change ', 'Editar ')
-        elif p_name.startswith('Can delete '):
-            p_name = p_name.replace('Can delete ', 'Excluir ')
-        elif p_name.startswith('Can view '):
-            p_name = p_name.replace('Can view ', 'Visualizar ')
+        for perm in permissions:
+            try:
+                if not perm.content_type:
+                    continue
+                    
+                app = perm.content_type.app_label
+                if app not in apps_permissions:
+                    apps_permissions[app] = []
+                
+                # Traduz nome da permissão
+                p_name = str(perm.name or '')
+                if p_name.startswith('Can add '):
+                    p_name = p_name.replace('Can add ', 'Adicionar ')
+                elif p_name.startswith('Can change '):
+                    p_name = p_name.replace('Can change ', 'Editar ')
+                elif p_name.startswith('Can delete '):
+                    p_name = p_name.replace('Can delete ', 'Excluir ')
+                elif p_name.startswith('Can view '):
+                    p_name = p_name.replace('Can view ', 'Visualizar ')
+                
+                perm.name = p_name
+                apps_permissions[app].append(perm)
+            except Exception as e:
+                # Silently ignore one bad permission
+                continue
         
-        perm.name = p_name
-        apps_permissions[app].append(perm)
-    
-    return apps_permissions
+        return apps_permissions
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erro fatal em get_permissions_from_mapping: {e}", exc_info=True)
+        return {}
 
 
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_create(request):
     """Cria novo perfil/grupo."""
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        permission_ids = request.POST.getlist('permissions')
+    try:
+        if request.method == 'POST':
+            name = request.POST.get('name')
+            permission_ids = request.POST.getlist('permissions')
+            
+            if not name:
+                messages.error(request, 'O nome do perfil é obrigatório.')
+                return render(request, 'core/profile_form_v2.html', {
+                    'group': None,
+                    'apps_permissions': get_permissions_from_mapping(),
+                    'current_permissions': []
+                })
+            
+            try:
+                group = Group.objects.create(name=name)
+                if permission_ids:
+                    group.permissions.set(permission_ids)
+                messages.success(request, 'Perfil criado com sucesso.')
+                return redirect('core:profile_list')
+            except Exception as e:
+                messages.error(request, f'Erro ao criar perfil no banco: {e}')
         
-        if not name:
-            messages.error(request, 'O nome do perfil é obrigatório.')
-            return render(request, 'core/profile_form_v2.html', {
-                'group': None,
-                'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': []
-            })
+        # GET - mostra formulário
+        perms = get_permissions_from_mapping()
+        return render(request, 'core/profile_form_v2.html', {
+            'group': None,
+            'apps_permissions': perms,
+            'current_permissions': []
+        })
+    except Exception as e:
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
+        error_msg = f"Erro em profile_create: {str(e)}\n{traceback.format_exc()}"
+        logger.error(error_msg)
         
-        try:
-            group = Group.objects.create(name=name)
-            if permission_ids:
-                group.permissions.set(permission_ids)
-            messages.success(request, 'Perfil criado com sucesso.')
-            return redirect('core:profile_list')
-        except Exception as e:
-            messages.error(request, f'Erro ao criar perfil: {e}')
-    
-    # GET - mostra formulário
-    return render(request, 'core/profile_form_v2.html', {
-        'group': None,
-        'apps_permissions': get_permissions_from_mapping(),
-        'current_permissions': []
-    })
+        if os.environ.get('DEBUG', 'False') == 'True' or request.user.is_superuser:
+            from django.http import HttpResponse
+            return HttpResponse(f"<h1>Erro Interno (DEBUG)</h1><pre>{error_msg}</pre>", status=500)
+            
+        messages.error(request, 'Ocorreu um erro interno ao carregar a página de perfis.')
+        return redirect('core:profile_list')
 
 
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_update(request, pk):
     """Atualiza perfil/grupo existente."""
-    group = get_object_or_404(Group, pk=pk)
-    
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        permission_ids = request.POST.getlist('permissions')
+    try:
+        group = get_object_or_404(Group, pk=pk)
         
-        if not name:
-            messages.error(request, 'O nome do perfil é obrigatório.')
-            return render(request, 'core/profile_form_v2.html', {
-                'group': group,
-                'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': group.permissions.values_list('id', flat=True)
-            })
+        if request.method == 'POST':
+            name = request.POST.get('name')
+            permission_ids = request.POST.getlist('permissions')
+            
+            if not name:
+                messages.error(request, 'O nome do perfil é obrigatório.')
+                return render(request, 'core/profile_form_v2.html', {
+                    'group': group,
+                    'apps_permissions': get_permissions_from_mapping(),
+                    'current_permissions': group.permissions.values_list('id', flat=True)
+                })
+            
+            try:
+                group.name = name
+                group.save()
+                group.permissions.set(permission_ids)
+                messages.success(request, 'Perfil atualizado com sucesso.')
+                return redirect('core:profile_list')
+            except Exception as e:
+                messages.error(request, f'Erro ao atualizar perfil no banco: {e}')
         
-        try:
-            group.name = name
-            group.save()
-            group.permissions.set(permission_ids)
-            messages.success(request, 'Perfil atualizado com sucesso.')
-            return redirect('core:profile_list')
-        except Exception as e:
-            messages.error(request, f'Erro ao atualizar perfil: {e}')
-    
-    # GET - mostra formulário
-    return render(request, 'core/profile_form_v2.html', {
-        'group': group,
-        'apps_permissions': get_permissions_from_mapping(),
-        'current_permissions': group.permissions.values_list('id', flat=True)
-    })
+        # GET - mostra formulário
+        perms = get_permissions_from_mapping()
+        return render(request, 'core/profile_form_v2.html', {
+            'group': group,
+            'apps_permissions': perms,
+            'current_permissions': group.permissions.values_list('id', flat=True)
+        })
+    except Exception as e:
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
+        error_msg = f"Erro em profile_update: {str(e)}\n{traceback.format_exc()}"
+        logger.error(error_msg)
+        
+        if os.environ.get('DEBUG', 'False') == 'True' or request.user.is_superuser:
+            from django.http import HttpResponse
+            return HttpResponse(f"<h1>Erro Interno (DEBUG)</h1><pre>{error_msg}</pre>", status=500)
+            
+        messages.error(request, 'Ocorreu um erro interno ao carregar a página de perfis.')
+        return redirect('core:profile_list')
 
 
 # ==============================================================================
