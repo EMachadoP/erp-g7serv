@@ -344,6 +344,10 @@
                 {% endif %}
 
                 {% if perms.auth.view_user %}
+                <a href="{% url 'importador:index' %}"
+                    class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+                    <i class="bi bi-cloud-arrow-up me-2"></i>Importador IA
+                </a>
                 <a href="{% url 'reports:dashboard' %}"
                     class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
                     <i class="bi bi-printer me-2"></i>Relatórios
