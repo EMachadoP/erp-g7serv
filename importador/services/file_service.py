@@ -237,7 +237,9 @@ class FileService:
                 if df_preview[col].dtype == 'datetime64[ns]':
                     df_preview[col] = df_preview[col].dt.strftime('%Y-%m-%d')
             
-            result["preview"] = df_preview.to_dict('records')
+            # Limpar NaN para evitar erro de JSON
+            df_preview_json = df_preview.where(df_preview.notnull(), None)
+            result["preview"] = df_preview_json.to_dict('records')
             
             # Contagem de linhas
             result["row_count"] = len(df)
