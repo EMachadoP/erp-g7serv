@@ -581,69 +581,114 @@ def extract_contrato_data(df: pd.DataFrame) -> pd.DataFrame:
                 contrato_atual['numero_contrato'] = parts[0].strip()
                 contrato_atual['tipo_contrato'] = parts[1].strip()
         
-        # Extrair Cliente
-        if 'Cliente:' in row_str and pd.notna(row.iloc[1]):
-            cliente = str(row.iloc[1]).strip()
-            if cliente and cliente != 'NaN':
-                contrato_atual['cliente'] = cliente
+        # Extrair Cliente (pode estar na linha seguinte na mesma coluna ou na coluna 1)
+        if 'Cliente:' in row_str:
+            # Procurar nas próximas 2 linhas na mesma coluna (A)
+            for offset in [1, 2]:
+                if idx + offset < len(df):
+                    val = df.iloc[idx + offset, 0]
+                    if pd.notna(val) and not any(label in str(val) for label in ['Vendedor:', 'Serviços', 'Contrato']):
+                        contrato_atual['cliente'] = str(val).strip()
+                        break
         
         # Extrair Dia de Cobrança
         if 'Dia de Cobrança:' in row_str:
-            for val in row.values:
-                if pd.notna(val) and ('º' in str(val) or str(val).isdigit()):
-                    contrato_atual['dia_cobranca'] = str(val).strip()
+            # Tentar na mesma linha ou na próxima
+            found = False
+            for offset in [0, 1, 2]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and ('º' in str(val) or 'dia' in str(val).lower() or (str(val).isdigit() and int(val) <= 31)):
+                            contrato_atual['dia_cobranca'] = str(val).strip()
+                            found = True
+                            break
+                if found: break
         
         # Extrair Vigência
         if 'Vigência:' in row_str:
-            for val in row.values:
-                if pd.notna(val) and ('/' in str(val) or 'Indeterminado' in str(val)):
-                    vigencia = str(val).strip()
-                    if ' - ' in vigencia:
-                        datas = vigencia.split(' - ')
-                        contrato_atual['data_inicio'] = datas[0]
-                        contrato_atual['data_fim'] = datas[1] if datas[1] != 'Indeterminado' else None
-                    else:
-                        contrato_atual['data_inicio'] = vigencia
+            found = False
+            for offset in [0, 1, 2]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and ('/' in str(val) or 'Indeterminado' in str(val)):
+                            vigencia = str(val).strip()
+                            if ' - ' in vigencia:
+                                datas = vigencia.split(' - ')
+                                contrato_atual['data_inicio'] = datas[0].strip()
+                                contrato_atual['data_fim'] = datas[1].strip() if datas[1].strip() != 'Indeterminado' else None
+                                found = True
+                                break
+                            elif '/' in vigencia:
+                                contrato_atual['data_inicio'] = vigencia
+                                found = True
+                                break
+                if found: break
         
         # Extrair Status
-        if len(row) > 10 and pd.notna(row.iloc[10]) and str(row.iloc[10]).strip() in ['Ativo', 'Expirado', 'Cancelado']:
-            contrato_atual['status'] = str(row.iloc[10]).strip()
+        if 'Status:' in row_str:
+             for offset in [0, 1, 2]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and str(val).strip() in ['Ativo', 'Expirado', 'Cancelado', 'Inativo']:
+                            contrato_atual['status'] = str(val).strip()
+                            break
         
         # Extrair Grupo de Faturamento
         if 'Grupo de Faturamento:' in row_str:
-            for val in row.values:
-                if pd.notna(val) and 'Faturamento' in str(val):
-                    contrato_atual['grupo_faturamento'] = str(val).strip()
+            for offset in [0, 1]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and 'Faturamento' in str(val):
+                            contrato_atual['grupo_faturamento'] = str(val).strip()
+                            break
         
         # Extrair Forma de Pagamento
         if 'Forma de Pagamento:' in row_str:
-            for val in row.values:
-                if pd.notna(val) and ('Boleto' in str(val) or 'Dinheiro' in str(val) or 'Cartão' in str(val)):
-                    contrato_atual['forma_pagamento'] = str(val).strip()
+            for offset in [0, 1]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and any(kw in str(val) for kw in ['Boleto', 'Dinheiro', 'Cartão', 'Pix', 'Depósito']):
+                            contrato_atual['forma_pagamento'] = str(val).strip()
+                            break
         
         # Extrair Índice de Reajuste
         if 'Índice de Reajuste:' in row_str:
-            for val in row.values:
-                if pd.notna(val) and ('IGP' in str(val) or 'IPCA' in str(val) or 'INPC' in str(val)):
-                    contrato_atual['indice_reajuste'] = str(val).strip()
+            for offset in [0, 1]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and any(kw in str(val) for kw in ['IGP', 'IPCA', 'INPC', 'IPC']):
+                            contrato_atual['indice_reajuste'] = str(val).strip()
+                            break
         
         # Extrair Valor do Serviço
-        if 'Fatura importada' in row_str or 'Principal' in row_str:
-            # Valor está na última coluna
-            for col in reversed(row.index):
-                val = row[col]
-                if pd.notna(val):
-                    try:
-                        valor = float(str(val).replace('.', '').replace(',', '.'))
-                        if valor > 0:
-                            contrato_atual['valor_mensal'] = valor
-                            break
-                    except:
-                        pass
+        if 'Fatura' in row_str or 'Valor' in row_str:
+            # Procurar por um valor numérico nas colunas à direita ou na linha de baixo
+            for offset in [0, 1]:
+                 if idx + offset < len(df):
+                    row_scan = df.iloc[idx + offset]
+                    for val in reversed(row_scan.values):
+                        if pd.notna(val):
+                            num_val = detect_and_convert_currency(val)
+                            if num_val is not None and num_val > 0:
+                                contrato_atual['valor_mensal'] = num_val
+                                break
+                    if 'valor_mensal' in contrato_atual: break
         
         # Extrair Serviço Principal
-        if 'Serv. Principal' in row_str and pd.notna(row.iloc[5]):
-            contrato_atual['servico_principal'] = str(row.iloc[5]).strip()
+        if 'Serv.' in row_str and 'Principal' in row_str:
+            for offset in [0, 1]:
+                if idx + offset < len(df):
+                    row_data = df.iloc[idx + offset]
+                    for val in row_data:
+                        if pd.notna(val) and 'Serv.' not in str(val) and 'Principal' not in str(val):
+                            contrato_atual['servico_principal'] = str(val).strip()
+                            break
     
     # Adicionar último contrato
     if contrato_atual and 'numero_contrato' in contrato_atual:
