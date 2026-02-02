@@ -10,7 +10,7 @@
                 {% csrf_token %}
                 <div class="mb-4">
                     <label class="form-label">Nome do Perfil</label>
-                    <input type="text" name="name" class="form-control" value="{{ group.name }}" required>
+                    <input type="text" name="name" class="form-control" value="{{ group.name|default:'' }}" required>
                 </div>
                 <h5 class="mb-3">Permissões de Acesso</h5>
                 <div class="accordion" id="permissionsAccordion">

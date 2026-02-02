@@ -283,6 +283,10 @@ def get_permissions_from_mapping():
 @user_passes_test(is_socio_diretor)
 def profile_create(request):
     """Cria novo perfil/grupo."""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("=== PROFILE_CREATE CHAMADO ===")
+    
     if request.method == 'POST':
         name = request.POST.get('name')
         permission_ids = request.POST.getlist('permissions')
@@ -302,10 +306,18 @@ def profile_create(request):
             messages.success(request, 'Perfil criado com sucesso.')
             return redirect('core:profile_list')
         except Exception as e:
+            logger.error(f"Erro ao criar perfil: {e}", exc_info=True)
             messages.error(request, f'Erro ao criar perfil no banco: {e}')
     
     # GET - mostra formulário
-    perms = get_permissions_from_mapping()
+    try:
+        perms = get_permissions_from_mapping()
+        logger.info(f"Permissões carregadas: {len(perms)} apps")
+    except Exception as e:
+        logger.error(f"ERRO ao carregar permissões: {e}", exc_info=True)
+        perms = {}
+        messages.warning(request, f'Não foi possível carregar todas as permissões.')
+    
     return render(request, 'core/profile_form_v2.html', {
         'group': None,
         'apps_permissions': perms,
