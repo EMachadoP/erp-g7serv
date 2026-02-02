@@ -427,3 +427,4 @@ def technician_update(request, pk):
         'form': form,
         'title': 'Editar Técnico'
     })
+# trigger
