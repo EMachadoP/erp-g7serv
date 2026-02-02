@@ -355,6 +355,25 @@ def contract_update(request, pk):
         
         if billing_group_id:
             contract.billing_group = get_object_or_404(BillingGroup, pk=billing_group_id)
+        else:
+            contract.billing_group = None
+
+        # Parse Value (Bz format 1.000,00 -> 1000.00)
+        value_str = request.POST.get('value', '0').replace('.', '').replace(',', '.')
+        try:
+            contract.value = float(value_str)
+        except ValueError:
+            pass # Keep previous value if invalid
+
+        contract.status = request.POST.get('status')
+        contract.modality = request.POST.get('modality')
+        contract.due_day = request.POST.get('due_day')
+        contract.start_date = request.POST.get('start_date')
+        
+        end_date = request.POST.get('end_date')
+        contract.end_date = end_date if end_date else None
+        
+        contract.save()
         
         messages.success(request, 'Contrato atualizado com sucesso.')
         return redirect('comercial:contract_detail', pk=contract.pk)
