@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -214,6 +214,16 @@ CKEDITOR_CONFIGS = {
         'width': 'auto',
     }
 }
+
+# CSRF Trusted Origins - Consolidated for Dev and Production stability
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'https://web-production-34bc.up.railway.app'
+]
+
 # SEGURANÇA - PRODUÇÃO
 if not DEBUG:
     # SSL/HTTPS
@@ -226,16 +236,10 @@ if not DEBUG:
     # Cookies
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    CSRF_TRUSTED_ORIGINS = [
-        'https://*.railway.app', 
-        'https://*.up.railway.app',
-        'https://web-production-34bc.up.railway.app'
-    ]
 
     # Headers
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
 else:
-    CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
     X_FRAME_OPTIONS = 'SAMEORIGIN' # For Admin/CKEditor compatibility in dev
