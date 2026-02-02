@@ -246,9 +246,22 @@ def api_execute_import(request):
     try:
         data = json.loads(request.body)
         template_id = data.get('template_id')
+        module_type = data.get('module_type') # Novo: suporte a módulo direto
         file_path = data.get('file_path')
         dry_run = data.get('dry_run', False)
         
+        # Se for um módulo especializado e não tiver template, buscar/criar um padrão
+        if not template_id and module_type in ['clientes', 'contratos', 'orcamentos']:
+            template, created = ImportTemplate.objects.get_or_create(
+                module_type=module_type,
+                name=f"Template Sistema - {module_type.capitalize()}",
+                defaults={
+                    'mapping': {}, # Mapeamento vazio pq o serviço especializado cuida disso
+                    'description': 'Template gerado automaticamente pelo sistema para o importador inteligente.'
+                }
+            )
+            template_id = template.id
+            
         import_service = ImportService()
         job = import_service.create_job(
             template_id=template_id,
