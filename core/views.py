@@ -368,6 +368,7 @@ def profile_create(request):
     logger = logging.getLogger(__name__)
     logger.info("=== PROFILE_CREATE CHAMADO ===")
     
+    logger.info("=== POST EM PROFILE_CREATE INICIADO ===")
     if request.method == 'POST':
         name = request.POST.get('name')
         permission_ids = request.POST.getlist('permissions')
@@ -381,27 +382,30 @@ def profile_create(request):
             })
         
         try:
+            logger.info(f"Tentando criar Grupo: {name}")
             group = Group.objects.create(name=name)
+            logger.info(f"Grupo criado ID: {group.id}")
+            
             if permission_ids:
+                logger.info(f"Tentando associar {len(permission_ids)} permissões")
                 group.permissions.set(permission_ids)
-            messages.success(request, 'Perfil criado com sucesso.')
+                logger.info("Permissões associadas com sucesso")
+            
+            messages.success(request, 'Perfil criado com sucesso!')
             return redirect('core:profile_list')
         except Exception as e:
-            logger.error(f"Erro ao criar perfil: {e}", exc_info=True)
-            messages.error(request, f'Erro ao criar perfil no banco: {e}')
-    
-    # GET - mostra formulário
-    try:
-        perms = get_permissions_from_mapping()
-        logger.info(f"Permissões carregadas: {len(perms)} apps")
-    except Exception as e:
-        logger.error(f"ERRO ao carregar permissões: {e}", exc_info=True)
-        perms = {}
-        messages.warning(request, f'Não foi possível carregar todas as permissões.')
-    
+            logger.error(f"Erro ao salvar perfil no banco: {e}", exc_info=True)
+            messages.error(request, f'Erro ao salvar no banco de dados: {e}')
+            return render(request, 'core/profile_form_v2.html', {
+                'group': None,
+                'apps_permissions': get_permissions_from_mapping(),
+                'current_permissions': set(permission_ids) if permission_ids else set()
+            })
+
+    logger.info("Exibindo formulário de criação (GET)")
     return render(request, 'core/profile_form_v2.html', {
         'group': None,
-        'apps_permissions': perms,
+        'apps_permissions': get_permissions_from_mapping(),
         'current_permissions': set()
     })
 
@@ -410,6 +414,9 @@ def profile_create(request):
 @user_passes_test(is_socio_diretor)
 def profile_update(request, pk):
     """Atualiza perfil/grupo existente."""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"=== PROFILE_UPDATE CHAMADO PARA ID: {pk} ===")
     group = get_object_or_404(Group, pk=pk)
     
     if request.method == 'POST':
@@ -418,25 +425,36 @@ def profile_update(request, pk):
         
         if not name:
             messages.error(request, 'O nome do perfil é obrigatório.')
+            current_permissions = set(group.permissions.values_list('id', flat=True))
             return render(request, 'core/profile_form_v2.html', {
                 'group': group,
                 'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': set(group.permissions.values_list('id', flat=True))
+                'current_permissions': current_permissions
             })
         
         try:
+            logger.info(f"Tentando atualizar Grupo ID: {group.id}")
             group.name = name
             group.save()
+            
+            logger.info(f"Tentando atualizar {len(permission_ids)} permissões")
             group.permissions.set(permission_ids)
-            messages.success(request, 'Perfil atualizado com sucesso.')
+            logger.info("Atualização concluída com sucesso")
+            
+            messages.success(request, 'Perfil atualizado com sucesso!')
             return redirect('core:profile_list')
         except Exception as e:
-            messages.error(request, f'Erro ao atualizar perfil no banco: {e}')
-    
-    # GET - mostra formulário
-    # CORREÇÃO: Converte QuerySet para lista para funcionar com `in` no template
+            logger.error(f"Erro ao atualizar perfil no banco: {e}", exc_info=True)
+            messages.error(request, f'Erro ao atualizar no banco de dados: {e}')
+            current_permissions = set(permission_ids) if permission_ids else set()
+            return render(request, 'core/profile_form_v2.html', {
+                'group': group,
+                'apps_permissions': get_permissions_from_mapping(),
+                'current_permissions': current_permissions
+            })
+
     current_permissions = set(group.permissions.values_list('id', flat=True))
-    
+    logger.info(f"Exibindo formulário de edição para {group.name}")
     return render(request, 'core/profile_form_v2.html', {
         'group': group,
         'apps_permissions': get_permissions_from_mapping(),
