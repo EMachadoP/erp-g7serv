@@ -283,98 +283,72 @@ def get_permissions_from_mapping():
 @user_passes_test(is_socio_diretor)
 def profile_create(request):
     """Cria novo perfil/grupo."""
-    try:
-        if request.method == 'POST':
-            name = request.POST.get('name')
-            permission_ids = request.POST.getlist('permissions')
-            
-            if not name:
-                messages.error(request, 'O nome do perfil é obrigatório.')
-                return render(request, 'core/profile_form_v2.html', {
-                    'group': None,
-                    'apps_permissions': get_permissions_from_mapping(),
-                    'current_permissions': []
-                })
-            
-            try:
-                group = Group.objects.create(name=name)
-                if permission_ids:
-                    group.permissions.set(permission_ids)
-                messages.success(request, 'Perfil criado com sucesso.')
-                return redirect('core:profile_list')
-            except Exception as e:
-                messages.error(request, f'Erro ao criar perfil no banco: {e}')
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        permission_ids = request.POST.getlist('permissions')
         
-        # GET - mostra formulário
-        perms = get_permissions_from_mapping()
-        return render(request, 'core/profile_form_v2.html', {
-            'group': None,
-            'apps_permissions': perms,
-            'current_permissions': []
-        })
-    except Exception as e:
-        import logging
-        import traceback
-        logger = logging.getLogger(__name__)
-        error_msg = f"Erro em profile_create: {str(e)}\n{traceback.format_exc()}"
-        logger.error(error_msg)
+        if not name:
+            messages.error(request, 'O nome do perfil é obrigatório.')
+            return render(request, 'core/profile_form_v2.html', {
+                'group': None,
+                'apps_permissions': get_permissions_from_mapping(),
+                'current_permissions': []
+            })
         
-        if os.environ.get('DEBUG', 'False') == 'True' or request.user.is_superuser:
-            from django.http import HttpResponse
-            return HttpResponse(f"<h1>Erro Interno (DEBUG)</h1><pre>{error_msg}</pre>", status=500)
-            
-        messages.error(request, 'Ocorreu um erro interno ao carregar a página de perfis.')
-        return redirect('core:profile_list')
+        try:
+            group = Group.objects.create(name=name)
+            if permission_ids:
+                group.permissions.set(permission_ids)
+            messages.success(request, 'Perfil criado com sucesso.')
+            return redirect('core:profile_list')
+        except Exception as e:
+            messages.error(request, f'Erro ao criar perfil no banco: {e}')
+    
+    # GET - mostra formulário
+    perms = get_permissions_from_mapping()
+    return render(request, 'core/profile_form_v2.html', {
+        'group': None,
+        'apps_permissions': perms,
+        'current_permissions': []
+    })
 
 
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_update(request, pk):
     """Atualiza perfil/grupo existente."""
-    try:
-        group = get_object_or_404(Group, pk=pk)
+    group = get_object_or_404(Group, pk=pk)
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        permission_ids = request.POST.getlist('permissions')
         
-        if request.method == 'POST':
-            name = request.POST.get('name')
-            permission_ids = request.POST.getlist('permissions')
-            
-            if not name:
-                messages.error(request, 'O nome do perfil é obrigatório.')
-                return render(request, 'core/profile_form_v2.html', {
-                    'group': group,
-                    'apps_permissions': get_permissions_from_mapping(),
-                    'current_permissions': group.permissions.values_list('id', flat=True)
-                })
-            
-            try:
-                group.name = name
-                group.save()
-                group.permissions.set(permission_ids)
-                messages.success(request, 'Perfil atualizado com sucesso.')
-                return redirect('core:profile_list')
-            except Exception as e:
-                messages.error(request, f'Erro ao atualizar perfil no banco: {e}')
+        if not name:
+            messages.error(request, 'O nome do perfil é obrigatório.')
+            return render(request, 'core/profile_form_v2.html', {
+                'group': group,
+                'apps_permissions': get_permissions_from_mapping(),
+                'current_permissions': list(group.permissions.values_list('id', flat=True))
+            })
         
-        # GET - mostra formulário
-        perms = get_permissions_from_mapping()
-        return render(request, 'core/profile_form_v2.html', {
-            'group': group,
-            'apps_permissions': perms,
-            'current_permissions': group.permissions.values_list('id', flat=True)
-        })
-    except Exception as e:
-        import logging
-        import traceback
-        logger = logging.getLogger(__name__)
-        error_msg = f"Erro em profile_update: {str(e)}\n{traceback.format_exc()}"
-        logger.error(error_msg)
-        
-        if os.environ.get('DEBUG', 'False') == 'True' or request.user.is_superuser:
-            from django.http import HttpResponse
-            return HttpResponse(f"<h1>Erro Interno (DEBUG)</h1><pre>{error_msg}</pre>", status=500)
-            
-        messages.error(request, 'Ocorreu um erro interno ao carregar a página de perfis.')
-        return redirect('core:profile_list')
+        try:
+            group.name = name
+            group.save()
+            group.permissions.set(permission_ids)
+            messages.success(request, 'Perfil atualizado com sucesso.')
+            return redirect('core:profile_list')
+        except Exception as e:
+            messages.error(request, f'Erro ao atualizar perfil no banco: {e}')
+    
+    # GET - mostra formulário
+    # CORREÇÃO: Converte QuerySet para lista para funcionar com `in` no template
+    current_permissions = list(group.permissions.values_list('id', flat=True))
+    
+    return render(request, 'core/profile_form_v2.html', {
+        'group': group,
+        'apps_permissions': get_permissions_from_mapping(),
+        'current_permissions': current_permissions
+    })
 
 
 # ==============================================================================
