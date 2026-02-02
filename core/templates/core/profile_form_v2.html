@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-sm">
@@ -13,9 +12,7 @@
                     <label class="form-label">Nome do Perfil</label>
                     <input type="text" name="name" class="form-control" value="{{ group.name }}" required>
                 </div>
-
                 <h5 class="mb-3">Permissões de Acesso</h5>
-
                 <div class="accordion" id="permissionsAccordion">
                     {% for app_name, perms in apps_permissions.items %}
                     <div class="accordion-item">
@@ -50,9 +47,8 @@
                                                 <input class="form-check-input permission-checkbox" type="checkbox"
                                                     name="permissions" value="{{ perm.id }}" id="perm{{ perm.id }}" {%
                                                     if perm.id in current_permissions %}checked{% endif %}>
-                                                <label class="form-check-label" for="perm{{ perm.id }}">
-                                                    {{ perm.name }}
-                                                </label>
+                                                <label class="form-check-label" for="perm{{ perm.id }}">{{ perm.name
+                                                    }}</label>
                                             </div>
                                         </div>
                                         {% endfor %}
@@ -63,7 +59,6 @@
                     </div>
                     {% endfor %}
                 </div>
-
                 <div class="d-flex justify-content-end gap-2 mt-4">
                     <a href="{% url 'core:profile_list' %}" class="btn btn-secondary">Cancelar</a>
                     <button type="submit" class="btn btn-success">Salvar</button>
@@ -72,42 +67,14 @@
         </div>
     </div>
 </div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Select All Main (Category level)
-        document.querySelectorAll('.select-all-main').forEach(function (selectAllMain) {
-            selectAllMain.addEventListener('change', function () {
-                const targetId = this.dataset.target;
-                const checkboxes = document.querySelectorAll(`#${targetId} .permission-checkbox`);
-                checkboxes.forEach(cb => {
-                    cb.checked = this.checked;
-                });
+        document.querySelectorAll('.select-all-main').forEach(function (btn) {
+            btn.addEventListener('change', function () {
+                const target = document.getElementById(this.dataset.target);
+                const checkboxes = target.querySelectorAll('.permission-checkbox');
+                checkboxes.forEach(cb => cb.checked = this.checked);
             });
-        });
-
-        // Update masters when children change
-        document.querySelectorAll('.permission-checkbox').forEach(function (cb) {
-            cb.addEventListener('change', function () {
-                const accordionBody = this.closest('.accordion-body');
-                const mainToggle = accordionBody.querySelector('.select-all-main');
-                const allInMain = accordionBody.querySelectorAll('.permission-checkbox');
-                const allCheckedInMain = accordionBody.querySelectorAll('.permission-checkbox:checked');
-
-                if (mainToggle) {
-                    mainToggle.checked = (allInMain.length === allCheckedInMain.length);
-                }
-            });
-        });
-
-        // Initial check for master toggles on page load
-        document.querySelectorAll('.select-all-main').forEach(function (mainToggle) {
-            const accordionBody = mainToggle.closest('.accordion-body');
-            const allInMain = accordionBody.querySelectorAll('.permission-checkbox');
-            const allCheckedInMain = accordionBody.querySelectorAll('.permission-checkbox:checked');
-            if (allInMain.length > 0) {
-                mainToggle.checked = (allInMain.length === allCheckedInMain.length);
-            }
         });
     });
 </script>
