@@ -193,98 +193,98 @@ class ImportService:
         
         return result
 
-def _apply_mapping(self, df: pd.DataFrame, mapping: Dict[str, str]) -> pd.DataFrame:
-    """
-    Aplica mapeamento de colunas
-    Renomeia colunas da planilha para nomes dos campos do sistema
-    """
-    # Create a dictionary for renaming
-    rename_dict = mapping
-    
-    # Subset current columns that are in the mapping
-    available_cols = [col for col in df.columns if col in mapping]
-    
-    # Filter and rename
-    df_mapped = df[available_cols].rename(columns=rename_dict)
-    
-    return df_mapped
+    def _apply_mapping(self, df: pd.DataFrame, mapping: Dict[str, str]) -> pd.DataFrame:
+        """
+        Aplica mapeamento de colunas
+        Renomeia colunas da planilha para nomes dos campos do sistema
+        """
+        # Create a dictionary for renaming
+        rename_dict = mapping
+        
+        # Subset current columns that are in the mapping
+        available_cols = [col for col in df.columns if col in mapping]
+        
+        # Filter and rename
+        df_mapped = df[available_cols].rename(columns=rename_dict)
+        
+        return df_mapped
 
-def _validate_data(
-    self,
-    df: pd.DataFrame,
-    module_type: str
-) -> Dict[str, Any]:
-    """
-    Valida dados antes de importar
-    """
-    # Buscar campos obrigatórios do módulo
-    required_fields = ModuleField.objects.filter(
-        module_type=module_type,
-        required=True,
-        is_active=True
-    )
-    
-    errors = []
-    warnings = []
-    
-    for field in required_fields:
-        if field.field_name not in df.columns:
-            errors.append(f"Campo obrigatório não mapeado: {field.field_name}")
-        else:
-            # Verificar valores vazios
-            empty_count = df[field.field_name].isna().sum()
-            if empty_count > 0:
-                warnings.append(f"Campo {field.field_name} tem {empty_count} valores vazios")
-    
-    return {
-        "valid": len(errors) == 0,
-        "errors": errors,
-        "warnings": warnings
-    }
+    def _validate_data(
+        self,
+        df: pd.DataFrame,
+        module_type: str
+    ) -> Dict[str, Any]:
+        """
+        Valida dados antes de importar
+        """
+        # Buscar campos obrigatórios do módulo
+        required_fields = ModuleField.objects.filter(
+            module_type=module_type,
+            required=True,
+            is_active=True
+        )
+        
+        errors = []
+        warnings = []
+        
+        for field in required_fields:
+            if field.field_name not in df.columns:
+                errors.append(f"Campo obrigatório não mapeado: {field.field_name}")
+            else:
+                # Verificar valores vazios
+                empty_count = df[field.field_name].isna().sum()
+                if empty_count > 0:
+                    warnings.append(f"Campo {field.field_name} tem {empty_count} valores vazios")
+        
+        return {
+            "valid": len(errors) == 0,
+            "errors": errors,
+            "warnings": warnings
+        }
 
-def _import_data(
-    self,
-    df: pd.DataFrame,
-    module_type: str,
-    job: ImportJob,
-    progress_callback: Optional[Callable[[int, int], None]] = None
-) -> int:
-    """
-    Importa dados para o banco
-    Retorna quantidade de registros inseridos
-    """
-    inserted = 0
-    total_rows = len(df)
-    
-    # OBS: df já deve estar processado/mapeado neste ponto
-    
-    for idx, row in df.iterrows():
-        try:
-            # TODO: Substituir pela inserção real no seu ERP
-            # Ex: Cliente.objects.create(**row.to_dict())
-            
-            inserted += 1
-            job.processed_rows = inserted
-            
-            # Callback de progresso
-            if progress_callback:
-                progress_callback(inserted, total_rows)
+    def _import_data(
+        self,
+        df: pd.DataFrame,
+        module_type: str,
+        job: ImportJob,
+        progress_callback: Optional[Callable[[int, int], None]] = None
+    ) -> int:
+        """
+        Importa dados para o banco
+        Retorna quantidade de registros inseridos
+        """
+        inserted = 0
+        total_rows = len(df)
+        
+        # OBS: df já deve estar processado/mapeado neste ponto
+        
+        for idx, row in df.iterrows():
+            try:
+                # TODO: Substituir pela inserção real no seu ERP
+                # Ex: Cliente.objects.create(**row.to_dict())
                 
-            if inserted % 10 == 0:
-                job.save()
+                inserted += 1
+                job.processed_rows = inserted
                 
-        except Exception as e:
-            job.error_rows += 1
-            from ..models import ImportError
-            ImportError.objects.create(
-                job=job,
-                row_number=idx + 1,
-                error_message=str(e),
-                original_value=str(row.to_dict())
-            )
-    
-    job.save()
-    return inserted
+                # Callback de progresso
+                if progress_callback:
+                    progress_callback(inserted, total_rows)
+                    
+                if inserted % 10 == 0:
+                    job.save()
+                    
+            except Exception as e:
+                job.error_rows += 1
+                from ..models import ImportError
+                ImportError.objects.create(
+                    job=job,
+                    row_number=idx + 1,
+                    error_message=str(e),
+                    original_value=str(row.to_dict())
+                )
+        
+        job.save()
+        return inserted
     
     def get_import_preview(
         self,

@@ -232,7 +232,7 @@ async function executarImportacaoAPI(moduleType, filePath) {
             alert('Importação iniciada com sucesso! Redirecionando para o histórico...');
             window.location.href = '/importador/importacoes/';
         } else {
-            alert('Erro na importação: ' + data.detail);
+            alert('Erro na importação: ' + (data.detail || data.message || 'Erro desconhecido'));
         }
     } catch (error) {
         alert('Erro ao conectar com o servidor: ' + error.message);
