@@ -296,7 +296,7 @@ def profile_create(request):
             return render(request, 'core/profile_form_v2.html', {
                 'group': None,
                 'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': []
+                'current_permissions': set()
             })
         
         try:
@@ -321,7 +321,7 @@ def profile_create(request):
     return render(request, 'core/profile_form_v2.html', {
         'group': None,
         'apps_permissions': perms,
-        'current_permissions': []
+        'current_permissions': set()
     })
 
 
@@ -340,7 +340,7 @@ def profile_update(request, pk):
             return render(request, 'core/profile_form_v2.html', {
                 'group': group,
                 'apps_permissions': get_permissions_from_mapping(),
-                'current_permissions': list(group.permissions.values_list('id', flat=True))
+                'current_permissions': set(group.permissions.values_list('id', flat=True))
             })
         
         try:
@@ -354,7 +354,7 @@ def profile_update(request, pk):
     
     # GET - mostra formulário
     # CORREÇÃO: Converte QuerySet para lista para funcionar com `in` no template
-    current_permissions = list(group.permissions.values_list('id', flat=True))
+    current_permissions = set(group.permissions.values_list('id', flat=True))
     
     return render(request, 'core/profile_form_v2.html', {
         'group': group,
