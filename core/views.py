@@ -497,8 +497,31 @@ def csrf_failure(request, reason=""):
         <p><b>Motivo:</b> {reason}</p>
         <hr>
         <p><b>Dica:</b> Como renomeamos os cookies para isolamento, por favor <b>limpe o cache/cookies do seu navegador</b> e tente novamente. Isso garante que os cookies antigos '.railway.app' não interfiram no novo 'erp_csrftoken'.</p>
-        <p><b>Detalhes para Suporte:</b> Method: {context['method']} | Origin: {context['origin']} | Referer: {context['referer']}</p>
+        <p><b>Detalhes para Suporte:</b> Method: {context['method']} | Origin: {context['origin']} | Referer: {context['referer']} | Cookie: {context['cookie_present']}</p>
     """)
+
+from django.http import HttpResponse
+def fix_user_permissions(request):
+    """View TEMPORÁRIA para garantir que o usuário eldonmp é superuser."""
+    if not os.environ.get('DEBUG', 'False') == 'True' and not DEBUG:
+        return HttpResponseForbidden("Apenas em modo DEBUG.")
+        
+    try:
+        user = User.objects.get(username='eldonmp')
+        user.is_superuser = True
+        user.is_staff = True
+        user.is_active = True
+        user.save()
+        
+        # Garantir grupo SÓCIO-DIRETOR
+        group, created = Group.objects.get_or_create(name='SÓCIO-DIRETOR')
+        user.groups.add(group)
+        
+        return HttpResponse(f"Usuário {user.username} agora é SUPERUSER e está no grupo SÓCIO-DIRETOR!")
+    except User.DoesNotExist:
+        return HttpResponse("Usuário eldonmp não encontrado.", status=404)
+    except Exception as e:
+        return HttpResponse(f"Erro: {e}", status=500)
 
 
 # ==============================================================================

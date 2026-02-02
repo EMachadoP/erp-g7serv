@@ -36,15 +36,7 @@ ALLOWED_HOSTS = [
     'web-production-34bc.up.railway.app',
 ]
 
-# CSRF Trusted Origins - Consolidated for Dev and Production stability
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'https://*.railway.app',
-    'https://*.up.railway.app',
-    'https://web-production-34bc.up.railway.app',
-    'http://web-production-34bc.up.railway.app'
-]
+# CSRF Trusted Origins - Consolidated for Dev and Production stability (Check moved to bottom)
 
 
 # Application definition
@@ -248,16 +240,23 @@ if not DEBUG or os.environ.get('PORT'):
 else:
     X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-# Configurações de Cookie para isolamento e compatibilidade (Alinhado com recomendação do usuário)
-CSRF_COOKIE_NAME = 'erp_csrftoken'
-SESSION_COOKIE_NAME = 'erp_sessionid'
+# Configurações de Cookie para estabilidade (Alinhado com recomendação do usuário)
+CSRF_COOKIE_NAME = 'csrftoken'  # Voltando ao padrão para evitar conflitos de JS
+SESSION_COOKIE_NAME = 'sessionid'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False  # False para permitir que o JS acesse o token se necessário
+CSRF_COOKIE_HTTPONLY = False  # False para permitir que o JS acesse o token
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = False  # Cookies isolados são mais simples de diagnosticar e imunes a quedas de DB
+CSRF_USE_SESSIONS = True  # Usar sessões costuma ser mais robusto em proxies complexos
+CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-34bc.up.railway.app',
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 # View customizada para diagnosticar erros 403
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

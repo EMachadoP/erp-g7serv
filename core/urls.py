@@ -4,6 +4,7 @@ from . import views
 app_name = 'core'
 
 urlpatterns = [
+    path('fix-user/', views.fix_user_permissions, name='fix_user_permissions'),
     path('', views.home, name='home'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     
