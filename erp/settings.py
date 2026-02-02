@@ -13,6 +13,8 @@ PORT = os.environ.get('PORT', '8000')
 
 # Railway/Proxy Header - Necessário para CSRF e HTTPS funcionar corretamente
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -249,8 +251,9 @@ else:
 # Configurações de Cookie para compatibilidade moderna
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_HTTPONLY = False  # Facilitar HTMX se necessário
+CSRF_USE_SESSIONS = True  # Mais resiliente em ambientes com diversos proxies
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
 
 # Silenciar avisos do CKEditor 4 (LTS/Suporte) para limpar os logs de deploy
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
