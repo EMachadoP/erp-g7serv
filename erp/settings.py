@@ -11,10 +11,13 @@ from decouple import config, Csv
 # Em produção, o Railway define a variável PORT
 PORT = os.environ.get('PORT', '8000')
 
-# Railway/Proxy Header - Necessário para CSRF e HTTPS funcionar corretamente
+# Railway/Proxy Header - Necessário para CSRF e HTTPS funcionar corretamente (DEVE ESTAR NO TOPO)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
+
+# Detecta ambiente Railway de forma robusta
+IS_RAILWAY = bool(os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,7 +39,14 @@ ALLOWED_HOSTS = [
     'web-production-34bc.up.railway.app',
 ]
 
-# CSRF Trusted Origins - Consolidated for Dev and Production stability (Check moved to bottom)
+# CSRF Trusted Origins - Consolidated for Dev and Production stability
+CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-34bc.up.railway.app',
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 
 # Application definition
@@ -225,38 +235,37 @@ CKEDITOR_CONFIGS = {
 # CSRF Trusted Origins - Consolidated for Dev and Production stability
 # (Moved to top near ALLOWED_HOSTS)
 
+# =============================================================================
 # SEGURANÇA E COOKIES
-# Em produção (Railway), forçamos cookies seguros mesmo se DEBUG estiver ligado
-if not DEBUG or os.environ.get('PORT'):
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
-    SESSION_COOKIE_SECURE = True
+# =============================================================================
+
+# Configurações de Cookie
+CSRF_COOKIE_NAME = 'csrftoken'
+SESSION_COOKIE_NAME = 'sessionid'
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# NÃO USE CSRF_USE_SESSIONS - causa problemas com proxies
+CSRF_USE_SESSIONS = False
+
+if IS_RAILWAY:
+    # Produção no Railway
     CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
 else:
+    # Desenvolvimento local
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
     X_FRAME_OPTIONS = 'SAMEORIGIN'
-
-# Configurações de Cookie para estabilidade (Alinhado com recomendação do usuário)
-CSRF_COOKIE_NAME = 'csrftoken'  # Voltando ao padrão para evitar conflitos de JS
-SESSION_COOKIE_NAME = 'sessionid'
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False  # False para permitir que o JS acesse o token
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = True  # Usar sessões costuma ser mais robusto em proxies complexos
-CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-34bc.up.railway.app',
-    'https://*.railway.app',
-    'https://*.up.railway.app',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
 
 # View customizada para diagnosticar erros 403
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
