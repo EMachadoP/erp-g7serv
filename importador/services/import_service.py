@@ -236,31 +236,54 @@ class ImportService:
         Importa dados para o banco
         Retorna quantidade de registros inseridos
         """
-        # TODO: Implementar lógica real de inserção por módulo
-        # Ex: if module_type == 'contas_pagar': convert row to AccountPayable model
+        # Importar processadores específicos
+        from .ai_service import extract_cliente_data, extract_contrato_data
         
         inserted = 0
-        total = len(df)
         
-        for idx, row in df.iterrows():
+        # Processar conforme o tipo de módulo
+        if module_type == 'clientes':
+            # Usar extrator específico para clientes
+            df_processed = extract_cliente_data(df)
+        elif module_type == 'contratos':
+            # Usar extrator específico para contratos
+            df_processed = extract_contrato_data(df)
+        else:
+            df_processed = df
+        
+        # Se o DataFrame processado estiver vazio, retornar 0
+        if df_processed.empty:
+            return 0
+            
+        # Aqui você implementaria a lógica real de inserção no seu ERP
+        # Por enquanto, apenas simulamos
+        
+        total_rows = len(df_processed)
+        for idx, row in df_processed.iterrows():
             try:
-                # Simular inserção (substituir por lógica real depois)
-                # self._save_to_erp(module_type, row)
+                # Simular inserção
+                # TODO: Substituir pela inserção real no seu ERP
                 
                 inserted += 1
-                job.processed_rows = idx + 1
+                job.processed_rows = inserted
                 
                 # Callback de progresso
                 if progress_callback:
-                    progress_callback(idx + 1, total)
+                    progress_callback(inserted, total_rows)
                 
-                # Salvar progresso a cada 100 registros
-                if (idx + 1) % 100 == 0:
-                    job.save()
+                # Commit a cada 100 registros (se estivesse usando uma sessão real do banco)
+                # if inserted % 100 == 0:
+                #    self.db.commit()
                     
             except Exception as e:
-                job.add_error(idx + 1, "general", str(e), row.to_dict())
                 job.error_rows += 1
+                ImportError.objects.create(
+                    job=job,
+                    row_number=idx + 1,
+                    error_type="general",
+                    message=str(e),
+                    raw_data=row.to_dict()
+                )
         
         job.save()
         return inserted

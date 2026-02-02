@@ -464,3 +464,259 @@ class DataCleaningService:
     def get_history(self) -> List[Dict]:
         """Retorna histórico de operações"""
         return self.history
+
+
+# ============================================================================
+# FUNÇÕES ESPECÍFICAS PARA CLIENTES, ORÇAMENTOS E CONTRATOS
+# ============================================================================
+
+def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Extrai dados de clientes de planilhas com estrutura específica
+    como a do arquivo ClientesTodos.xlsx
+    """
+    clientes = []
+    cliente_atual = {}
+    
+    for idx, row in df.iterrows():
+        # Verificar se é linha de nome (primeira coluna vazia, segunda com nome)
+        if pd.notna(row.iloc[1]) and (pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == ''):
+            nome = str(row.iloc[1]).strip()
+            if nome and not nome.startswith('RG/') and not nome.startswith('Endereço:') and not nome.startswith('Sem contato'):
+                # Salvar cliente anterior se existir
+                if cliente_atual and 'nome' in cliente_atual:
+                    clientes.append(cliente_atual.copy())
+                
+                # Iniciar novo cliente
+                cliente_atual = {'nome': nome}
+        
+        # Extrair CPF/CNPJ
+        if 'CPF/CNPJ:' in str(row.values):
+            for val in row.values:
+                if pd.notna(val) and 'CPF/CNPJ:' in str(val):
+                    cpf_cnpj = str(val).split('CPF/CNPJ:')[1].strip()
+                    cliente_atual['cpf_cnpj'] = cpf_cnpj
+        
+        # Extrair RG/IE
+        if 'RG/Inscrição Estadual:' in str(row.values):
+            for val in row.values:
+                if pd.notna(val) and 'RG/Inscrição Estadual:' in str(val):
+                    rg_ie = str(val).split('RG/Inscrição Estadual:')[1].strip()
+                    cliente_atual['rg_ie'] = rg_ie
+        
+        # Extrair Telefone
+        if 'Telefone:' in str(row.values):
+            for val in row.values:
+                if pd.notna(val) and 'Telefone:' in str(val):
+                    telefone = str(val).split('Telefone:')[1].strip()
+                    cliente_atual['telefone'] = telefone
+        
+        # Extrair Endereço
+        if 'Endereço:' in str(row.values):
+            for val in row.values:
+                if pd.notna(val) and 'Endereço:' in str(val):
+                    endereco = str(val).split('Endereço:')[1].strip()
+                    cliente_atual['endereco'] = endereco
+        
+        # Extrair Status (ATIVO/INATIVO)
+        if len(row) > 8 and pd.notna(row.iloc[8]) and str(row.iloc[8]).strip() in ['ATIVO', 'INATIVO']:
+            cliente_atual['status'] = str(row.iloc[8]).strip()
+        
+        # Extrair contatos
+        if pd.notna(row.iloc[1]) and str(row.iloc[1]).strip() == 'Contato':
+            # Próxima linha tem os dados do contato
+            if idx + 1 < len(df):
+                next_row = df.iloc[idx + 1]
+                if pd.notna(next_row.iloc[1]):
+                    cliente_atual['contato_nome'] = str(next_row.iloc[1]).strip()
+                if pd.notna(next_row.iloc[2]):
+                    cliente_atual['contato_telefone'] = str(next_row.iloc[2]).strip()
+                if len(next_row) > 4 and pd.notna(next_row.iloc[4]):
+                    cliente_atual['contato_email'] = str(next_row.iloc[4]).strip()
+                if len(next_row) > 7 and pd.notna(next_row.iloc[7]):
+                    cliente_atual['contato_tipo'] = str(next_row.iloc[7]).strip()
+    
+    # Adicionar último cliente
+    if cliente_atual and 'nome' in cliente_atual:
+        clientes.append(cliente_atual)
+    
+    # Criar DataFrame
+    if not clientes:
+        return pd.DataFrame()
+        
+    df_clientes = pd.DataFrame(clientes)
+    
+    # Limpar CPF/CNPJ
+    if 'cpf_cnpj' in df_clientes.columns:
+        df_clientes['cpf_cnpj'] = df_clientes['cpf_cnpj'].apply(
+            lambda x: detect_and_convert_cnpj(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 14 
+            else detect_and_convert_cpf(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 11
+            else x
+        )
+    
+    return df_clientes
+
+
+def extract_contrato_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Extrai dados de contratos de planilhas com estrutura específica
+    como a do arquivo ContratosAtivos.xlsx
+    """
+    contratos = []
+    contrato_atual = {}
+    
+    for idx, row in df.iterrows():
+        row_str = ' '.join([str(v) for v in row.values if pd.notna(v)])
+        
+        # Detectar início de novo contrato
+        if 'Contrato' in row_str and '/' in row_str:
+            # Salvar contrato anterior
+            if contrato_atual and 'numero_contrato' in contrato_atual:
+                contratos.append(contrato_atual.copy())
+            
+            # Extrair número e tipo do contrato
+            contrato_atual = {}
+            parts = row_str.split('-')
+            if len(parts) >= 2:
+                contrato_atual['numero_contrato'] = parts[0].strip()
+                contrato_atual['tipo_contrato'] = parts[1].strip()
+        
+        # Extrair Cliente
+        if 'Cliente:' in row_str and pd.notna(row.iloc[1]):
+            cliente = str(row.iloc[1]).strip()
+            if cliente and cliente != 'NaN':
+                contrato_atual['cliente'] = cliente
+        
+        # Extrair Dia de Cobrança
+        if 'Dia de Cobrança:' in row_str:
+            for val in row.values:
+                if pd.notna(val) and ('º' in str(val) or str(val).isdigit()):
+                    contrato_atual['dia_cobranca'] = str(val).strip()
+        
+        # Extrair Vigência
+        if 'Vigência:' in row_str:
+            for val in row.values:
+                if pd.notna(val) and ('/' in str(val) or 'Indeterminado' in str(val)):
+                    vigencia = str(val).strip()
+                    if ' - ' in vigencia:
+                        datas = vigencia.split(' - ')
+                        contrato_atual['data_inicio'] = datas[0]
+                        contrato_atual['data_fim'] = datas[1] if datas[1] != 'Indeterminado' else None
+                    else:
+                        contrato_atual['data_inicio'] = vigencia
+        
+        # Extrair Status
+        if len(row) > 10 and pd.notna(row.iloc[10]) and str(row.iloc[10]).strip() in ['Ativo', 'Expirado', 'Cancelado']:
+            contrato_atual['status'] = str(row.iloc[10]).strip()
+        
+        # Extrair Grupo de Faturamento
+        if 'Grupo de Faturamento:' in row_str:
+            for val in row.values:
+                if pd.notna(val) and 'Faturamento' in str(val):
+                    contrato_atual['grupo_faturamento'] = str(val).strip()
+        
+        # Extrair Forma de Pagamento
+        if 'Forma de Pagamento:' in row_str:
+            for val in row.values:
+                if pd.notna(val) and ('Boleto' in str(val) or 'Dinheiro' in str(val) or 'Cartão' in str(val)):
+                    contrato_atual['forma_pagamento'] = str(val).strip()
+        
+        # Extrair Índice de Reajuste
+        if 'Índice de Reajuste:' in row_str:
+            for val in row.values:
+                if pd.notna(val) and ('IGP' in str(val) or 'IPCA' in str(val) or 'INPC' in str(val)):
+                    contrato_atual['indice_reajuste'] = str(val).strip()
+        
+        # Extrair Valor do Serviço
+        if 'Fatura importada' in row_str or 'Principal' in row_str:
+            # Valor está na última coluna
+            for col in reversed(row.index):
+                val = row[col]
+                if pd.notna(val):
+                    try:
+                        valor = float(str(val).replace('.', '').replace(',', '.'))
+                        if valor > 0:
+                            contrato_atual['valor_mensal'] = valor
+                            break
+                    except:
+                        pass
+        
+        # Extrair Serviço Principal
+        if 'Serv. Principal' in row_str and pd.notna(row.iloc[5]):
+            contrato_atual['servico_principal'] = str(row.iloc[5]).strip()
+    
+    # Adicionar último contrato
+    if contrato_atual and 'numero_contrato' in contrato_atual:
+        contratos.append(contrato_atual)
+    
+    # Criar DataFrame
+    if not contratos:
+        return pd.DataFrame()
+        
+    df_contratos = pd.DataFrame(contratos)
+    
+    # Converter datas
+    for col in ['data_inicio', 'data_fim']:
+        if col in df_contratos.columns:
+            df_contratos[col] = df_contratos[col].apply(detect_and_convert_date)
+    
+    return df_contratos
+
+
+def parse_endereco(endereco_str: str) -> dict:
+    """
+    Parse de endereço brasileiro em componentes
+    """
+    if not endereco_str or endereco_str == 'Endereço não encontrado.':
+        return {
+            'logradouro': '',
+            'numero': '',
+            'bairro': '',
+            'cidade': '',
+            'estado': '',
+            'cep': ''
+        }
+    
+    resultado = {
+        'logradouro': '',
+        'numero': '',
+        'bairro': '',
+        'cidade': '',
+        'estado': '',
+        'cep': ''
+    }
+    
+    # Padrão: Rua Nome, 123 - Bairro, Cidade - UF, CEP
+    import re
+    
+    # Extrair CEP (5 dígitos - 3 dígitos)
+    cep_match = re.search(r'(\d{5})-?(\d{3})', endereco_str)
+    if cep_match:
+        resultado['cep'] = f"{cep_match.group(1)}-{cep_match.group(2)}"
+    
+    # Extrair UF (2 letras maiúsculas após hífen)
+    uf_match = re.search(r'-\s*([A-Z]{2})\s*,', endereco_str)
+    if uf_match:
+        resultado['estado'] = uf_match.group(1)
+    
+    # Extrair Cidade (entre vírgula e -UF)
+    cidade_match = re.search(r',\s*([^,]+)\s*-\s*[A-Z]{2}', endereco_str)
+    if cidade_match:
+        resultado['cidade'] = cidade_match.group(1).strip()
+    
+    # Extrair Bairro (entre - e ,cidade)
+    bairro_match = re.search(r'-\s*([^,]+)\s*,\s*[^,]+\s*-\s*[A-Z]{2}', endereco_str)
+    if bairro_match:
+        resultado['bairro'] = bairro_match.group(1).strip()
+    
+    # Extrair Logradouro e Número (início até a primeira vírgula)
+    primeira_parte = endereco_str.split(',')[0]
+    numero_match = re.search(r',\s*(\d+|S/N|SN)\s*-', endereco_str)
+    if numero_match:
+        resultado['numero'] = numero_match.group(1)
+        logradouro = primeira_parte.replace(f", {resultado['numero']}", '').strip()
+        resultado['logradouro'] = logradouro
+    else:
+        resultado['logradouro'] = primeira_parte.strip()
+    
+    return resultado

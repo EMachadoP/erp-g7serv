@@ -60,49 +60,100 @@ class ImportDetailPageView(LoginRequiredMixin, DetailView):
 
 @csrf_exempt # For simplicity in dev, ideally keep CSRF if called from same domain
 def api_upload_file(request):
+    """
+    API para upload de arquivo e análise inicial
+    """
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'detail': 'Metodo não permitido'}, status=405)
+        return JsonResponse({'success': False, 'detail': 'Método não permitido'}, status=405)
     
     try:
         file = request.FILES.get('file')
         module_type = request.POST.get('module_type')
         template_id = request.POST.get('template_id')
         
-        if not file:
-             return JsonResponse({'success': False, 'detail': 'Arquivo não enviado'}, status=400)
-        
-        if not FileService.validate_file(file.name):
-            return JsonResponse({
-                'success': False, 
-                'detail': f'Tipo de arquivo não suportado. Use: {FileService.ALLOWED_EXTENSIONS}'
-            }, status=400)
+        if not file or not module_type:
+            return JsonResponse({'success': False, 'detail': 'Arquivo e tipo de módulo são obrigatórios'}, status=400)
             
-        # Salvar arquivo
-        file_path = FileService.save_upload_file(file, file.name)
+        file_service = FileService()
+        if not file_service.validate_file(file.name):
+            return JsonResponse({'success': False, 'detail': 'Tipo de arquivo não suportado'}, status=400)
+            
+        # Salvar arquivo temporariamente
+        file_path = file_service.save_upload_file(file)
         
         # Analisar estrutura
-        file_type = FileService.detect_file_type(file_path)
-        analysis = FileService.analyze_structure(file_path, file_type)
+        file_type = file_service.detect_file_type(file_path)
+        analysis = file_service.analyze_structure(file_path, file_type)
         
-        # Se tiver template_id, aplicar mapeamento
-        if template_id and template_id.isdigit():
+        # Se for clientes ou contratos, usar processamento especial
+        if module_type == 'clientes':
+            from .services.ai_service import extract_cliente_data
+            df = file_service.read_file(file_path, file_type=file_type)
+            df_clientes = extract_cliente_data(df)
+            
+            return JsonResponse({
+                "success": True,
+                "filename": file.name,
+                "file_path": file_path,
+                "module_type": module_type,
+                "special_processing": True,
+                "preview_type": "clientes",
+                "total": len(df_clientes),
+                "preview": df_clientes.head(10).to_dict('records') if not df_clientes.empty else [],
+                "columns": list(df_clientes.columns) if not df_clientes.empty else [],
+                "analysis": analysis
+            })
+        
+        elif module_type == 'contratos':
+            from .services.ai_service import extract_contrato_data
+            df = file_service.read_file(file_path, file_type=file_type)
+            df_contratos = extract_contrato_data(df)
+            
+            return JsonResponse({
+                "success": True,
+                "filename": file.name,
+                "file_path": file_path,
+                "module_type": module_type,
+                "special_processing": True,
+                "preview_type": "contratos",
+                "total": len(df_contratos),
+                "preview": df_contratos.head(10).to_dict('records') if not df_contratos.empty else [],
+                "columns": list(df_contratos.columns) if not df_contratos.empty else [],
+                "analysis": analysis
+            })
+        
+        # Fluxo normal
+        template_service = TemplateService()
+        if template_id:
+            # Aplicar mapeamento do template
             import_service = ImportService()
-            preview = import_service.get_import_preview(int(template_id), file_path)
-            analysis["mapped_preview"] = preview
+            # Ensure template_id is an int if it's a string
+            template_id_int = int(template_id) if isinstance(template_id, str) and template_id.isdigit() else None
+            if template_id_int is not None:
+                preview = import_service.get_import_preview(template_id_int, file_path)
+                analysis['mapped_preview'] = preview
+            else:
+                # Handle case where template_id is provided but not a valid digit
+                logger.warning(f"Invalid template_id received: {template_id}")
+                # Fallback to suggestions if template_id is invalid
+                suggestions = template_service.suggest_mapping(
+                    [col['name'] for col in analysis['columns']], 
+                    module_type
+                )
+                analysis['mapping_suggestions'] = suggestions
         else:
             # Sugerir mapeamento
-            suggestions = TemplateService.suggest_mapping(
-                [col["name"] for col in analysis["columns"]],
+            suggestions = template_service.suggest_mapping(
+                [col['name'] for col in analysis['columns']], 
                 module_type
             )
-            analysis["mapping_suggestions"] = suggestions
+            analysis['mapping_suggestions'] = suggestions
             
         return JsonResponse({
             'success': True,
             'filename': file.name,
             'file_path': file_path,
             'module_type': module_type,
-            'template_id': template_id,
             'analysis': analysis
         })
         
