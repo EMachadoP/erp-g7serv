@@ -11,6 +11,9 @@ from decouple import config, Csv
 # Em produção, o Railway define a variável PORT
 PORT = os.environ.get('PORT', '8000')
 
+# Railway/Proxy Header - Necessário para CSRF e HTTPS funcionar corretamente
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -221,13 +224,13 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://*.railway.app',
     'https://*.up.railway.app',
-    'https://web-production-34bc.up.railway.app'
+    'https://web-production-34bc.up.railway.app',
+    'http://web-production-34bc.up.railway.app'
 ]
 
 # SEGURANÇA - PRODUÇÃO
 if not DEBUG:
     # SSL/HTTPS
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
