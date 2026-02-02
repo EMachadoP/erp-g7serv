@@ -86,39 +86,45 @@ def detect_and_convert_date(value: Any) -> Optional[str]:
 
 def detect_and_convert_currency(value: Any) -> Optional[float]:
     """
-    Detecta e converte valor monetário para float
-    Suporta: R$ 1.234,56, $ 1,234.56, 1.234,56, 1234.56
+    Detecta e converte valor monetário para float de forma robusta.
+    Suporta formatos brasileiros e americanos, e valores puros de Excel.
     """
     if pd.isna(value) or value is None:
         return None
     
-    # Se já for número, retornar
+    # Se for número (float/int), retornar direto
     if isinstance(value, (int, float)):
         return float(value)
     
-    # Converter para string
-    value_str = str(value).strip()
-    
-    # Remover símbolos de moeda
-    value_str = re.sub(r'^[Rr]\$\s*', '', value_str)
-    value_str = re.sub(r'^\$\s*', '', value_str)
-    
-    # Detectar formato
-    # Se tiver vírgula e ponto, provavelmente é milhar com vírgula decimal
-    if ',' in value_str and '.' in value_str:
-        # Remover pontos (separadores de milhar) e substituir vírgula por ponto
-        value_str = value_str.replace('.', '').replace(',', '.')
-    # Se só tiver vírgula, provavelmente é decimal
-    elif ',' in value_str:
-        # Verificar se é separador de milhar (mais de 2 dígitos após vírgula)
-        parts = value_str.split(',')
-        if len(parts) == 2 and len(parts[1]) > 2:
-            value_str = value_str.replace(',', '')
+    # Converter para string e limpar símbolos
+    val_s = str(value).strip().replace('R$', '').replace('$', '').strip()
+    if not val_s:
+        return None
+        
+    # Lógica de decisão de separador decimal
+    # Se tiver vírgula e ponto, o último é o decimal
+    if ',' in val_s and '.' in val_s:
+        if val_s.rfind(',') > val_s.rfind('.'):
+            # BR: 1.234,56
+            val_s = val_s.replace('.', '').replace(',', '.')
         else:
-            value_str = value_str.replace(',', '.')
-    
+            # US: 1,234.56
+            val_s = val_s.replace(',', '')
+    elif ',' in val_s:
+        # Só vírgula: se tem 1 ou 2 casas, é decimal. Se tem 3 e não é final, é milhar.
+        parts = val_s.split(',')
+        if len(parts) == 2 and len(parts[1]) <= 2:
+            val_s = val_s.replace(',', '.')
+        else:
+            val_s = val_s.replace(',', '')
+    elif '.' in val_s:
+        # Só ponto: se tem 1 ou 2 casas, é decimal. Se tem mais de 2, pode ser milhar sem decimal.
+        parts = val_s.split('.')
+        if len(parts) == 2 and len(parts[1]) > 2:
+            val_s = val_s.replace('.', '')
+            
     try:
-        return float(value_str)
+        return float(val_s)
     except ValueError:
         return None
 
@@ -557,155 +563,111 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
     return df_clientes
 
 
+def _find_value_below(df: pd.DataFrame, row_idx: int, col_idx: int, max_rows: int = 4) -> Optional[str]:
+    """Procura o primeiro valor não vazio abaixo da célula (row_idx, col_idx)"""
+    for offset in range(1, max_rows + 1):
+        if row_idx + offset < len(df):
+            val = df.iloc[row_idx + offset, col_idx]
+            if pd.notna(val) and str(val).strip() != '':
+                s_val = str(val).strip()
+                # Se parecer um rótulo de outro campo ou início de contrato, para a busca
+                if s_val.endswith(':') or any(k in s_val for k in ['Contrato', 'Serviços', 'Vendedor:']):
+                    break
+                return s_val
+    return None
+
+
 def extract_contrato_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Extrai dados de contratos de planilhas com estrutura específica
-    como a do arquivo ContratosAtivos.xlsx
+    Extrai dados de contratos usando busca por contexto (rótulos e valores próximos)
+    Suporta layouts multi-linha onde o valor fica abaixo do rótulo.
     """
     contratos = []
     contrato_atual = {}
     
+    # Limpeza básica: remover colunas completamente vazias
+    df = df.dropna(axis=1, how='all')
+    
     for idx, row in df.iterrows():
+        # Gerar uma string da linha inteira para detecção de triggers
         row_str = ' '.join([str(v) for v in row.values if pd.notna(v)])
         
-        # Detectar início de novo contrato
-        if 'Contrato' in row_str and '/' in row_str:
-            # Salvar contrato anterior
+        # Trigger: Início de um novo bloco de contrato
+        if 'Contrato' in row_str and ('/' in row_str or '202' in row_str):
+            # Salvar o contrato que estávamos processando
             if contrato_atual and 'numero_contrato' in contrato_atual:
                 contratos.append(contrato_atual.copy())
             
-            # Extrair número e tipo do contrato
-            contrato_atual = {}
-            parts = row_str.split('-')
-            if len(parts) >= 2:
-                contrato_atual['numero_contrato'] = parts[0].strip()
-                contrato_atual['tipo_contrato'] = parts[1].strip()
-        
-        # Extrair Cliente (pode estar na linha seguinte na mesma coluna ou na coluna 1)
-        if 'Cliente:' in row_str:
-            # Procurar nas próximas 2 linhas na mesma coluna (A)
-            for offset in [1, 2]:
-                if idx + offset < len(df):
-                    val = df.iloc[idx + offset, 0]
-                    if pd.notna(val) and not any(label in str(val) for label in ['Vendedor:', 'Serviços', 'Contrato']):
-                        contrato_atual['cliente'] = str(val).strip()
-                        break
-        
-        # Extrair Dia de Cobrança
-        if 'Dia de Cobrança:' in row_str:
-            # Tentar na mesma linha ou na próxima
-            found = False
-            for offset in [0, 1, 2]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and ('º' in str(val) or 'dia' in str(val).lower() or (str(val).isdigit() and int(val) <= 31)):
-                            contrato_atual['dia_cobranca'] = str(val).strip()
-                            found = True
-                            break
-                if found: break
-        
-        # Extrair Vigência
-        if 'Vigência:' in row_str:
-            found = False
-            for offset in [0, 1, 2]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and ('/' in str(val) or 'Indeterminado' in str(val)):
-                            vigencia = str(val).strip()
-                            if ' - ' in vigencia:
-                                datas = vigencia.split(' - ')
-                                contrato_atual['data_inicio'] = datas[0].strip()
-                                contrato_atual['data_fim'] = datas[1].strip() if datas[1].strip() != 'Indeterminado' else None
-                                found = True
-                                break
-                            elif '/' in vigencia:
-                                contrato_atual['data_inicio'] = vigencia
-                                found = True
-                                break
-                if found: break
-        
-        # Extrair Status
-        if 'Status:' in row_str:
-             for offset in [0, 1, 2]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and str(val).strip() in ['Ativo', 'Expirado', 'Cancelado', 'Inativo']:
-                            contrato_atual['status'] = str(val).strip()
-                            break
-        
-        # Extrair Grupo de Faturamento
-        if 'Grupo de Faturamento:' in row_str:
-            for offset in [0, 1]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and 'Faturamento' in str(val):
-                            contrato_atual['grupo_faturamento'] = str(val).strip()
-                            break
-        
-        # Extrair Forma de Pagamento
-        if 'Forma de Pagamento:' in row_str:
-            for offset in [0, 1]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and any(kw in str(val) for kw in ['Boleto', 'Dinheiro', 'Cartão', 'Pix', 'Depósito']):
-                            contrato_atual['forma_pagamento'] = str(val).strip()
-                            break
-        
-        # Extrair Índice de Reajuste
-        if 'Índice de Reajuste:' in row_str:
-            for offset in [0, 1]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and any(kw in str(val) for kw in ['IGP', 'IPCA', 'INPC', 'IPC']):
-                            contrato_atual['indice_reajuste'] = str(val).strip()
-                            break
-        
-        # Extrair Valor do Serviço
-        if 'Fatura' in row_str or 'Valor' in row_str:
-            # Procurar por um valor numérico nas colunas à direita ou na linha de baixo
-            for offset in [0, 1]:
-                 if idx + offset < len(df):
-                    row_scan = df.iloc[idx + offset]
-                    for val in reversed(row_scan.values):
-                        if pd.notna(val):
-                            num_val = detect_and_convert_currency(val)
-                            if num_val is not None and num_val > 0:
-                                contrato_atual['valor_mensal'] = num_val
-                                break
-                    if 'valor_mensal' in contrato_atual: break
-        
-        # Extrair Serviço Principal
-        if 'Serv.' in row_str and 'Principal' in row_str:
-            for offset in [0, 1]:
-                if idx + offset < len(df):
-                    row_data = df.iloc[idx + offset]
-                    for val in row_data:
-                        if pd.notna(val) and 'Serv.' not in str(val) and 'Principal' not in str(val):
-                            contrato_atual['servico_principal'] = str(val).strip()
-                            break
-    
-    # Adicionar último contrato
+            # Inicializar novo buffer de contrato
+            contrato_atual = {'status': 'Ativo'} # Default
+            
+            # Extrair número e tipo (ex: "Contrato 000007/2023 - Locação")
+            match = re.search(r'Contrato\s+([\d/]+)', row_str)
+            if match:
+                contrato_atual['numero_contrato'] = match.group(0).strip()
+            else:
+                contrato_atual['numero_contrato'] = row_str.split('-')[0].strip()
+            
+            if '-' in row_str:
+                contrato_atual['tipo_contrato'] = row_str.split('-')[-1].strip()
+            continue
+
+        # Scan por rótulos nas células da linha atual
+        for col_idx, cell_val in enumerate(row.values):
+            if pd.isna(cell_val): continue
+            label = str(cell_val).strip()
+            
+            if 'Cliente:' in label:
+                contrato_atual['cliente'] = _find_value_below(df, idx, col_idx)
+            
+            elif 'Dia de Cobrança:' in label:
+                contrato_atual['dia_cobranca'] = _find_value_below(df, idx, col_idx)
+                
+            elif 'Vigência:' in label:
+                vig = _find_value_below(df, idx, col_idx)
+                if vig:
+                    if ' - ' in vig:
+                        parts = vig.split(' - ')
+                        contrato_atual['data_inicio'] = parts[0].strip()
+                        contrato_atual['data_fim'] = parts[1].strip() if 'Indeterminado' not in parts[1] else None
+                    else:
+                        contrato_atual['data_inicio'] = vig.strip()
+            
+            elif 'Status:' in label:
+                val = _find_value_below(df, idx, col_idx)
+                if val: contrato_atual['status'] = val
+                
+            elif 'Valor' == label or 'Valor:' in label:
+                # O valor costuma estar abaixo de "Valor"
+                val = _find_value_below(df, idx, col_idx)
+                if val:
+                    num = detect_and_convert_currency(val)
+                    if num: contrato_atual['valor_mensal'] = num
+            
+            elif 'Forma de Pagamento:' in label:
+                contrato_atual['forma_pagamento'] = _find_value_below(df, idx, col_idx)
+                
+            elif 'Índice de Reajuste:' in label:
+                contrato_atual['indice_reajuste'] = _find_value_below(df, idx, col_idx)
+            
+            elif 'Serv.' in label and 'Principal' in label:
+                contrato_atual['servico_principal'] = _find_value_below(df, idx, col_idx)
+
+    # Adicionar o último contrato do loop
     if contrato_atual and 'numero_contrato' in contrato_atual:
         contratos.append(contrato_atual)
     
-    # Criar DataFrame
     if not contratos:
         return pd.DataFrame()
         
-    df_contratos = pd.DataFrame(contratos)
+    df_res = pd.DataFrame(contratos)
     
-    # Converter datas
+    # Converter colunas de data para formato ISO
     for col in ['data_inicio', 'data_fim']:
-        if col in df_contratos.columns:
-            df_contratos[col] = df_contratos[col].apply(detect_and_convert_date)
-    
-    return df_contratos
+        if col in df_res.columns:
+            df_res[col] = df_res[col].apply(detect_and_convert_date)
+            
+    return df_res
 
 
 def parse_endereco(endereco_str: str) -> dict:
