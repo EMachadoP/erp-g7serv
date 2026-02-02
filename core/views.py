@@ -485,7 +485,7 @@ def csrf_failure(request, reason=""):
         'method': request.method,
         'origin': request.META.get('HTTP_ORIGIN'),
         'referer': request.META.get('HTTP_REFERER'),
-        'cookie_present': 'erp_csrftoken' in request.COOKIES,
+        'cookie_present': 'csrftoken' in request.COOKIES,
     }
     
     logger.error(f"FALHA CSRF DETECTADA: {reason} | Path: {request.path} | Origin: {context['origin']} | Cookie: {context['cookie_present']}")
