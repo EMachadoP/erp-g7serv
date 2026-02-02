@@ -418,7 +418,54 @@ def profile_create(request):
 @login_required
 @user_passes_test(is_socio_diretor)
 def profile_update(request, pk):
-    # ... (existing content is large, applying specific end parts)
+    """Atualiza perfil/grupo existente."""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"=== PROFILE_UPDATE CHAMADO PARA ID: {pk} ===")
+    
+    # Diagnóstico de CSRF e Headers no POST
+    if request.method == 'POST':
+        logger.info("=== POST EM PROFILE_UPDATE INICIADO ===")
+        logger.info(f"HTTP_ORIGIN: {request.META.get('HTTP_ORIGIN')}")
+        logger.info(f"HTTP_REFERER: {request.META.get('HTTP_REFERER')}")
+        logger.info(f"CSRF_COOKIE: {request.COOKIES.get('erp_csrftoken')}")
+
+    group = get_object_or_404(Group, pk=pk)
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        permission_ids = request.POST.getlist('permissions')
+        
+        if not name:
+            messages.error(request, 'O nome do perfil é obrigatório.')
+            current_permissions = set(group.permissions.values_list('id', flat=True))
+            return render(request, 'core/profile_form_v2.html', {
+                'group': group,
+                'apps_permissions': get_permissions_from_mapping(),
+                'current_permissions': current_permissions
+            })
+        
+        try:
+            logger.info(f"Tentando atualizar Grupo ID: {group.id}")
+            group.name = name
+            group.save()
+            
+            logger.info(f"Tentando atualizar {len(permission_ids)} permissões")
+            group.permissions.set(permission_ids)
+            logger.info("Atualização concluída com sucesso")
+            
+            messages.success(request, 'Perfil atualizado com sucesso!')
+            return redirect('core:profile_list')
+        except Exception as e:
+            logger.error(f"Erro ao atualizar perfil no banco: {e}", exc_info=True)
+            messages.error(request, f'Erro ao atualizar no banco de dados: {e}')
+            current_permissions = set(permission_ids) if permission_ids else set()
+            return render(request, 'core/profile_form_v2.html', {
+                'group': group,
+                'apps_permissions': get_permissions_from_mapping(),
+                'current_permissions': current_permissions
+            })
+
     current_permissions = set(group.permissions.values_list('id', flat=True))
     logger.info(f"Exibindo formulário de edição para {group.name}")
     return render(request, 'core/profile_form_v2.html', {

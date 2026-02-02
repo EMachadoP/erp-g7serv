@@ -248,14 +248,16 @@ if not DEBUG or os.environ.get('PORT'):
 else:
     X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-# Configurações de Cookie para isolamento e compatibilidade
+# Configurações de Cookie para isolamento e compatibilidade (Alinhado com recomendação do usuário)
 CSRF_COOKIE_NAME = 'erp_csrftoken'
 SESSION_COOKIE_NAME = 'erp_sessionid'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False  # False para permitir que o JS acesse o token se necessário
+SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = False  # Cookies isolados são mais simples de diagnosticar
-CSRF_COOKIE_HTTPONLY = False  # Permitir leitura por HTMX/JS
-SESSION_COOKIE_HTTPONLY = True
+CSRF_USE_SESSIONS = False  # Cookies isolados são mais simples de diagnosticar e imunes a quedas de DB
 
 # View customizada para diagnosticar erros 403
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
