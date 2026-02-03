@@ -478,9 +478,89 @@ class DataCleaningService:
 
 def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Extrai dados de clientes de planilhas com estrutura específica
-    como a do arquivo ClientesTodos.xlsx
+    Extrai dados de clientes de planilhas.
+    Suporta dois formatos:
+    1. Formato tabular (colunas com cabeçalhos)
+    2. Formato hierárquico (como relatórios exportados de sistemas)
     """
+    # Primeiro, tentar detectar se é formato tabular (colunas com cabeçalhos)
+    # Verificar se as primeiras colunas têm nomes de cabeçalho típicos
+    columns_lower = [str(c).lower().strip() for c in df.columns]
+    
+    # Mapeamento de possíveis nomes de colunas para nomes padronizados
+    column_mappings = {
+        'nome': ['nome', 'razao social', 'razão social', 'cliente', 'name', 'razao_social', 'razaosocial'],
+        'cpf_cnpj': ['cpf/cnpj', 'cpf', 'cnpj', 'cpf_cnpj', 'documento', 'document', 'cpfcnpj'],
+        'telefone': ['telefone', 'fone', 'phone', 'celular', 'tel', 'contato'],
+        'email': ['email', 'e-mail', 'e_mail', 'mail'],
+        'endereco': ['endereco', 'endereço', 'address', 'logradouro'],
+        'cidade': ['cidade', 'city', 'municipio', 'município'],
+        'estado': ['estado', 'uf', 'state'],
+        'cep': ['cep', 'zip', 'zipcode', 'codigo_postal'],
+        'bairro': ['bairro', 'neighborhood', 'district'],
+        'status': ['status', 'situacao', 'situação', 'ativo', 'tipo'],
+        'rg_ie': ['rg', 'ie', 'inscricao', 'inscrição', 'rg/inscrição', 'inscricao estadual', 'rg/inscricao estadual'],
+        'contato_nome': ['contato', 'responsavel', 'responsável', 'contato_nome'],
+        'contato_email': ['email contato', 'email_contato', 'contato_email'],
+        'contato_telefone': ['telefone contato', 'telefone_contato', 'contato_telefone'],
+    }
+    
+    # Detectar formato tabular
+    tabular_detected = False
+    found_mappings = {}
+    
+    for target_col, possible_names in column_mappings.items():
+        for idx, col in enumerate(columns_lower):
+            if col in possible_names or any(pn in col for pn in possible_names):
+                found_mappings[target_col] = df.columns[idx]
+                break
+    
+    # Se encontrou pelo menos 'nome' ou 'cpf_cnpj', é formato tabular
+    if 'nome' in found_mappings or 'cpf_cnpj' in found_mappings:
+        tabular_detected = True
+        logger.info(f"Formato tabular detectado. Colunas mapeadas: {found_mappings}")
+    
+    if tabular_detected:
+        # Processar formato tabular
+        clientes = []
+        
+        for idx, row in df.iterrows():
+            # Pular linhas vazias ou de cabeçalho
+            row_values = [str(v).strip() for v in row.values if pd.notna(v)]
+            if not row_values:
+                continue
+                
+            cliente = {}
+            
+            for target_col, source_col in found_mappings.items():
+                val = row.get(source_col)
+                if pd.notna(val):
+                    val_str = str(val).strip()
+                    # Ignorar valores que são rótulos de cabeçalho
+                    if val_str.lower() in [c.lower() for c in df.columns]:
+                        continue
+                    if val_str:
+                        cliente[target_col] = val_str
+            
+            # Só adicionar se tiver pelo menos nome ou CPF/CNPJ
+            if cliente.get('nome') or cliente.get('cpf_cnpj'):
+                clientes.append(cliente)
+        
+        if clientes:
+            df_clientes = pd.DataFrame(clientes)
+            
+            # Limpar e padronizar CPF/CNPJ
+            if 'cpf_cnpj' in df_clientes.columns:
+                df_clientes['cpf_cnpj'] = df_clientes['cpf_cnpj'].apply(
+                    lambda x: detect_and_convert_cnpj(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 14 
+                    else detect_and_convert_cpf(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 11
+                    else x
+                )
+            
+            return df_clientes
+    
+    # Se não for tabular, tentar formato hierárquico (legado)
+    logger.info("Tentando formato hierárquico (legado)")
     clientes = []
     cliente_atual = {}
     
