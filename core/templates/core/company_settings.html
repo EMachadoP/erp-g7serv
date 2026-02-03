@@ -28,28 +28,26 @@
                     <div class="row mb-3">
                         <div class="col-md-8">
                             <label class="form-label fw-bold small text-uppercase">Nome da Empresa</label>
-                            {{ form.name }}
-                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif
-                            %}
+                            {{ form.name  }}
+                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors  }}</div>{% endif %}
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold small text-uppercase">CNPJ</label>
-                            {{ form.cnpj }}
-                            {% if form.cnpj.errors %}<div class="text-danger small">{{ form.cnpj.errors }}</div>{% endif
-                            %}
+                            {{ form.cnpj  }}
+                            {% if form.cnpj.errors %}<div class="text-danger small">{{ form.cnpj.errors  }}</div>{% endif %}
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-uppercase">Logo da Empresa</label>
-                        {{ form.logo }}
+                        {{ form.logo  }}
                         {% if settings.logo %}
                         <div class="mt-2">
-                            <img src="{{ settings.logo.url }}" alt="Logo" style="max-height: 100px;"
+                            <img src="{{ settings.logo.url  }}" alt="Logo" style="max-height: 100px;"
                                 class="img-thumbnail border-0 shadow-sm">
                         </div>
                         {% endif %}
-                        {% if form.logo.errors %}<div class="text-danger small">{{ form.logo.errors }}</div>{% endif %}
+                        {% if form.logo.errors %}<div class="text-danger small">{{ form.logo.errors  }}</div>{% endif %}
                     </div>
 
                     <h5 class="mb-3 border-bottom pb-2 mt-4 text-primary">Banco Cora (Integração v2)</h5>
@@ -61,15 +59,14 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-uppercase">Cora Client ID</label>
-                        {{ form.cora_client_id }}
-                        {% if form.cora_client_id.errors %}<div class="text-danger small">{{ form.cora_client_id.errors
-                            }}</div>{% endif %}
+                        {{ form.cora_client_id  }}
+                        {% if form.cora_client_id.errors %}<div class="text-danger small">{{ form.cora_client_id.errors  }}</div>{% endif %}
                         <div class="form-text small">Obtido no painel de desenvolvedor da Cora.</div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-uppercase">Cora Certificado (Base64)</label>
-                        {{ form.cora_cert_base64 }}
+                        {{ form.cora_cert_base64  }}
                         {% if form.cora_cert_base64.errors %}<div class="text-danger small">{{
                             form.cora_cert_base64.errors }}</div>{% endif %}
                         <div class="form-text small">Conteúdo do arquivo .pem convertido para Base64.</div>
@@ -77,7 +74,7 @@
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-uppercase">Cora Chave Privada (Base64)</label>
-                        {{ form.cora_key_base64 }}
+                        {{ form.cora_key_base64  }}
                         {% if form.cora_key_base64.errors %}<div class="text-danger small">{{
                             form.cora_key_base64.errors }}</div>{% endif %}
                         <div class="form-text small">Conteúdo do arquivo .key convertido para Base64.</div>
