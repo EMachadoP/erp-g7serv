@@ -25,4 +25,7 @@ urlpatterns = [
     path('tecnicos/', views.technician_list, name='technician_list'),
     path('tecnicos/novo/', views.technician_create, name='technician_create'),
     path('tecnicos/<int:pk>/editar/', views.technician_update, name='technician_update'),
+    
+    # System Settings
+    path('configuracoes/', views.company_settings, name='company_settings'),
 ]

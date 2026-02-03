@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Configurações do Sistema | G7Serv{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-gear-fill me-2 text-primary"></i>Configurações do Sistema
+            </h2>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary">Dados da Empresa e Integrações</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <h5 class="mb-3 border-bottom pb-2">Geral</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold small text-uppercase">Nome da Empresa</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif
+                            %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-uppercase">CNPJ</label>
+                            {{ form.cnpj }}
+                            {% if form.cnpj.errors %}<div class="text-danger small">{{ form.cnpj.errors }}</div>{% endif
+                            %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase">Logo da Empresa</label>
+                        {{ form.logo }}
+                        {% if settings.logo %}
+                        <div class="mt-2">
+                            <img src="{{ settings.logo.url }}" alt="Logo" style="max-height: 100px;"
+                                class="img-thumbnail border-0 shadow-sm">
+                        </div>
+                        {% endif %}
+                        {% if form.logo.errors %}<div class="text-danger small">{{ form.logo.errors }}</div>{% endif %}
+                    </div>
+
+                    <h5 class="mb-3 border-bottom pb-2 mt-4 text-primary">Banco Cora (Integração v2)</h5>
+                    <div class="alert alert-info py-2 small border-0 shadow-sm mb-4">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        As configurações abaixo permitem a comunicação segura via mTLS. Os certificados devem estar em
+                        formato <strong>Base64</strong>.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Cora Client ID</label>
+                        {{ form.cora_client_id }}
+                        {% if form.cora_client_id.errors %}<div class="text-danger small">{{ form.cora_client_id.errors
+                            }}</div>{% endif %}
+                        <div class="form-text small">Obtido no painel de desenvolvedor da Cora.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Cora Certificado (Base64)</label>
+                        {{ form.cora_cert_base64 }}
+                        {% if form.cora_cert_base64.errors %}<div class="text-danger small">{{
+                            form.cora_cert_base64.errors }}</div>{% endif %}
+                        <div class="form-text small">Conteúdo do arquivo .pem convertido para Base64.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase">Cora Chave Privada (Base64)</label>
+                        {{ form.cora_key_base64 }}
+                        {% if form.cora_key_base64.errors %}<div class="text-danger small">{{
+                            form.cora_key_base64.errors }}</div>{% endif %}
+                        <div class="form-text small">Conteúdo do arquivo .key convertido para Base64.</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class="bi bi-save me-2"></i>Salvar Configurações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-light py-3">
+                <h6 class="m-0 fw-bold text-dark">Dicas de Segurança</h6>
+            </div>
+            <div class="card-body small">
+                <p><strong>Certificados:</strong> Nunca compartilhe sua chave privada Cora. O armazenamento aqui é
+                    restrito a administradores.</p>
+                <p><strong>Ambiente:</strong> No ERP atual, as chamadas estão sendo feitas para a URL de <strong>Stage
+                        (Homologação)</strong>.</p>
+                <p class="mb-0"><strong>Base64:</strong> Você pode converter seus arquivos usando o comando: <br>
+                    <code>base64 -w 0 arquivo.pem</code>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

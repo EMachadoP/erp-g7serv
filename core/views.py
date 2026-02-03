@@ -22,7 +22,25 @@ from financeiro.models import AccountPayable
 
 # Imports locais
 from .models import CompanySettings, Technician
-from .forms import TechnicianForm
+from .forms import TechnicianForm, CompanySettingsForm
+
+@user_passes_test(lambda u: u.is_superuser)
+@login_required
+def company_settings(request):
+    settings_obj = CompanySettings.objects.first()
+    if not settings_obj:
+        settings_obj = CompanySettings.objects.create(name="Minha Empresa", cnpj="00.000.000/0000-00")
+        
+    if request.method == 'POST':
+        form = CompanySettingsForm(request.POST, request.FILES, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Configurações atualizadas com sucesso.")
+            return redirect('core:company_settings')
+    else:
+        form = CompanySettingsForm(instance=settings_obj)
+        
+    return render(request, 'core/company_settings.html', {'form': form, 'settings': settings_obj})
 
 
 def is_socio_diretor(user):

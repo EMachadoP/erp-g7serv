@@ -51,3 +51,17 @@ class TechnicianForm(forms.ModelForm):
             technician.save()
             
         return technician
+
+from .models import CompanySettings
+
+class CompanySettingsForm(forms.ModelForm):
+    class Meta:
+        model = CompanySettings
+        fields = ['name', 'cnpj', 'logo', 'cora_client_id', 'cora_cert_base64', 'cora_key_base64']
+        widgets = {
+            'cora_cert_base64': forms.Textarea(attrs={'rows': 5, 'class': 'form-control font-monospace', 'style': 'font-size: 0.8rem;'}),
+            'cora_key_base64': forms.Textarea(attrs={'rows': 5, 'class': 'form-control font-monospace', 'style': 'font-size: 0.8rem;'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'cnpj': forms.TextInput(attrs={'class': 'form-control'}),
+            'cora_client_id': forms.TextInput(attrs={'class': 'form-control'}),
+        }

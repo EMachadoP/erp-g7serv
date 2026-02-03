@@ -5,18 +5,27 @@ import tempfile
 import logging
 from django.conf import settings
 
+from django.conf import settings
+from core.models import CompanySettings
+
 logger = logging.getLogger(__name__)
 
 class CoraService:
     def __init__(self):
-        # Use stage URLs as requested
+        # 1. Try to get from Database
+        db_settings = CompanySettings.objects.first()
+        
+        # UI/Stage Settings
         self.base_url = getattr(settings, 'CORA_API_URL', "https://api.stage.cora.com.br/v2")
         self.auth_url = getattr(settings, 'CORA_AUTH_URL', "https://matls-auth.stage.cora.com.br/token")
-        self.client_id = getattr(settings, 'CORA_CLIENT_ID', os.getenv('CORA_CLIENT_ID'))
         
-        # Cora Certificates from Environment Variables (Base64)
-        cora_cert_b64 = os.getenv('CORA_CERT_BASE64')
-        cora_key_b64 = os.getenv('CORA_KEY_BASE64')
+        # Client ID Priority: DB -> Settings -> ENV
+        self.client_id = (db_settings.cora_client_id if db_settings else None) or \
+                         getattr(settings, 'CORA_CLIENT_ID', os.getenv('CORA_CLIENT_ID'))
+        
+        # Cora Certificates Priority: DB (Base64) -> ENV
+        cora_cert_b64 = (db_settings.cora_cert_base64 if db_settings else None) or os.getenv('CORA_CERT_BASE64')
+        cora_key_b64 = (db_settings.cora_key_base64 if db_settings else None) or os.getenv('CORA_KEY_BASE64')
         
         if not cora_cert_b64 or not cora_key_b64:
             self.cert_pair = None
