@@ -16,26 +16,52 @@ from decimal import Decimal
 def invoice_list(request):
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
+    month_filter = request.GET.get('month', '')
+    year_filter = request.GET.get('year', '')
     
-    invoices = Invoice.objects.select_related('billing_group').all().order_by('-issue_date')
+    invoices = Invoice.objects.select_related('client', 'billing_group').all().order_by('-id')
     
     if search_query:
         invoices = invoices.filter(
             Q(number__icontains=search_query) |
+            Q(client__name__icontains=search_query) |
             Q(billing_group__name__icontains=search_query)
         )
         
     if status_filter:
         invoices = invoices.filter(status=status_filter)
         
-    paginator = Paginator(invoices, 10)
+    if month_filter:
+        invoices = invoices.filter(competence_month=month_filter)
+        
+    if year_filter:
+        invoices = invoices.filter(competence_year=year_filter)
+        
+    paginator = Paginator(invoices, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    
+    # Prepara lista de anos/meses para o filtro
+    years = Invoice.objects.values_list('competence_year', flat=True).distinct().order_by('-competence_year')
+    months = [
+        (1, 'Janeiro'), (2, 'Fevereiro'), (3, 'Março'), (4, 'Abril'),
+        (5, 'Maio'), (6, 'Junho'), (7, 'Julho'), (8, 'Agosto'),
+        (9, 'Setembro'), (10, 'Outubro'), (11, 'Novembro'), (12, 'Dezembro')
+    ]
+    
+    # Email templates para ações em massa
+    from core.models import EmailTemplate
+    email_templates = EmailTemplate.objects.filter(active=True)
     
     return render(request, 'faturamento/invoice_list.html', {
         'page_obj': page_obj, 
         'search_query': search_query,
-        'status_filter': status_filter
+        'status_filter': status_filter,
+        'month_filter': month_filter,
+        'year_filter': year_filter,
+        'years': years,
+        'months': months,
+        'email_templates': email_templates,
     })
 
 @login_required
