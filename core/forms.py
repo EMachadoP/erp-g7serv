@@ -66,3 +66,23 @@ class CompanySettingsForm(forms.ModelForm):
             'cnpj': forms.TextInput(attrs={'class': 'form-control'}),
             'cora_client_id': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+
+from .models import EmailTemplate
+
+class EmailTemplateForm(forms.ModelForm):
+    class Meta:
+        model = EmailTemplate
+        fields = ['name', 'subject', 'body', 'template_type', 'active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Boleto com Nota Fiscal'}),
+            'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Assunto do e-mail'}),
+            'body': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 10,
+                'placeholder': 'Use placeholders: {cliente}, {valor}, {vencimento}, {fatura}, {link_boleto}, {link_nf}'
+            }),
+            'template_type': forms.Select(attrs={'class': 'form-select'}),
+            'active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+

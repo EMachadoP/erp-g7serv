@@ -63,6 +63,8 @@ class ContractBillingTest(TestCase):
 
     def test_process_billing(self):
         """Test processing the billing for a contract."""
+        from faturamento.models import BillingBatch
+        
         url = reverse('faturamento:process_contract_billing')
         data = {
             'competence_month': 2,
@@ -70,7 +72,14 @@ class ContractBillingTest(TestCase):
             'selected_contracts': [self.contract.id]
         }
         response = self.client.post(url, data, follow=True)
-        self.assertRedirects(response, reverse('faturamento:contract_billing_summary'))
+        
+        # Get the batch that was created
+        batch = BillingBatch.objects.first()
+        self.assertIsNotNone(batch)
+        
+        # Verify redirect to batch detail page
+        expected_url = reverse('faturamento:billing_batch_detail', kwargs={'pk': batch.pk})
+        self.assertRedirects(response, expected_url)
 
         # Verify Invoice Created
         invoice = Invoice.objects.get(contract=self.contract, competence_month=2, competence_year=2025)

@@ -14,8 +14,7 @@
                 </div>
                 <div>
                     <h2 class="text-primary mb-0">Faturamento Realizado</h2>
-                    <p class="text-muted mb-0">Veja todos os faturamentos de contratos realizados. Os valores exibidos
-                        são os calculados no período na qual o faturamento foi realizado.</p>
+                    <p class="text-muted mb-0">Veja todos os faturamentos de contratos realizados.</p>
                 </div>
             </div>
         </div>
@@ -30,13 +29,11 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Competência:</small>
-                    <strong class="text-primary">{% if batch.competence_month < 10 %}0{% endif %}{{
-                            batch.competence_month }}/{{ batch.competence_year }}</strong>
+                    <strong class="text-primary">{{ batch.competence_month }}/{{ batch.competence_year }}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Realizado por:</small>
-                    <strong>{% if batch.user.get_full_name %}{{ batch.user.get_full_name }}{% else %}{{
-                        batch.user.username }}{% endif %}</strong>
+                    <strong>{{ batch.user.username }}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Realizado em:</small>
@@ -46,20 +43,16 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Dia de cobrança entre:</small>
-                    <strong>Dia {% if batch.day_range_start < 10 %}0{% endif %}{{ batch.day_range_start }} à dia {{
-                            batch.day_range_end }}</strong>
+                    <strong>Dia {{ batch.day_range_start }} à dia {{ batch.day_range_end }}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Grupo de Faturamento:</small>
-                    <strong>{% if batch.billing_group %}{{ batch.billing_group.name }}{% else %}Todos{% endif
-                        %}</strong>
+                    <strong>{{ batch.billing_group.name|default:"Todos" }}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Processo:</small>
-                    <strong class="text-primary">
-                        Iniciado às {{ batch.started_at|time:"H:i" }}{% if batch.finished_at %} e encerrado às {{
-                        batch.finished_at|time:"H:i" }}{% endif %}
-                    </strong>
+                    <strong class="text-primary">Iniciado às {{ batch.started_at|time:"H:i" }}{% if batch.finished_at %}
+                        e encerrado às {{ batch.finished_at|time:"H:i" }}{% endif %}</strong>
                 </div>
             </div>
         </div>
@@ -126,8 +119,7 @@
                                     <div class="input-group">
                                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                                         <input type="text" name="search" class="form-control"
-                                            placeholder="Pesquise pelos contratos do faturamento"
-                                            value="{{ search_query }}">
+                                            placeholder="Pesquise pelos contratos" value="{{ search_query }}">
                                         <button type="submit" class="btn btn-primary">Buscar</button>
                                     </div>
                                 </form>
@@ -154,28 +146,21 @@
                                 <div class="col">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <strong>#{{ invoice.number }}</strong> - {% if invoice.client %}{{
-                                            invoice.client.name }}{% else %}Cliente não informado{% endif %}
-                                            {% if invoice.client and invoice.client.fantasy_name %}
-                                            <small class="text-muted">({{ invoice.client.fantasy_name }})</small>
-                                            {% endif %}
+                                            <strong>#{{ invoice.number }}</strong> - {{
+                                            invoice.client.name|default:"Cliente não informado" }}
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-primary">R$ {{ invoice.amount|floatformat:2 }}</strong>
                                         </div>
                                     </div>
                                     <div class="text-muted small mt-1">
-                                        <i class="bi bi-calendar me-1"></i>Competência: {% if invoice.competence_month <
-                                            10 %}0{% endif %}{{ invoice.competence_month }}/{{ invoice.competence_year
-                                            }} &nbsp;|&nbsp; <i class="bi bi-file-text me-1"></i>Contrato: {% if
-                                            invoice.contract %}<a href="#">{{ invoice.contract.id }}</a>{% else %}-{%
-                                            endif %}
-                                            &nbsp;|&nbsp;
-                                            <i class="bi bi-tag me-1"></i>Fatura de Serviços
-                                            &nbsp;|&nbsp;
-                                            <i class="bi bi-person me-1"></i>Criado por: {% if batch.user.get_full_name
-                                            %}{{ batch.user.get_full_name }}{% else %}{{ batch.user.username }}{% endif
-                                            %}
+                                        <i class="bi bi-calendar me-1"></i>Competência: {{ invoice.competence_month
+                                        }}/{{ invoice.competence_year }}
+                                        &nbsp;|&nbsp;
+                                        <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-"
+                                        }}
+                                        &nbsp;|&nbsp;
+                                        <i class="bi bi-tag me-1"></i>Fatura de Serviços
                                     </div>
                                     <div class="text-muted small">
                                         <i class="bi bi-calendar-check me-1"></i>Registro: {{
@@ -215,21 +200,17 @@
                             <ul class="pagination justify-content-center mb-0">
                                 {% if invoices.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link"
-                                        href="?page={{ invoices.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo;
+                                    <a class="page-link" href="?page={{ invoices.previous_page_number }}">&laquo;
                                         Anterior</a>
                                 </li>
                                 {% endif %}
-
                                 <li class="page-item active">
                                     <span class="page-link">{{ invoices.number }} de {{ invoices.paginator.num_pages
                                         }}</span>
                                 </li>
-
                                 {% if invoices.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link"
-                                        href="?page={{ invoices.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Próxima
+                                    <a class="page-link" href="?page={{ invoices.next_page_number }}">Próxima
                                         &raquo;</a>
                                 </li>
                                 {% endif %}
@@ -295,27 +276,26 @@
         <div class="toast-body" id="toastBody"></div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const checkboxes = document.querySelectorAll('.invoice-checkbox');
-        const selectedCountEl = document.getElementById('selectedCount');
-        const btnGerarNota = document.getElementById('btnGerarNota');
-        const btnGerarBoletos = document.getElementById('btnGerarBoletos');
-        const btnTransacionarCartao = document.getElementById('btnTransacionarCartao');
-        const btnEmail = document.getElementById('btnEmail');
-        const selectAllBtn = document.getElementById('selectAll');
-        const deselectAllBtn = document.getElementById('deselectAll');
+        var checkboxes = document.querySelectorAll('.invoice-checkbox');
+        var selectedCountEl = document.getElementById('selectedCount');
+        var btnGerarNota = document.getElementById('btnGerarNota');
+        var btnGerarBoletos = document.getElementById('btnGerarBoletos');
+        var btnTransacionarCartao = document.getElementById('btnTransacionarCartao');
+        var btnEmail = document.getElementById('btnEmail');
+        var selectAllBtn = document.getElementById('selectAll');
+        var deselectAllBtn = document.getElementById('deselectAll');
 
         function updateSelectedCount() {
-            const selected = document.querySelectorAll('.invoice-checkbox:checked');
-            const count = selected.length;
+            var selected = document.querySelectorAll('.invoice-checkbox:checked');
+            var count = selected.length;
             selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
 
-            const hasSelection = count > 0;
+            var hasSelection = count > 0;
             btnGerarNota.disabled = !hasSelection;
             btnGerarBoletos.disabled = !hasSelection;
             btnTransacionarCartao.disabled = !hasSelection;
@@ -323,93 +303,102 @@
         }
 
         function getSelectedIds() {
-            const selected = document.querySelectorAll('.invoice-checkbox:checked');
-            return Array.from(selected).map(cb => cb.value);
+            var selected = document.querySelectorAll('.invoice-checkbox:checked');
+            var ids = [];
+            selected.forEach(function (cb) { ids.push(cb.value); });
+            return ids;
         }
 
         function showToast(title, message, type) {
-            const toast = document.getElementById('liveToast');
-            const toastTitle = document.getElementById('toastTitle');
-            const toastBody = document.getElementById('toastBody');
+            var toast = document.getElementById('liveToast');
+            var toastTitle = document.getElementById('toastTitle');
+            var toastBody = document.getElementById('toastBody');
 
             toastTitle.textContent = title;
             toastBody.innerHTML = message;
 
             toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info');
-            if (type === 'success') toast.classList.add('bg-success', 'text-white');
-            else if (type === 'error') toast.classList.add('bg-danger', 'text-white');
-            else if (type === 'warning') toast.classList.add('bg-warning');
+            if (type === 'success') { toast.classList.add('bg-success', 'text-white'); }
+            else if (type === 'error') { toast.classList.add('bg-danger', 'text-white'); }
+            else if (type === 'warning') { toast.classList.add('bg-warning'); }
 
-            const bsToast = new bootstrap.Toast(toast);
+            var bsToast = new bootstrap.Toast(toast);
             bsToast.show();
         }
 
-        async function callBulkAction(url, extraData) {
+        function callBulkAction(url, extraData) {
             extraData = extraData || {};
-            const ids = getSelectedIds();
+            var ids = getSelectedIds();
             if (ids.length === 0) {
                 showToast('Atenção', 'Nenhuma fatura selecionada.', 'warning');
                 return;
             }
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        invoice_ids: ids,
-                        ...extraData
-                    })
-                });
+            var payload = { invoice_ids: ids };
+            for (var key in extraData) { payload[key] = extraData[key]; }
 
-                const data = await response.json();
-
-                if (data.status === 'success' || data.status === 'info') {
-                    let msg = data.message;
-                    if (data.errors && data.errors.length > 0) {
-                        msg += '<br><small class="text-warning">' + data.errors.length + ' erros</small>';
-                        console.log('Erros:', data.errors);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.status === 'success' || data.status === 'info') {
+                        var msg = data.message;
+                        if (data.errors && data.errors.length > 0) {
+                            msg += '<br><small class="text-warning">' + data.errors.length + ' erros</small>';
+                        }
+                        showToast('Sucesso', msg, 'success');
+                    } else {
+                        showToast('Erro', data.message, 'error');
                     }
-                    showToast('Sucesso', msg, 'success');
-                } else {
-                    showToast('Erro', data.message, 'error');
-                }
-            } catch (error) {
-                showToast('Erro', 'Erro ao processar requisição: ' + error.message, 'error');
-            }
+                })
+                .catch(function (error) {
+                    showToast('Erro', 'Erro ao processar: ' + error.message, 'error');
+                });
         }
 
-        // Event Listeners
         checkboxes.forEach(function (cb) {
             cb.addEventListener('change', updateSelectedCount);
         });
 
-        selectAllBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            checkboxes.forEach(function (cb) { cb.checked = true; });
-            updateSelectedCount();
-        });
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                checkboxes.forEach(function (cb) { cb.checked = true; });
+                updateSelectedCount();
+            });
+        }
 
-        deselectAllBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            checkboxes.forEach(function (cb) { cb.checked = false; });
-            updateSelectedCount();
-        });
+        if (deselectAllBtn) {
+            deselectAllBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                checkboxes.forEach(function (cb) { cb.checked = false; });
+                updateSelectedCount();
+            });
+        }
 
-        btnGerarNota.addEventListener('click', function () {
-            callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}");
-        });
+        if (btnGerarNota) {
+            btnGerarNota.addEventListener('click', function () {
+                callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}");
+            });
+        }
 
-        btnGerarBoletos.addEventListener('click', function () {
-            callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}");
-        });
+        if (btnGerarBoletos) {
+            btnGerarBoletos.addEventListener('click', function () {
+                callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}");
+            });
+        }
 
-        btnTransacionarCartao.addEventListener('click', function () {
-            showToast('Informação', 'Funcionalidade de transação por cartão em desenvolvimento.', 'info');
-        });
+        if (btnTransacionarCartao) {
+            btnTransacionarCartao.addEventListener('click', function () {
+                showToast('Informação', 'Funcionalidade de transação por cartão em desenvolvimento.', 'info');
+            });
+        }
 
         document.querySelectorAll('.email-template-option').forEach(function (option) {
             option.addEventListener('click', function (e) {
@@ -419,7 +408,6 @@
             });
         });
 
-        // Initialize
         updateSelectedCount();
     });
 </script>

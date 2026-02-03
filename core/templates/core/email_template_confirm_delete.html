@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Excluir Template | G7Serv{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-danger text-white py-3">
+                <h6 class="m-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão</h6>
+            </div>
+            <div class="card-body text-center py-4">
+                <i class="bi bi-trash text-danger" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Tem certeza que deseja excluir?</h5>
+                <p class="text-muted">Template: <strong>{{ template.name }}</strong></p>
+                <p class="text-muted small">Tipo: {{ template.get_template_type_display }}</p>
+
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <a href="{% url 'core:email_template_list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Sim, Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

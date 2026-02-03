@@ -683,4 +683,73 @@ def technician_update(request, pk):
         'form': form,
         'title': 'Editar Técnico'
     })
-# trigger
+
+
+# ==============================================================================
+# TEMPLATES DE E-MAIL
+# ==============================================================================
+from .models import EmailTemplate
+from .forms import EmailTemplateForm
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def email_template_list(request):
+    """Lista todos os templates de e-mail."""
+    templates = EmailTemplate.objects.all().order_by('-active', 'name')
+    return render(request, 'core/email_template_list.html', {'templates': templates})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def email_template_create(request):
+    """Cria novo template de e-mail."""
+    if request.method == 'POST':
+        form = EmailTemplateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Template de e-mail criado com sucesso.')
+            return redirect('core:email_template_list')
+    else:
+        form = EmailTemplateForm()
+    
+    return render(request, 'core/email_template_form.html', {
+        'form': form,
+        'title': 'Novo Template de E-mail'
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def email_template_update(request, pk):
+    """Edita template de e-mail existente."""
+    template = get_object_or_404(EmailTemplate, pk=pk)
+    
+    if request.method == 'POST':
+        form = EmailTemplateForm(request.POST, instance=template)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Template de e-mail atualizado com sucesso.')
+            return redirect('core:email_template_list')
+    else:
+        form = EmailTemplateForm(instance=template)
+    
+    return render(request, 'core/email_template_form.html', {
+        'form': form,
+        'title': 'Editar Template de E-mail',
+        'template': template
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def email_template_delete(request, pk):
+    """Exclui template de e-mail."""
+    template = get_object_or_404(EmailTemplate, pk=pk)
+    
+    if request.method == 'POST':
+        template.delete()
+        messages.success(request, 'Template de e-mail excluído com sucesso.')
+        return redirect('core:email_template_list')
+    
+    return render(request, 'core/email_template_confirm_delete.html', {'template': template})
+

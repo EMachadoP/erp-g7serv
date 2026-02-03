@@ -28,4 +28,11 @@ urlpatterns = [
     
     # System Settings
     path('configuracoes/', views.company_settings, name='company_settings'),
+    
+    # Email Templates
+    path('configuracoes/templates-email/', views.email_template_list, name='email_template_list'),
+    path('configuracoes/templates-email/novo/', views.email_template_create, name='email_template_create'),
+    path('configuracoes/templates-email/<int:pk>/editar/', views.email_template_update, name='email_template_update'),
+    path('configuracoes/templates-email/<int:pk>/excluir/', views.email_template_delete, name='email_template_delete'),
 ]
+
