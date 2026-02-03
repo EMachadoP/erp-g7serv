@@ -478,82 +478,207 @@ class DataCleaningService:
 
 def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Extrai dados de clientes de planilhas com estrutura específica
-    como a do arquivo ClientesTodos.xlsx
+    Extrai dados de clientes de planilhas.
+    Detecta automaticamente se a planilha é:
+    1. Tabular (com headers de coluna como Nome, CPF, Telefone, etc.)
+    2. Hierárquica (com prefixos como "CPF/CNPJ:", "Telefone:", etc.)
     """
-    clientes = []
-    cliente_atual = {}
+    # Palavras que indicam headers/labels e não devem ser nomes
+    LABELS_INVALIDOS = {
+        'nome', 'cpf', 'cnpj', 'cpf/cnpj', 'telefone', 'fone', 'celular',
+        'endereco', 'endereço', 'status', 'email', 'e-mail', 'contato',
+        'rg', 'ie', 'inscrição', 'inscricao', 'razao', 'razão', 'fantasia',
+        'cliente', 'clientes', '-', 'n/a', 'null', 'none', ''
+    }
     
-    for idx, row in df.iterrows():
-        # Verificar se é linha de nome (primeira coluna vazia, segunda com nome)
-        if pd.notna(row.iloc[1]) and (pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == ''):
-            nome = str(row.iloc[1]).strip()
-            if nome and not nome.startswith('RG/') and not nome.startswith('Endereço:') and not nome.startswith('Sem contato'):
-                # Salvar cliente anterior se existir
-                if cliente_atual and 'nome' in cliente_atual:
-                    clientes.append(cliente_atual.copy())
+    def is_invalid_name(val):
+        """Verifica se o valor é um label/header e não um nome válido"""
+        if pd.isna(val):
+            return True
+        s = str(val).strip().lower()
+        # Verifica se é um label conhecido
+        if s in LABELS_INVALIDOS:
+            return True
+        # Verifica se parece um header (ex: "Nome:", "Telefone")
+        if s.endswith(':'):
+            return True
+        # Muito curto para ser nome (menos de 2 caracteres)
+        if len(s) < 2:
+            return True
+        return False
+    
+    def detect_format(df: pd.DataFrame) -> str:
+        """Detecta se a planilha é tabular ou hierárquica"""
+        # Verifica as primeiras linhas para detectar padrão
+        first_rows = df.head(5)
+        
+        # Checar se primeira linha parece header
+        first_row_str = ' '.join([str(v).lower() for v in first_rows.iloc[0].values if pd.notna(v)])
+        has_header_keywords = any(kw in first_row_str for kw in ['nome', 'cpf', 'cnpj', 'telefone', 'endereço', 'endereco', 'status'])
+        
+        # Checar se existem prefixos hierárquicos
+        all_text = ' '.join([str(v) for row in first_rows.values for v in row if pd.notna(v)])
+        has_hierarchical_prefixes = any(prefix in all_text for prefix in ['CPF/CNPJ:', 'Telefone:', 'Endereço:', 'RG/Inscrição'])
+        
+        if has_hierarchical_prefixes:
+            return 'hierarchical'
+        elif has_header_keywords:
+            return 'tabular'
+        else:
+            # Default: tentar tabular
+            return 'tabular'
+    
+    def extract_tabular(df: pd.DataFrame) -> pd.DataFrame:
+        """Extrai dados de planilha tabular (com colunas)"""
+        # Mapear colunas por similaridade de nomes
+        column_mapping = {}
+        target_fields = {
+            'nome': ['nome', 'razao', 'razão', 'cliente', 'nome cliente', 'razao social', 'razão social', 'name'],
+            'cpf_cnpj': ['cpf', 'cnpj', 'cpf/cnpj', 'cpf_cnpj', 'documento', 'doc'],
+            'telefone': ['telefone', 'fone', 'celular', 'tel', 'phone', 'contato'],
+            'endereco': ['endereco', 'endereço', 'address', 'logradouro'],
+            'status': ['status', 'situacao', 'situação', 'ativo'],
+            'email': ['email', 'e-mail', 'mail'],
+            'rg_ie': ['rg', 'ie', 'inscricao', 'inscrição', 'rg/ie'],
+        }
+        
+        # Normalizar nomes das colunas
+        col_names = [str(c).lower().strip() for c in df.columns]
+        
+        for target, aliases in target_fields.items():
+            for idx, col_name in enumerate(col_names):
+                if any(alias in col_name for alias in aliases):
+                    column_mapping[target] = df.columns[idx]
+                    break
+        
+        # Se não encontrou header na primeira linha, tentar usar a primeira linha como header
+        if not column_mapping:
+            # Verificar se a primeira linha contém headers
+            first_row = df.iloc[0]
+            potential_headers = [str(v).lower().strip() for v in first_row.values if pd.notna(v)]
+            
+            if any(any(alias in h for alias in aliases) for h, (target, aliases) in zip(potential_headers, target_fields.items())):
+                # Usar primeira linha como header
+                new_headers = [str(v).strip() if pd.notna(v) else f'col_{i}' for i, v in enumerate(first_row.values)]
+                df = df.iloc[1:].copy()
+                df.columns = new_headers[:len(df.columns)]
                 
-                # Iniciar novo cliente
-                cliente_atual = {'nome': nome}
+                # Refazer mapeamento
+                col_names = [str(c).lower().strip() for c in df.columns]
+                for target, aliases in target_fields.items():
+                    for idx, col_name in enumerate(col_names):
+                        if any(alias in col_name for alias in aliases):
+                            column_mapping[target] = df.columns[idx]
+                            break
         
-        # Extrair CPF/CNPJ
-        if 'CPF/CNPJ:' in str(row.values):
-            for val in row.values:
-                if pd.notna(val) and 'CPF/CNPJ:' in str(val):
-                    cpf_cnpj = str(val).split('CPF/CNPJ:')[1].strip()
-                    cliente_atual['cpf_cnpj'] = cpf_cnpj
+        if not column_mapping:
+            logger.warning("Não foi possível mapear colunas da planilha tabular")
+            return pd.DataFrame()
         
-        # Extrair RG/IE
-        if 'RG/Inscrição Estadual:' in str(row.values):
-            for val in row.values:
-                if pd.notna(val) and 'RG/Inscrição Estadual:' in str(val):
-                    rg_ie = str(val).split('RG/Inscrição Estadual:')[1].strip()
-                    cliente_atual['rg_ie'] = rg_ie
+        # Extrair dados
+        clientes = []
+        for idx, row in df.iterrows():
+            cliente = {}
+            
+            for target, col in column_mapping.items():
+                try:
+                    val = row[col]
+                    if pd.notna(val):
+                        val_str = str(val).strip()
+                        if val_str and val_str.lower() not in LABELS_INVALIDOS:
+                            cliente[target] = val_str
+                except (KeyError, IndexError):
+                    continue
+            
+            # Só adicionar se tiver nome válido ou CPF/CNPJ
+            if cliente.get('nome') and not is_invalid_name(cliente['nome']):
+                clientes.append(cliente)
+            elif cliente.get('cpf_cnpj'):
+                # Se não tem nome mas tem CPF/CNPJ, ainda assim incluir
+                clientes.append(cliente)
         
-        # Extrair Telefone
-        if 'Telefone:' in str(row.values):
-            for val in row.values:
-                if pd.notna(val) and 'Telefone:' in str(val):
-                    telefone = str(val).split('Telefone:')[1].strip()
-                    cliente_atual['telefone'] = telefone
-        
-        # Extrair Endereço
-        if 'Endereço:' in str(row.values):
-            for val in row.values:
-                if pd.notna(val) and 'Endereço:' in str(val):
-                    endereco = str(val).split('Endereço:')[1].strip()
-                    cliente_atual['endereco'] = endereco
-        
-        # Extrair Status (ATIVO/INATIVO)
-        if len(row) > 8 and pd.notna(row.iloc[8]) and str(row.iloc[8]).strip() in ['ATIVO', 'INATIVO']:
-            cliente_atual['status'] = str(row.iloc[8]).strip()
-        
-        # Extrair contatos
-        if pd.notna(row.iloc[1]) and str(row.iloc[1]).strip() == 'Contato':
-            # Próxima linha tem os dados do contato
-            if idx + 1 < len(df):
-                next_row = df.iloc[idx + 1]
-                if pd.notna(next_row.iloc[1]):
-                    cliente_atual['contato_nome'] = str(next_row.iloc[1]).strip()
-                if pd.notna(next_row.iloc[2]):
-                    cliente_atual['contato_telefone'] = str(next_row.iloc[2]).strip()
-                if len(next_row) > 4 and pd.notna(next_row.iloc[4]):
-                    cliente_atual['contato_email'] = str(next_row.iloc[4]).strip()
-                if len(next_row) > 7 and pd.notna(next_row.iloc[7]):
-                    cliente_atual['contato_tipo'] = str(next_row.iloc[7]).strip()
+        return pd.DataFrame(clientes) if clientes else pd.DataFrame()
     
-    # Adicionar último cliente
-    if cliente_atual and 'nome' in cliente_atual:
-        clientes.append(cliente_atual)
-    
-    # Criar DataFrame
-    if not clientes:
-        return pd.DataFrame()
+    def extract_hierarchical(df: pd.DataFrame) -> pd.DataFrame:
+        """Extrai dados de planilha hierárquica (com prefixos)"""
+        clientes = []
+        cliente_atual = {}
         
-    df_clientes = pd.DataFrame(clientes)
+        for idx, row in df.iterrows():
+            # Verificar se é linha de nome (primeira coluna vazia, segunda com nome)
+            if len(row) > 1 and pd.notna(row.iloc[1]) and (pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == ''):
+                nome = str(row.iloc[1]).strip()
+                if nome and not is_invalid_name(nome) and not nome.startswith('RG/') and not nome.startswith('Endereço:') and not nome.startswith('Sem contato'):
+                    # Salvar cliente anterior se existir
+                    if cliente_atual and 'nome' in cliente_atual:
+                        clientes.append(cliente_atual.copy())
+                    
+                    # Iniciar novo cliente
+                    cliente_atual = {'nome': nome}
+            
+            # Extrair CPF/CNPJ
+            if 'CPF/CNPJ:' in str(row.values):
+                for val in row.values:
+                    if pd.notna(val) and 'CPF/CNPJ:' in str(val):
+                        cpf_cnpj = str(val).split('CPF/CNPJ:')[1].strip()
+                        cliente_atual['cpf_cnpj'] = cpf_cnpj
+            
+            # Extrair RG/IE
+            if 'RG/Inscrição Estadual:' in str(row.values):
+                for val in row.values:
+                    if pd.notna(val) and 'RG/Inscrição Estadual:' in str(val):
+                        rg_ie = str(val).split('RG/Inscrição Estadual:')[1].strip()
+                        cliente_atual['rg_ie'] = rg_ie
+            
+            # Extrair Telefone
+            if 'Telefone:' in str(row.values):
+                for val in row.values:
+                    if pd.notna(val) and 'Telefone:' in str(val):
+                        telefone = str(val).split('Telefone:')[1].strip()
+                        cliente_atual['telefone'] = telefone
+            
+            # Extrair Endereço
+            if 'Endereço:' in str(row.values):
+                for val in row.values:
+                    if pd.notna(val) and 'Endereço:' in str(val):
+                        endereco = str(val).split('Endereço:')[1].strip()
+                        cliente_atual['endereco'] = endereco
+            
+            # Extrair Status (ATIVO/INATIVO)
+            if len(row) > 8 and pd.notna(row.iloc[8]) and str(row.iloc[8]).strip() in ['ATIVO', 'INATIVO']:
+                cliente_atual['status'] = str(row.iloc[8]).strip()
+            
+            # Extrair contatos
+            if len(row) > 1 and pd.notna(row.iloc[1]) and str(row.iloc[1]).strip() == 'Contato':
+                # Próxima linha tem os dados do contato
+                if idx + 1 < len(df):
+                    next_row = df.iloc[idx + 1]
+                    if len(next_row) > 1 and pd.notna(next_row.iloc[1]):
+                        cliente_atual['contato_nome'] = str(next_row.iloc[1]).strip()
+                    if len(next_row) > 2 and pd.notna(next_row.iloc[2]):
+                        cliente_atual['contato_telefone'] = str(next_row.iloc[2]).strip()
+                    if len(next_row) > 4 and pd.notna(next_row.iloc[4]):
+                        cliente_atual['contato_email'] = str(next_row.iloc[4]).strip()
+                    if len(next_row) > 7 and pd.notna(next_row.iloc[7]):
+                        cliente_atual['contato_tipo'] = str(next_row.iloc[7]).strip()
+        
+        # Adicionar último cliente
+        if cliente_atual and 'nome' in cliente_atual:
+            clientes.append(cliente_atual)
+        
+        return pd.DataFrame(clientes) if clientes else pd.DataFrame()
+    
+    # Detectar formato e extrair
+    formato = detect_format(df)
+    logger.info(f"Formato detectado para extração de clientes: {formato}")
+    
+    if formato == 'tabular':
+        df_clientes = extract_tabular(df)
+    else:
+        df_clientes = extract_hierarchical(df)
     
     # Limpar CPF/CNPJ
-    if 'cpf_cnpj' in df_clientes.columns:
+    if not df_clientes.empty and 'cpf_cnpj' in df_clientes.columns:
         df_clientes['cpf_cnpj'] = df_clientes['cpf_cnpj'].apply(
             lambda x: detect_and_convert_cnpj(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 14 
             else detect_and_convert_cpf(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 11
