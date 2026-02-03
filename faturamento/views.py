@@ -118,7 +118,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from financeiro.models import AccountReceivable, FinancialCategory
 from financeiro.services.email_service import BillingEmailService
-from financeiro.integrations.cora import CoraAPI
+from financeiro.integrations.cora import CoraService
 from datetime import date
 import json
 
@@ -184,7 +184,7 @@ def process_contract_billing(request):
         defaults={'type': 'REVENUE'}
     )
     
-    cora = CoraAPI()
+    cora = CoraService()
     
     for contract in contracts:
         # Double check if already billed
@@ -215,12 +215,42 @@ def process_contract_billing(request):
                     status='PD'
                 )
                 
-                # 2. Integrate with Cora (Passo 4)
-                boleto_url = cora.gerar_boleto(invoice)
-                if boleto_url:
-                    invoice.boleto_url = boleto_url
-                    invoice.save()
+                # 2. Integrate with Cora v2 (mTLS)
+                # Payload format according to user provided Cora documentation
+                # Note: amount must be in cents (integer)
+                fatura_data = {
+                    "customer": {
+                        "name": contract.client.name,
+                        "email": contract.client.email or "faturamento@g7serv.com.br",
+                        "document": {
+                            "identity": contract.client.document or "00000000000",
+                            "type": "CNPJ" if len(contract.client.document or "") > 11 else "CPF"
+                        }
+                    },
+                    "payment_methods": ["BANK_SLIP", "PIX"],
+                    "services": [
+                        {
+                            "name": f"Serviços de {contract.billing_group.name if contract.billing_group else 'Suporte'}",
+                            "description": f"Competência: {month:02d}/{year}",
+                            "amount": int(invoice.amount * 100),
+                            "quantity": 1
+                        }
+                    ],
+                    "due_date": due_date.strftime("%Y-%m-%d")
+                }
                 
+                cora_response = cora.gerar_fatura(fatura_data)
+                
+                # Save the payment link or identifier
+                if "payment_url" in cora_response:
+                    invoice.boleto_url = cora_response["payment_url"]
+                    invoice.save()
+                elif "id" in cora_response:
+                    # Some versions return just id and we might need to fetch the PDF link
+                    # For now using what's most common in Cora v2
+                    invoice.boleto_url = cora_response.get("url") or cora_response.get("payment_url")
+                    invoice.save()
+
                 # 3. Create Account Receivable
                 AccountReceivable.objects.create(
                     description=f"Fatura Contrato #{contract.id} - {month}/{year}",
@@ -235,7 +265,7 @@ def process_contract_billing(request):
                 
                 created_count += 1
                 
-                # 4. Send Email (Passo 2)
+                # 4. Send Email
                 if BillingEmailService.send_invoice_email(invoice):
                     invoice.email_sent_at = timezone.now()
                     invoice.save()
@@ -245,7 +275,7 @@ def process_contract_billing(request):
             messages.error(request, f"Erro ao processar contrato #{contract.id}: {str(e)}")
             continue
             
-    # Handle HTMX request (Passo 3: hx-post)
+    # Handle HTMX request
     if request.headers.get('HX-Request'):
         return render(request, 'faturamento/partials/billing_result_message.html', {
             'created_count': created_count,
