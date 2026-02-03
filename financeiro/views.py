@@ -341,6 +341,65 @@ def account_receivable_receive(request, pk):
     return redirect('financeiro:account_receivable_detail', pk=pk)
 
 @login_required(login_url='/accounts/login/')
+def emitir_boleto_cora(request, pk):
+    receivable = get_object_or_404(AccountReceivable, pk=pk)
+    
+    if not receivable.client:
+        messages.error(request, "Cliente não vinculado a esta conta.")
+        return redirect('financeiro:account_receivable_detail', pk=pk)
+    
+    # 1. Prepare Cora Payload
+    service = CoraService()
+    
+    # Amount in cents
+    amount_cents = int(receivable.amount * 100)
+    client = receivable.client
+    
+    # Cora payload structure
+    fatura_data = {
+        "customer": {
+            "name": client.name,
+            "email": client.email or "financeiro@descartex.com.br",
+            "document": {
+                "identity": client.document.replace('.', '').replace('-', '').replace('/', '').replace(' ', ''),
+                "type": "CNPJ" if len(client.document.replace('.', '').replace('-', '').replace('/', '').replace(' ', '')) > 11 else "CPF"
+            }
+        },
+        "services": [
+            {
+                "name": receivable.description,
+                "amount": amount_cents
+            }
+        ],
+        "payment_options": ["BANK_SLIP", "PIX"],
+        "due_date": receivable.due_date.isoformat()
+    }
+    
+    # 2. Call Cora
+    result = service.gerar_fatura(fatura_data)
+    
+    if "erro" in result:
+        messages.error(request, f"Erro ao emitir na Cora: {result['erro']}")
+    elif "id" in result:
+        # Success! Save data
+        receivable.cora_id = result.get('id')
+        receivable.cora_status = result.get('status')
+        
+        # Get link/copy-paste
+        p_options = result.get('payment_options', [])
+        for opt in p_options:
+            if opt.get('type') == 'BANK_SLIP':
+                receivable.cora_copy_paste = opt.get('copy_paste')
+                receivable.cora_pdf_url = opt.get('bank_slip_url')
+        
+        receivable.save()
+        messages.success(request, f"Boleto Cora emitido com sucesso! ID: {receivable.cora_id}")
+    else:
+        messages.warning(request, f"Resposta inesperada da Cora: {json.dumps(result)}")
+
+    return redirect('financeiro:account_receivable_detail', pk=pk)
+
+@login_required(login_url='/accounts/login/')
 def account_receivable_cancel(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)
     if request.method == 'POST':

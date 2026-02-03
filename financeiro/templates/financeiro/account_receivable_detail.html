@@ -62,22 +62,56 @@
 
             {% if receivable.status == 'PENDING' or receivable.status == 'OVERDUE' %}
             <div class="card-footer bg-white py-3">
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 align-items-center">
                     <form action="{% url 'financeiro:account_receivable_receive' receivable.id %}" method="post"
                         onsubmit="return confirm('Confirmar recebimento desta conta?');">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success text-white fw-bold">
+                        <button type="submit" class="btn btn-success text-white fw-bold shadow-sm">
                             <i class="bi bi-check-circle me-2"></i>Realizar Recebimento
                         </button>
                     </form>
 
+                    {% if not receivable.cora_id %}
+                    <form action="{% url 'financeiro:emitir_boleto_cora' receivable.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary shadow-sm">
+                            <i class="bi bi-lightning-fill me-2"></i>Emitir Boleto/Pix Cora
+                        </button>
+                    </form>
+                    {% endif %}
+
                     <form action="{% url 'financeiro:account_receivable_cancel' receivable.id %}" method="post"
                         onsubmit="return confirm('Tem certeza que deseja cancelar esta conta?');">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-danger">
+                        <button type="submit" class="btn btn-outline-danger shadow-sm">
                             <i class="bi bi-x-circle me-2"></i>Cancelar Conta
                         </button>
                     </form>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if receivable.cora_id %}
+            <div class="card-footer bg-light border-top py-3">
+                <h6 class="fw-bold mb-3"><i class="bi bi-bank me-2 text-primary"></i>Integração Cora (Emitido)</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="text-muted small">ID Cora</label>
+                        <p class="font-monospace small">{{ receivable.cora_id }}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="d-flex gap-2">
+                            {% if receivable.cora_pdf_url %}
+                            <a href="{{ receivable.cora_pdf_url }}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Ver Boleto (PDF)
+                            </a>
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-dark"
+                                onclick="navigator.clipboard.writeText('{{ receivable.cora_copy_paste }}').then(() => alert('Copiado!'))">
+                                <i class="bi bi-clipboard me-1"></i>Copiar Linha/Pix
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endif %}

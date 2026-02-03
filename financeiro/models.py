@@ -139,6 +139,12 @@ class AccountReceivable(BaseModel):
     due_date = models.DateField(verbose_name="Data de Vencimento")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING', verbose_name="Status")
     invoice = models.ForeignKey('faturamento.Invoice', on_delete=models.SET_NULL, null=True, blank=True, related_name='receivables', verbose_name="Fatura")
+    
+    # Cora Integration
+    cora_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cora ID")
+    cora_status = models.CharField(max_length=50, blank=True, null=True, verbose_name="Status Cora")
+    cora_copy_paste = models.TextField(blank=True, null=True, verbose_name="Código Pix/Linha Digitável")
+    cora_pdf_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="URL do PDF")
 
     # Receipt details
     # Receipt details

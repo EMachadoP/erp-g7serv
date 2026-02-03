@@ -22,6 +22,7 @@ urlpatterns = [
     path('contas-a-receber/<int:pk>/editar/', views.account_receivable_update, name='account_receivable_update'),
     path('contas-a-receber/<int:pk>/receber/', views.account_receivable_receive, name='account_receivable_receive'),
     path('contas-a-receber/<int:pk>/cancelar/', views.account_receivable_cancel, name='account_receivable_cancel'),
+    path('contas-a-receber/<int:pk>/emitir-boleto/', views.emitir_boleto_cora, name='emitir_boleto_cora'),
     
     # Receipts
     path('recibos/', views.receipt_list, name='receipt_list'),
