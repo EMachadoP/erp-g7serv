@@ -400,59 +400,87 @@ def billing_batch_detail(request, pk):
 def invoice_bulk_generate_boletos(request):
     """Gera boletos em lote para faturas selecionadas."""
     import json
+    from integracao_cora.services.boleto import CoraBoleto
+    from integracao_cora.models import CoraConfig
     
     invoice_ids = request.POST.getlist('invoice_ids[]')
     if not invoice_ids:
         try:
             data = json.loads(request.body)
             invoice_ids = data.get('invoice_ids', [])
+            force_regenerate = data.get('force', False)
         except:
-            pass
+            force_regenerate = False
     
     if not invoice_ids:
         return JsonResponse({'status': 'error', 'message': 'Nenhuma fatura selecionada.'}, status=400)
     
-    invoices = Invoice.objects.filter(id__in=invoice_ids, boleto_url__isnull=True)
-    cora = CoraService()
+    # Permite regenerar boletos - não filtra por boleto_url__isnull
+    invoices = Invoice.objects.filter(id__in=invoice_ids)
+    
+    # Verificar se Cora está configurada
+    config = CoraConfig.objects.first()
+    if not config:
+        return JsonResponse({
+            'status': 'error', 
+            'message': 'Integração Cora não configurada. Acesse Integrações > Cora para configurar.'
+        }, status=400)
+    
     success_count = 0
+    skipped_count = 0
     errors = []
     
     for invoice in invoices:
         try:
-            fatura_data = {
-                "customer": {
-                    "name": invoice.client.name if invoice.client else "Cliente",
-                    "email": invoice.client.email if invoice.client else "faturamento@g7serv.com.br",
-                    "document": {
-                        "identity": invoice.client.document if invoice.client else "00000000000",
-                        "type": "CNPJ" if len(invoice.client.document or "") > 11 else "CPF"
-                    }
-                },
-                "payment_methods": ["BANK_SLIP", "PIX"],
-                "services": [
-                    {
-                        "name": f"Fatura {invoice.number}",
-                        "amount": int(invoice.amount * 100),
-                        "quantity": 1
-                    }
-                ],
-                "due_date": invoice.due_date.strftime("%Y-%m-%d")
-            }
+            # Se já tem boleto e não forçou regeneração, pula
+            if invoice.boleto_url and not invoice.boleto_url.startswith('https://www.cora.com.br/boleto/simulado'):
+                skipped_count += 1
+                continue
+                
+            # Prepara dados do cliente
+            if not invoice.client:
+                errors.append(f"Fatura #{invoice.number}: Cliente não informado")
+                continue
+                
+            customer_document = (invoice.client.document or "").replace('.', '').replace('-', '').replace('/', '')
+            if not customer_document:
+                errors.append(f"Fatura #{invoice.number}: CPF/CNPJ do cliente não informado")
+                continue
             
-            cora_response = cora.gerar_fatura(fatura_data)
+            # Instancia serviço de boleto Cora
+            cora = CoraBoleto()
             
-            if "payment_url" in cora_response or "id" in cora_response:
-                invoice.boleto_url = cora_response.get("payment_url") or cora_response.get("url")
+            # Cria objeto que simula NFSe para compatibilidade com CoraBoleto
+            class FaturaWrapper:
+                def __init__(self, inv):
+                    self.numero_dps = inv.number
+                    self.cliente = inv.client
+                    self.servico = type('obj', (object,), {
+                        'name': f'Fatura {inv.number}',
+                        'sale_price': inv.amount
+                    })()
+            
+            boleto = cora.gerar_boleto(FaturaWrapper(invoice))
+            
+            if boleto and boleto.url_pdf:
+                invoice.boleto_url = boleto.url_pdf
                 invoice.save()
                 success_count += 1
             else:
-                errors.append(f"Fatura #{invoice.id}: {cora_response.get('erro', 'Erro desconhecido')}")
+                errors.append(f"Fatura #{invoice.number}: Boleto gerado mas sem URL")
+                
         except Exception as e:
-            errors.append(f"Fatura #{invoice.id}: {str(e)}")
+            errors.append(f"Fatura #{invoice.number}: {str(e)}")
+    
+    message = f'{success_count} boleto(s) gerado(s) com sucesso.'
+    if skipped_count > 0:
+        message += f' {skipped_count} já possuíam boleto.'
+    if errors:
+        message += f' {len(errors)} erro(s).'
     
     return JsonResponse({
-        'status': 'success',
-        'message': f'{success_count} boletos gerados com sucesso.',
+        'status': 'success' if success_count > 0 else 'warning',
+        'message': message,
         'errors': errors
     })
 
