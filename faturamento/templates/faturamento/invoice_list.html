@@ -36,38 +36,34 @@
                     <label class="form-label small text-uppercase fw-bold">Ano</label>
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
-                        {% for y in years %}
-                        <option value="{{ y }}" {% if year_filter|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}
-                        </option>
-                        {% endfor %}
+                        {% for y in years %}<option value="{{ y }}" {% if
+                            year_filter|stringformat:"s"==y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>{%
+                        endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-uppercase fw-bold">Mês</label>
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
-                        {% for m_num, m_name in months %}
-                        <option value="{{ m_num }}" {% if month_filter|stringformat:"s" == m_num|stringformat:"s" %}selected{% endif %}>{{
-                            m_name }}</option>
-                        {% endfor %}
+                        {% for m_num, m_name in months %}<option value="{{ m_num }}" {% if
+                            month_filter|stringformat:"s"==m_num|stringformat:"s" %}selected{% endif %}>{{ m_name }}
+                        </option>{% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PD" {% if status_filter == 'PD' %}selected{% endif %}>Pendente</option>
-                        <option value="PG" {% if status_filter == 'PG' %}selected{% endif %}>Paga</option>
-                        <option value="CN" {% if status_filter == 'CN' %}selected{% endif %}>Cancelada</option>
+                        <option value="PD" {% if status_filter=='PD' %}selected{% endif %}>Pendente</option>
+                        <option value="PG" {% if status_filter=='PG' %}selected{% endif %}>Paga</option>
+                        <option value="CN" {% if status_filter=='CN' %}selected{% endif %}>Cancelada</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">
-                        <i class="bi bi-filter me-1"></i>Filtrar
-                    </button>
-                    <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i>
-                    </a>
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i
+                            class="bi bi-filter me-1"></i>Filtrar</button>
+                    <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary"><i
+                            class="bi bi-x-circle"></i></a>
                 </div>
             </form>
         </div>
@@ -107,40 +103,32 @@
                                 <div class="text-muted small mt-1">
                                     <i class="bi bi-calendar-check me-1"></i>Registro: {{
                                     invoice.created_at|date:"d/m/Y" }}
-                                    {% if invoice.boleto_url %}
-                                    &nbsp;|&nbsp;
-                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i><a
+                                    {% if invoice.boleto_url %}&nbsp;|&nbsp;<i
+                                        class="bi bi-file-earmark-pdf text-danger me-1"></i><a
                                         href="{{ invoice.boleto_url }}" target="_blank"
-                                        class="text-danger text-decoration-none">Boleto</a>
-                                    {% endif %}
-                                    {% if invoice.nfse_link %}
-                                    &nbsp;|&nbsp;
-                                    <i class="bi bi-file-earmark-text text-success me-1"></i><a
+                                        class="text-danger text-decoration-none" download>Boleto</a>{% endif %}
+                                    {% if invoice.nfse_link %}&nbsp;|&nbsp;<i
+                                        class="bi bi-file-earmark-text text-success me-1"></i><a
                                         href="{{ invoice.nfse_link }}" target="_blank"
-                                        class="text-success text-decoration-none">NFSe</a>
-                                    {% endif %}
+                                        class="text-success text-decoration-none">NFSe</a>{% endif %}
                                 </div>
                             </div>
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2|intcomma }}</h5>
-                                {% if invoice.status == 'PG' %}
-                                <span
-                                    class="badge bg-success-subtle text-success border border-success-subtle">Paga</span>
-                                {% elif invoice.status == 'CN' %}
-                                <span
-                                    class="badge bg-danger-subtle text-danger border border-danger-subtle">Cancelada</span>
-                                {% else %}
-                                <span
-                                    class="badge bg-warning-subtle text-warning border border-warning-subtle">Pendente</span>
-                                {% endif %}
+                                {% if invoice.status == 'PG' %}<span
+                                    class="badge bg-success-subtle text-success border border-success-subtle">Paga</span>{%
+                                elif invoice.status == 'CN' %}<span
+                                    class="badge bg-danger-subtle text-danger border border-danger-subtle">Cancelada</span>{%
+                                else %}<span
+                                    class="badge bg-warning-subtle text-warning border border-warning-subtle">Pendente</span>{%
+                                endif %}
                             </div>
                         </div>
                     </div>
                     <div class="col-auto">
                         <div class="dropdown">
-                            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
+                            <button class="btn btn-light btn-sm rounded-circle" type="button"
+                                data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{% url 'faturamento:detail' pk=invoice.id %}"><i
                                             class="bi bi-eye me-2"></i>Ver Detalhes</a></li>
@@ -168,27 +156,16 @@
         <div class="card-footer bg-white border-0 py-3">
             <nav aria-label="Paginação">
                 <ul class="pagination pagination-sm justify-content-center mb-0">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link"
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
                             href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Anterior</a>
-                    </li>
-                    {% endif %}
-
-                    {% for i in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-                        <a class="page-link"
+                    </li>{% endif %}
+                    {% for i in page_obj.paginator.page_range %}<li
+                        class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link"
                             href="?page={{ i }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">{{
-                            i }}</a>
-                    </li>
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link"
+                            i }}</a></li>{% endfor %}
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
                             href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Próximo</a>
-                    </li>
-                    {% endif %}
+                    </li>{% endif %}
                 </ul>
             </nav>
         </div>
@@ -203,25 +180,18 @@
                     selecionada(s)</span>
             </div>
             <div class="d-flex gap-2 align-items-center">
-                <button type="button" class="btn btn-warning" id="btnGerarNota" disabled>
-                    <i class="bi bi-file-earmark-text me-1"></i>Gerar NFSe
-                </button>
-                <button type="button" class="btn btn-outline-primary" id="btnGerarBoletos" disabled>
-                    <i class="bi bi-upc me-1"></i>Gerar Boletos
-                </button>
+                <button type="button" class="btn btn-warning" id="btnGerarNota"><i
+                        class="bi bi-file-earmark-text me-1"></i>Gerar NFSe</button>
+                <button type="button" class="btn btn-outline-primary" id="btnGerarBoletos"><i
+                        class="bi bi-upc me-1"></i>Gerar Boletos</button>
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false" id="btnEmail" disabled>
-                        <i class="bi bi-envelope me-1"></i>Enviar E-mail
-                    </button>
+                        aria-expanded="false" id="btnEmail"><i class="bi bi-envelope me-1"></i>Enviar E-mail</button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        {% for template in email_templates %}
-                        <li><a class="dropdown-item email-template-option" href="#"
-                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>
-                        {% empty %}
-                        <li><a class="dropdown-item email-template-option" href="#" data-template-id="">Template
-                                Padrão</a></li>
-                        {% endfor %}
+                        {% for template in email_templates %}<li><a class="dropdown-item email-template-option" href="#"
+                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>{% empty %}<li><a
+                                class="dropdown-item email-template-option" href="#" data-template-id="">Template
+                                Padrão</a></li>{% endfor %}
                     </ul>
                 </div>
             </div>
@@ -257,13 +227,12 @@
             const count = selected.length;
             selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
 
-            const hasSelection = count > 0;
-            btnGerarNota.disabled = !hasSelection;
-            btnGerarBoletos.disabled = !hasSelection;
-            btnEmail.disabled = !hasSelection;
-
-            if (hasSelection) {
+            if (count > 0) {
                 selectedCountEl.classList.replace('bg-primary', 'bg-success');
+                btnGerarNota.classList.remove('btn-outline-warning');
+                btnGerarNota.classList.add('btn-warning');
+                btnGerarBoletos.classList.remove('btn-outline-secondary');
+                btnGerarBoletos.classList.add('btn-outline-primary');
             } else {
                 selectedCountEl.classList.replace('bg-success', 'bg-primary');
             }
@@ -284,17 +253,16 @@
             toastEl.className = 'toast show';
             if (type === 'success') toastEl.classList.add('bg-success', 'text-white');
             else if (type === 'error') toastEl.classList.add('bg-danger', 'text-white');
-            else if (type === 'warning') toastEl.classList.add('bg-warning');
 
-            setTimeout(() => {
-                const bsToast = new bootstrap.Toast(toastEl);
-                bsToast.hide();
-            }, 5000);
+            setTimeout(() => { toastEl.classList.remove('show'); }, 5000);
         }
 
         function callBulkAction(url, extraData = {}) {
             const ids = getSelectedIds();
-            if (ids.length === 0) return;
+            if (ids.length === 0) {
+                showToast('Atenção', 'Selecione pelo menos uma fatura.', 'warning');
+                return;
+            }
 
             const payload = { invoice_ids: ids, ...extraData };
 
