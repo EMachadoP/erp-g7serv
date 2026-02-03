@@ -255,6 +255,23 @@ def account_receivable_list(request):
     return render(request, 'financeiro/account_receivable_list.html', {'receivables': receivables})
 
 @login_required(login_url='/accounts/login/')
+def account_receivable_update(request, pk):
+    receivable = get_object_or_404(AccountReceivable, pk=pk)
+    if request.method == 'POST':
+        form = AccountReceivableForm(request.POST, instance=receivable)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Conta a receber atualizada com sucesso.')
+            return redirect('financeiro:account_receivable_list')
+    else:
+        form = AccountReceivableForm(instance=receivable)
+    
+    return render(request, 'financeiro/account_receivable_form.html', {
+        'form': form,
+        'receivable': receivable
+    })
+
+@login_required(login_url='/accounts/login/')
 def account_receivable_create(request):
     if request.method == 'POST':
         form = AccountReceivableForm(request.POST)

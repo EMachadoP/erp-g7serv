@@ -13,30 +13,48 @@
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
-    <div class="col-md-3">
-        <label for="end_date" class="form-label">Vencimento Fim</label>
-        <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="PENDING" {% if request.GET.status=='PENDING' %}selected{% endif %}>Pendente</option>
+                    <option value="RECEIVED" {% if request.GET.status=='RECEIVED' %}selected{% endif %}>Recebido
+                    </option>
+                    <option value="OVERDUE" {% if request.GET.status=='OVERDUE' %}selected{% endif %}>Vencido</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">Vencimento Início</label>
+                <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">Vencimento Fim</label>
+                <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-filter me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
     </div>
-    <div class="col-md-3 d-flex align-items-end">
-        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-    </div>
-    </form>
-</div>
 </div>
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 text-nowrap">
                 <thead class="bg-light">
                     <tr>
-                        <th class="ps-4">Vencimento</th>
+                        <th class="ps-4" style="width: 120px;">Vencimento</th>
                         <th>Descrição</th>
                         <th>Cliente</th>
                         <th>Categoria</th>
-                        <th class="text-end">Valor</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-end pe-4">Ações</th>
+                        <th class="text-end" style="width: 150px;">Valor</th>
+                        <th class="text-center" style="width: 120px;">Status</th>
+                        <th class="text-end pe-4" style="width: 80px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,30 +68,34 @@
                             {% endif %}
                         </td>
                         <td>{{ receivable.client.name|default:"-" }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ receivable.category.name|default:"-"
+                        <td><span class="badge bg-light text-dark border fw-normal">{{
+                                receivable.category.name|default:"-"
                                 }}</span></td>
                         <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
                         <td class="text-center">
                             {% if receivable.status == 'PENDING' %}
-                            <span class="badge bg-warning text-dark">Pendente</span>
+                            <span class="badge bg-warning text-dark px-3">Pendente</span>
                             {% elif receivable.status == 'RECEIVED' %}
-                            <span class="badge bg-success">Recebido</span>
+                            <span class="badge bg-success px-3">Recebido</span>
                             {% elif receivable.status == 'OVERDUE' %}
-                            <span class="badge bg-danger">Vencido</span>
+                            <span class="badge bg-danger px-3">Vencido</span>
                             {% else %}
-                            <span class="badge bg-secondary">{{ receivable.get_status_display }}</span>
+                            <span class="badge bg-secondary px-3">{{ receivable.get_status_display }}</span>
                             {% endif %}
                         </td>
                         <td class="text-end pe-4">
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-three-dots-vertical"></i>
+                                <button class="btn btn-sm btn-white border shadow-sm" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-gear-fill text-secondary"></i>
                                 </button>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                     <li><a class="dropdown-item"
                                             href="{% url 'financeiro:account_receivable_detail' receivable.id %}"><i
                                                 class="bi bi-eye me-2"></i>Detalhes</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a>
+                                    <li><a class="dropdown-item"
+                                            href="{% url 'financeiro:account_receivable_update' receivable.id %}"><i
+                                                class="bi bi-pencil me-2"></i>Editar</a>
                                     </li>
                                     {% if receivable.status != 'RECEIVED' %}
                                     <li>
