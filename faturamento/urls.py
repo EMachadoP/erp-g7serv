@@ -14,6 +14,12 @@ urlpatterns = [
     path('faturamento-contratos/buscar/', views.search_contracts, name='search_contracts'),
     path('faturamento-contratos/processar/', views.process_contract_billing, name='process_contract_billing'),
     path('faturamento-contratos/resumo/', views.contract_billing_summary, name='contract_billing_summary'),
+    path('faturamento-lote/<int:pk>/', views.billing_batch_detail, name='billing_batch_detail'),
+    
+    # Ações em Massa para Faturas
+    path('faturas/gerar-boletos-lote/', views.invoice_bulk_generate_boletos, name='invoice_bulk_generate_boletos'),
+    path('faturas/enviar-emails-lote/', views.invoice_bulk_send_emails, name='invoice_bulk_send_emails'),
+    path('faturas/gerar-nfse-lote/', views.invoice_bulk_generate_nfse, name='invoice_bulk_generate_nfse'),
     
     # NFe Input (Compras)
     path('notas-entrada/', views.nota_entrada_list, name='nota_entrada_list'),

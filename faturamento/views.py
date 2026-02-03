@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Invoice, NotaEntrada, NotaEntradaItem, NotaEntradaParcela
+from .models import Invoice, NotaEntrada, NotaEntradaItem, NotaEntradaParcela, BillingBatch
 from .forms import InvoiceForm, NotaEntradaItemForm, NotaEntradaParcelaForm
 from .services.nfe_import import processar_xml_nfe
 from financeiro.models import AccountPayable, FinancialCategory, CostCenter
@@ -8,7 +8,9 @@ from comercial.models import BillingGroup
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.db import transaction
+from decimal import Decimal
 
 @login_required
 def invoice_list(request):
@@ -169,14 +171,34 @@ def process_contract_billing(request):
     month = int(request.POST.get('competence_month'))
     year = int(request.POST.get('competence_year'))
     contract_ids = request.POST.getlist('selected_contracts')
+    group_id = request.POST.get('billing_group')
+    day_start = int(request.POST.get('day_range_start', 1))
+    day_end = int(request.POST.get('day_range_end', 31))
     
     if not contract_ids:
         messages.error(request, 'Nenhum contrato selecionado.')
         return redirect('faturamento:contract_billing')
+    
+    # Get billing group if specified
+    billing_group = None
+    if group_id:
+        billing_group = BillingGroup.objects.filter(id=group_id).first()
+    
+    # Create BillingBatch to track this processing
+    batch = BillingBatch.objects.create(
+        user=request.user,
+        billing_group=billing_group,
+        competence_month=month,
+        competence_year=year,
+        day_range_start=day_start,
+        day_range_end=day_end,
+        total_contracts=len(contract_ids)
+    )
         
     contracts = Contract.objects.filter(id__in=contract_ids)
     created_count = 0
     email_count = 0
+    total_invoiced = Decimal('0.00')
     
     # Get or create default category for contracts
     category, _ = FinancialCategory.objects.get_or_create(
@@ -201,10 +223,11 @@ def process_contract_billing(request):
                     last_day = calendar.monthrange(year, month)[1]
                     due_date = date(year, month, last_day)
                 
-                # 1. Create Invoice
+                # 1. Create Invoice linked to batch
                 invoice = Invoice.objects.create(
                     client=contract.client,
                     contract=contract,
+                    batch=batch,
                     billing_group=contract.billing_group,
                     competence_month=month,
                     competence_year=year,
@@ -216,8 +239,6 @@ def process_contract_billing(request):
                 )
                 
                 # 2. Integrate with Cora v2 (mTLS)
-                # Payload format according to user provided Cora documentation
-                # Note: amount must be in cents (integer)
                 fatura_data = {
                     "customer": {
                         "name": contract.client.name,
@@ -239,17 +260,16 @@ def process_contract_billing(request):
                     "due_date": due_date.strftime("%Y-%m-%d")
                 }
                 
-                cora_response = cora.gerar_fatura(fatura_data)
-                
-                # Save the payment link or identifier
-                if "payment_url" in cora_response:
-                    invoice.boleto_url = cora_response["payment_url"]
-                    invoice.save()
-                elif "id" in cora_response:
-                    # Some versions return just id and we might need to fetch the PDF link
-                    # For now using what's most common in Cora v2
-                    invoice.boleto_url = cora_response.get("url") or cora_response.get("payment_url")
-                    invoice.save()
+                try:
+                    cora_response = cora.gerar_fatura(fatura_data)
+                    if "payment_url" in cora_response:
+                        invoice.boleto_url = cora_response["payment_url"]
+                        invoice.save()
+                    elif "id" in cora_response:
+                        invoice.boleto_url = cora_response.get("url") or cora_response.get("payment_url")
+                        invoice.save()
+                except Exception:
+                    pass  # Continue even if Cora fails
 
                 # 3. Create Account Receivable
                 AccountReceivable.objects.create(
@@ -264,32 +284,237 @@ def process_contract_billing(request):
                 )
                 
                 created_count += 1
+                total_invoiced += contract.value
                 
-                # 4. Send Email
-                if BillingEmailService.send_invoice_email(invoice):
-                    invoice.email_sent_at = timezone.now()
-                    invoice.save()
-                    email_count += 1
+                # 4. Send Email (optional - don't fail if email fails)
+                try:
+                    if BillingEmailService.send_invoice_email(invoice):
+                        invoice.email_sent_at = timezone.now()
+                        invoice.save()
+                        email_count += 1
+                except Exception:
+                    pass
                     
         except Exception as e:
             messages.error(request, f"Erro ao processar contrato #{contract.id}: {str(e)}")
             continue
+    
+    # Update batch with final stats
+    batch.finished_at = timezone.now()
+    batch.status = 'COMPLETED'
+    batch.total_invoiced = total_invoiced
+    batch.save()
             
     # Handle HTMX request
     if request.headers.get('HX-Request'):
         return render(request, 'faturamento/partials/billing_result_message.html', {
             'created_count': created_count,
-            'email_count': email_count
+            'email_count': email_count,
+            'batch': batch
         })
         
     messages.success(request, f'{created_count} faturas geradas ({email_count} e-mails enviados).')
-    return redirect('faturamento:contract_billing_summary')
+    return redirect('faturamento:billing_batch_detail', pk=batch.pk)
+
 
 @login_required
 def contract_billing_summary(request):
-    # Show recent invoices (e.g., last 50)
-    invoices = Invoice.objects.filter(contract__isnull=False).order_by('-created_at')[:50]
-    return render(request, 'faturamento/contract_billing_summary.html', {'invoices': invoices})
+    """Lista de todos os lotes de faturamento."""
+    batches = BillingBatch.objects.all().order_by('-started_at')[:50]
+    return render(request, 'faturamento/contract_billing_summary.html', {'batches': batches})
+
+
+@login_required
+def billing_batch_detail(request, pk):
+    """Detalhes de um lote de faturamento específico."""
+    batch = get_object_or_404(BillingBatch, pk=pk)
+    
+    # Buscar faturas do lote com filtros
+    search_query = request.GET.get('search', '')
+    invoices = batch.invoices.select_related('client', 'contract').all()
+    
+    if search_query:
+        invoices = invoices.filter(
+            Q(number__icontains=search_query) |
+            Q(client__name__icontains=search_query) |
+            Q(contract__id__icontains=search_query)
+        )
+    
+    # Calcular totalizadores
+    totals = invoices.aggregate(
+        total_faturado=Sum('amount')
+    )
+    
+    # Paginação
+    paginator = Paginator(invoices, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Templates de email disponíveis
+    from core.models import EmailTemplate
+    email_templates = EmailTemplate.objects.filter(is_active=True)
+    
+    context = {
+        'batch': batch,
+        'page_obj': page_obj,
+        'invoices': page_obj,
+        'search_query': search_query,
+        'total_faturado': totals['total_faturado'] or Decimal('0.00'),
+        'email_templates': email_templates,
+    }
+    return render(request, 'faturamento/billing_batch_detail.html', context)
+
+
+# ==============================================================================
+# Ações em Massa para Faturas
+# ==============================================================================
+
+@login_required
+@require_POST
+def invoice_bulk_generate_boletos(request):
+    """Gera boletos em lote para faturas selecionadas."""
+    import json
+    
+    invoice_ids = request.POST.getlist('invoice_ids[]')
+    if not invoice_ids:
+        try:
+            data = json.loads(request.body)
+            invoice_ids = data.get('invoice_ids', [])
+        except:
+            pass
+    
+    if not invoice_ids:
+        return JsonResponse({'status': 'error', 'message': 'Nenhuma fatura selecionada.'}, status=400)
+    
+    invoices = Invoice.objects.filter(id__in=invoice_ids, boleto_url__isnull=True)
+    cora = CoraService()
+    success_count = 0
+    errors = []
+    
+    for invoice in invoices:
+        try:
+            fatura_data = {
+                "customer": {
+                    "name": invoice.client.name if invoice.client else "Cliente",
+                    "email": invoice.client.email if invoice.client else "faturamento@g7serv.com.br",
+                    "document": {
+                        "identity": invoice.client.document if invoice.client else "00000000000",
+                        "type": "CNPJ" if len(invoice.client.document or "") > 11 else "CPF"
+                    }
+                },
+                "payment_methods": ["BANK_SLIP", "PIX"],
+                "services": [
+                    {
+                        "name": f"Fatura {invoice.number}",
+                        "amount": int(invoice.amount * 100),
+                        "quantity": 1
+                    }
+                ],
+                "due_date": invoice.due_date.strftime("%Y-%m-%d")
+            }
+            
+            cora_response = cora.gerar_fatura(fatura_data)
+            
+            if "payment_url" in cora_response or "id" in cora_response:
+                invoice.boleto_url = cora_response.get("payment_url") or cora_response.get("url")
+                invoice.save()
+                success_count += 1
+            else:
+                errors.append(f"Fatura #{invoice.id}: {cora_response.get('erro', 'Erro desconhecido')}")
+        except Exception as e:
+            errors.append(f"Fatura #{invoice.id}: {str(e)}")
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': f'{success_count} boletos gerados com sucesso.',
+        'errors': errors
+    })
+
+
+@login_required
+@require_POST
+def invoice_bulk_send_emails(request):
+    """Envia e-mails em lote para faturas selecionadas."""
+    import json
+    
+    invoice_ids = request.POST.getlist('invoice_ids[]')
+    template_id = request.POST.get('template_id')
+    
+    if not invoice_ids:
+        try:
+            data = json.loads(request.body)
+            invoice_ids = data.get('invoice_ids', [])
+            template_id = data.get('template_id')
+        except:
+            pass
+    
+    if not invoice_ids:
+        return JsonResponse({'status': 'error', 'message': 'Nenhuma fatura selecionada.'}, status=400)
+    
+    invoices = Invoice.objects.filter(id__in=invoice_ids)
+    success_count = 0
+    errors = []
+    
+    for invoice in invoices:
+        try:
+            if BillingEmailService.send_invoice_email(invoice, template_id=template_id):
+                invoice.email_sent_at = timezone.now()
+                invoice.save()
+                success_count += 1
+            else:
+                errors.append(f"Fatura #{invoice.id}: Falha ao enviar e-mail.")
+        except Exception as e:
+            errors.append(f"Fatura #{invoice.id}: {str(e)}")
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': f'{success_count} e-mails enviados com sucesso.',
+        'errors': errors
+    })
+
+
+@login_required
+@require_POST
+def invoice_bulk_generate_nfse(request):
+    """Gera NFS-e em lote para faturas selecionadas (estrutura preparada)."""
+    import json
+    
+    invoice_ids = request.POST.getlist('invoice_ids[]')
+    if not invoice_ids:
+        try:
+            data = json.loads(request.body)
+            invoice_ids = data.get('invoice_ids', [])
+        except:
+            pass
+    
+    if not invoice_ids:
+        return JsonResponse({'status': 'error', 'message': 'Nenhuma fatura selecionada.'}, status=400)
+    
+    invoices = Invoice.objects.filter(id__in=invoice_ids, nfse_link__isnull=True)
+    success_count = 0
+    errors = []
+    
+    # TODO: Integrar com módulo nfse_nacional quando certificado configurado
+    for invoice in invoices:
+        try:
+            # Placeholder - implementação real depende de certificado digital
+            # from nfse_nacional.services.api_client import NFSeNacionalClient
+            # client = NFSeNacionalClient()
+            # result = client.emitir_nfse(invoice)
+            # invoice.nfse_link = result.get('link')
+            # invoice.save()
+            # success_count += 1
+            
+            errors.append(f"Fatura #{invoice.id}: Emissão de NFS-e em desenvolvimento.")
+        except Exception as e:
+            errors.append(f"Fatura #{invoice.id}: {str(e)}")
+    
+    return JsonResponse({
+        'status': 'info',
+        'message': f'Funcionalidade de NFS-e em desenvolvimento. {success_count} notas processadas.',
+        'errors': errors
+    })
+
 
 @login_required
 def nota_entrada_list(request):

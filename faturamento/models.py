@@ -1,8 +1,43 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 from comercial.models import BillingGroup, Contract
 from core.models import Person
 from estoque.models import Product
+
+
+class BillingBatch(models.Model):
+    """Representa um lote/processamento de faturamento de contratos."""
+    STATUS_CHOICES = [
+        ('PROCESSING', 'Em Processamento'),
+        ('COMPLETED', 'Concluído'),
+        ('ERROR', 'Erro'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Realizado por")
+    billing_group = models.ForeignKey(BillingGroup, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Grupo de Faturamento")
+    competence_month = models.IntegerField(verbose_name="Mês de Competência")
+    competence_year = models.IntegerField(verbose_name="Ano de Competência")
+    day_range_start = models.IntegerField(default=1, verbose_name="Dia Cobrança Início")
+    day_range_end = models.IntegerField(default=31, verbose_name="Dia Cobrança Fim")
+    
+    started_at = models.DateTimeField(auto_now_add=True, verbose_name="Iniciado em")
+    finished_at = models.DateTimeField(null=True, blank=True, verbose_name="Encerrado em")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PROCESSING', verbose_name="Status")
+    
+    # Totalizadores
+    total_contracts = models.IntegerField(default=0, verbose_name="Total de Contratos")
+    total_invoiced = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Total Faturado")
+    total_not_invoiced = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Total Não Faturado")
+    
+    class Meta:
+        verbose_name = "Lote de Faturamento"
+        verbose_name_plural = "Lotes de Faturamento"
+        ordering = ['-started_at']
+    
+    def __str__(self):
+        return f"Faturamento {self.competence_month:02d}/{self.competence_year} - {self.get_status_display()}"
+
 
 class Invoice(models.Model):
     STATUS_CHOICES = [
@@ -12,6 +47,7 @@ class Invoice(models.Model):
     ]
 
     billing_group = models.ForeignKey(BillingGroup, on_delete=models.PROTECT, related_name='invoices', null=True, blank=True)
+    batch = models.ForeignKey('BillingBatch', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices', verbose_name="Lote de Faturamento")
     client = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices', verbose_name="Cliente", null=True)
     contract = models.ForeignKey(Contract, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices', verbose_name="Contrato")
     competence_month = models.IntegerField(verbose_name="Mês de Competência", null=True)

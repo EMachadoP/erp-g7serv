@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Resumo de Faturamento de Contratos{% endblock %}
+{% block title %}Histórico de Faturamento{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -8,7 +8,7 @@
         <div class="col-12 d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="text-primary"><i class="bi bi-clock-history me-2"></i>Histórico de Faturamento</h2>
-                <p class="text-muted">Últimas faturas geradas via contrato.</p>
+                <p class="text-muted">Últimos lotes de faturamento de contratos.</p>
             </div>
             <a href="{% url 'faturamento:contract_billing' %}" class="btn btn-primary">
                 <i class="bi bi-play-circle me-2"></i>Novo Faturamento
@@ -22,38 +22,48 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Fatura</th>
-                            <th>Cliente</th>
+                            <th>Lote</th>
                             <th>Competência</th>
-                            <th>Vencimento</th>
-                            <th>Valor</th>
+                            <th>Grupo</th>
+                            <th>Realizado por</th>
+                            <th>Data</th>
+                            <th>Contratos</th>
+                            <th>Total Faturado</th>
                             <th>Status</th>
-                            <th>Gerado em</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for invoice in invoices %}
+                        {% for batch in batches %}
                         <tr>
-                            <td>{{ invoice.number }}</td>
-                            <td>{{ invoice.client.name }}</td>
-                            <td>{{ invoice.competence_month }}/{{ invoice.competence_year }}</td>
-                            <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
-                            <td>R$ {{ invoice.amount }}</td>
+                            <td><strong>#{{ batch.id }}</strong></td>
+                            <td>{{ batch.competence_month|stringformat:"02d" }}/{{ batch.competence_year }}</td>
+                            <td>{{ batch.billing_group.name|default:"Todos" }}</td>
+                            <td>{{ batch.user.get_full_name|default:batch.user.username }}</td>
+                            <td>{{ batch.started_at|date:"d/m/Y H:i" }}</td>
+                            <td><span class="badge bg-primary">{{ batch.total_contracts }}</span></td>
+                            <td><strong class="text-success">R$ {{ batch.total_invoiced|floatformat:2 }}</strong></td>
                             <td>
-                                {% if invoice.status == 'PD' %}
-                                <span class="badge bg-warning text-dark">Pendente</span>
-                                {% elif invoice.status == 'PG' %}
-                                <span class="badge bg-success">Paga</span>
+                                {% if batch.status == 'COMPLETED' %}
+                                <span class="badge bg-success">Concluído</span>
+                                {% elif batch.status == 'PROCESSING' %}
+                                <span class="badge bg-warning text-dark">Processando</span>
                                 {% else %}
-                                <span class="badge bg-danger">Cancelada</span>
+                                <span class="badge bg-danger">Erro</span>
                                 {% endif %}
                             </td>
-                            <td>{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'faturamento:billing_batch_detail' pk=batch.id %}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>Detalhes
+                                </a>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
-                                Nenhuma fatura de contrato gerada recentemente.
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                Nenhum lote de faturamento encontrado.
                             </td>
                         </tr>
                         {% endfor %}
