@@ -606,71 +606,66 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(clientes) if clientes else pd.DataFrame()
     
     def extract_hierarchical(df: pd.DataFrame) -> pd.DataFrame:
-        """Extrai dados de planilha hierárquica (com prefixos)"""
+        """
+        Extrai dados de planilha com prefixos como 'CPF/CNPJ:'.
+        Trata cada linha que contém CPF/CNPJ como um cliente individual.
+        """
         clientes = []
-        cliente_atual = {}
         
         for idx, row in df.iterrows():
-            # Verificar se é linha de nome (primeira coluna vazia, segunda com nome)
-            if len(row) > 1 and pd.notna(row.iloc[1]) and (pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == ''):
-                nome = str(row.iloc[1]).strip()
-                if nome and not is_invalid_name(nome) and not nome.startswith('RG/') and not nome.startswith('Endereço:') and not nome.startswith('Sem contato'):
-                    # Salvar cliente anterior se existir
-                    if cliente_atual and 'nome' in cliente_atual:
-                        clientes.append(cliente_atual.copy())
-                    
-                    # Iniciar novo cliente
-                    cliente_atual = {'nome': nome}
+            row_str = ' '.join([str(v) for v in row.values if pd.notna(v)])
             
-            # Extrair CPF/CNPJ
-            if 'CPF/CNPJ:' in str(row.values):
-                for val in row.values:
-                    if pd.notna(val) and 'CPF/CNPJ:' in str(val):
-                        cpf_cnpj = str(val).split('CPF/CNPJ:')[1].strip()
-                        cliente_atual['cpf_cnpj'] = cpf_cnpj
+            # Só processar linhas que têm CPF/CNPJ
+            if 'CPF/CNPJ:' not in row_str:
+                continue
             
-            # Extrair RG/IE
-            if 'RG/Inscrição Estadual:' in str(row.values):
-                for val in row.values:
-                    if pd.notna(val) and 'RG/Inscrição Estadual:' in str(val):
-                        rg_ie = str(val).split('RG/Inscrição Estadual:')[1].strip()
-                        cliente_atual['rg_ie'] = rg_ie
+            cliente = {}
             
-            # Extrair Telefone
-            if 'Telefone:' in str(row.values):
-                for val in row.values:
-                    if pd.notna(val) and 'Telefone:' in str(val):
-                        telefone = str(val).split('Telefone:')[1].strip()
-                        cliente_atual['telefone'] = telefone
+            # Extrair CPF/CNPJ da linha
+            for val in row.values:
+                if pd.notna(val) and 'CPF/CNPJ:' in str(val):
+                    cpf_cnpj = str(val).split('CPF/CNPJ:')[1].strip()
+                    cliente['cpf_cnpj'] = cpf_cnpj
+                    break
             
-            # Extrair Endereço
-            if 'Endereço:' in str(row.values):
-                for val in row.values:
-                    if pd.notna(val) and 'Endereço:' in str(val):
-                        endereco = str(val).split('Endereço:')[1].strip()
-                        cliente_atual['endereco'] = endereco
+            # Tentar extrair nome da primeira coluna (se não for inválido)
+            if len(row) > 0 and pd.notna(row.iloc[0]):
+                nome_candidato = str(row.iloc[0]).strip()
+                if nome_candidato and not is_invalid_name(nome_candidato):
+                    cliente['nome'] = nome_candidato
             
-            # Extrair Status (ATIVO/INATIVO)
-            if len(row) > 8 and pd.notna(row.iloc[8]) and str(row.iloc[8]).strip() in ['ATIVO', 'INATIVO']:
-                cliente_atual['status'] = str(row.iloc[8]).strip()
+            # Extrair telefone se presente
+            for val in row.values:
+                if pd.notna(val):
+                    val_str = str(val).strip()
+                    # Detectar telefone pelo formato brasileiro
+                    if val_str.startswith('(') and len(val_str) >= 10:
+                        cliente['telefone'] = val_str
+                        break
+                    # Formato com Telefone: prefixo
+                    if 'Telefone:' in val_str:
+                        tel = val_str.split('Telefone:')[1].strip()
+                        if tel and tel != '-':
+                            cliente['telefone'] = tel
+                        break
             
-            # Extrair contatos
-            if len(row) > 1 and pd.notna(row.iloc[1]) and str(row.iloc[1]).strip() == 'Contato':
-                # Próxima linha tem os dados do contato
-                if idx + 1 < len(df):
-                    next_row = df.iloc[idx + 1]
-                    if len(next_row) > 1 and pd.notna(next_row.iloc[1]):
-                        cliente_atual['contato_nome'] = str(next_row.iloc[1]).strip()
-                    if len(next_row) > 2 and pd.notna(next_row.iloc[2]):
-                        cliente_atual['contato_telefone'] = str(next_row.iloc[2]).strip()
-                    if len(next_row) > 4 and pd.notna(next_row.iloc[4]):
-                        cliente_atual['contato_email'] = str(next_row.iloc[4]).strip()
-                    if len(next_row) > 7 and pd.notna(next_row.iloc[7]):
-                        cliente_atual['contato_tipo'] = str(next_row.iloc[7]).strip()
-        
-        # Adicionar último cliente
-        if cliente_atual and 'nome' in cliente_atual:
-            clientes.append(cliente_atual)
+            # Extrair endereço se presente
+            for val in row.values:
+                if pd.notna(val) and 'Endereço:' in str(val):
+                    endereco = str(val).split('Endereço:')[1].strip()
+                    if endereco and endereco != 'Endereço não encontrado.':
+                        cliente['endereco'] = endereco
+                    break
+            
+            # Extrair Status
+            for val in row.values:
+                if pd.notna(val) and str(val).strip() in ['ATIVO', 'INATIVO']:
+                    cliente['status'] = str(val).strip()
+                    break
+            
+            # Só adicionar se tiver ao menos CPF/CNPJ
+            if cliente.get('cpf_cnpj'):
+                clientes.append(cliente)
         
         return pd.DataFrame(clientes) if clientes else pd.DataFrame()
     
