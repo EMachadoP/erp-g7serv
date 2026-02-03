@@ -298,6 +298,21 @@
                 </div>
                 {% endif %}
 
+                <!-- Configurações (Superuser only) -->
+                {% if user.is_superuser %}
+                <a href="#configSubmenu"
+                    class="list-group-item list-group-item-action bg-transparent second-text fw-bold"
+                    data-bs-toggle="collapse">
+                    <i class="bi bi-gear-fill me-2 text-primary"></i>Configurações
+                </a>
+                <div class="collapse" id="configSubmenu">
+                    <a href="{% url 'core:company_settings' %}"
+                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
+                        Banco Cora v2
+                    </a>
+                </div>
+                {% endif %}
+
                 <!-- Financeiro -->
                 {% if user.is_authenticated %}
                 <a href="#financeiroSubmenu"
@@ -356,20 +371,6 @@
                 </a>
                 {% endif %}
 
-                {% if user.is_superuser %}
-                <div class="dropdown-divider"></div>
-                <a href="#configSubmenu"
-                    class="list-group-item list-group-item-action bg-transparent second-text fw-bold"
-                    data-bs-toggle="collapse">
-                    <i class="bi bi-gear-fill me-2 text-primary"></i>Configurações
-                </a>
-                <div class="collapse" id="configSubmenu">
-                    <a href="{% url 'core:company_settings' %}"
-                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
-                        Banco Cora v2
-                    </a>
-                </div>
-                {% endif %}
 
                 <a href="#"
                     class="list-group-item list-group-item-action bg-transparent second-text text-danger fw-bold">

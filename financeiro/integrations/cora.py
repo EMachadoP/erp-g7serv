@@ -14,10 +14,15 @@ class CoraService:
     def __init__(self):
         # 1. Try to get from Database
         db_settings = CompanySettings.objects.first()
+        cora_env = db_settings.cora_environment if db_settings else 'stage'
         
-        # UI/Stage Settings
-        self.base_url = getattr(settings, 'CORA_API_URL', "https://api.stage.cora.com.br/v2")
-        self.auth_url = getattr(settings, 'CORA_AUTH_URL', "https://matls-auth.stage.cora.com.br/token")
+        # UI/Stage/Prod Settings
+        if cora_env == 'prod':
+            self.base_url = "https://api.cora.com.br/v2"
+            self.auth_url = "https://matls-auth.cora.com.br/token"
+        else:
+            self.base_url = getattr(settings, 'CORA_API_URL', "https://api.stage.cora.com.br/v2")
+            self.auth_url = getattr(settings, 'CORA_AUTH_URL', "https://matls-auth.stage.cora.com.br/token")
         
         # Client ID Priority: DB -> Settings -> ENV
         self.client_id = (db_settings.cora_client_id if db_settings else None) or \

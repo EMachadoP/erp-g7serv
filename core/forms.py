@@ -57,8 +57,9 @@ from .models import CompanySettings
 class CompanySettingsForm(forms.ModelForm):
     class Meta:
         model = CompanySettings
-        fields = ['name', 'cnpj', 'logo', 'cora_client_id', 'cora_cert_base64', 'cora_key_base64']
+        fields = ['name', 'cnpj', 'logo', 'cora_environment', 'cora_client_id', 'cora_cert_base64', 'cora_key_base64']
         widgets = {
+            'cora_environment': forms.Select(attrs={'class': 'form-select'}),
             'cora_cert_base64': forms.Textarea(attrs={'rows': 5, 'class': 'form-control font-monospace', 'style': 'font-size: 0.8rem;'}),
             'cora_key_base64': forms.Textarea(attrs={'rows': 5, 'class': 'form-control font-monospace', 'style': 'font-size: 0.8rem;'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),

@@ -77,6 +77,11 @@ class CompanySettings(BaseModel):
     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True, verbose_name="Logo")
     
     # Integrations
+    CORA_ENV_CHOICES = [
+        ('stage', 'Homologação (Stage)'),
+        ('prod', 'Produção'),
+    ]
+    cora_environment = models.CharField(max_length=10, choices=CORA_ENV_CHOICES, default='stage', verbose_name="Ambiente Cora")
     cora_client_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cora Client ID")
     cora_cert_base64 = models.TextField(blank=True, null=True, verbose_name="Cora Certificado (Base64)")
     cora_key_base64 = models.TextField(blank=True, null=True, verbose_name="Cora Chave Privada (Base64)")
