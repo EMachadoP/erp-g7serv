@@ -117,6 +117,8 @@ def create_invoice_from_contract(request, contract_id):
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from financeiro.models import AccountReceivable, FinancialCategory
+from financeiro.services.email_service import BillingEmailService
+from financeiro.integrations.cora import CoraAPI
 from datetime import date
 import json
 
@@ -174,6 +176,7 @@ def process_contract_billing(request):
         
     contracts = Contract.objects.filter(id__in=contract_ids)
     created_count = 0
+    email_count = 0
     
     # Get or create default category for contracts
     category, _ = FinancialCategory.objects.get_or_create(
@@ -181,54 +184,75 @@ def process_contract_billing(request):
         defaults={'type': 'REVENUE'}
     )
     
+    cora = CoraAPI()
+    
     for contract in contracts:
         # Double check if already billed
         if Invoice.objects.filter(contract=contract, competence_month=month, competence_year=year).exists():
             continue
             
-        # Calculate due date
-        # If due day is passed, set for next month? Or current month?
-        # Usually contract billing is for the current month service, due next month or same month.
-        # Let's assume due date is in the competence month for now, or next month if day passed.
-        # Simple logic: Due date is day X of competence month.
         try:
-            due_date = date(year, month, contract.due_day)
-        except ValueError:
-            # Handle Feb 30 etc.
-            # Set to last day of month
-            import calendar
-            last_day = calendar.monthrange(year, month)[1]
-            due_date = date(year, month, last_day)
+            with transaction.atomic():
+                # Calculate due date
+                try:
+                    due_date = date(year, month, contract.due_day)
+                except ValueError:
+                    import calendar
+                    last_day = calendar.monthrange(year, month)[1]
+                    due_date = date(year, month, last_day)
+                
+                # 1. Create Invoice
+                invoice = Invoice.objects.create(
+                    client=contract.client,
+                    contract=contract,
+                    billing_group=contract.billing_group,
+                    competence_month=month,
+                    competence_year=year,
+                    number=f"CTR-{contract.id}-{year}{month:02d}",
+                    issue_date=timezone.now(),
+                    due_date=due_date,
+                    amount=contract.value,
+                    status='PD'
+                )
+                
+                # 2. Integrate with Cora (Passo 4)
+                boleto_url = cora.gerar_boleto(invoice)
+                if boleto_url:
+                    invoice.boleto_url = boleto_url
+                    invoice.save()
+                
+                # 3. Create Account Receivable
+                AccountReceivable.objects.create(
+                    description=f"Fatura Contrato #{contract.id} - {month}/{year}",
+                    client=contract.client,
+                    category=category,
+                    amount=contract.value,
+                    due_date=due_date,
+                    status='PENDING',
+                    invoice=invoice,
+                    document_number=invoice.number
+                )
+                
+                created_count += 1
+                
+                # 4. Send Email (Passo 2)
+                if BillingEmailService.send_invoice_email(invoice):
+                    invoice.email_sent_at = timezone.now()
+                    invoice.save()
+                    email_count += 1
+                    
+        except Exception as e:
+            messages.error(request, f"Erro ao processar contrato #{contract.id}: {str(e)}")
+            continue
             
-        # Create Invoice
-        invoice = Invoice.objects.create(
-            client=contract.client,
-            contract=contract,
-            billing_group=contract.billing_group,
-            competence_month=month,
-            competence_year=year,
-            number=f"CTR-{contract.id}-{year}{month:02d}",
-            issue_date=timezone.now(),
-            due_date=due_date,
-            amount=contract.value,
-            status='PD'
-        )
+    # Handle HTMX request (Passo 3: hx-post)
+    if request.headers.get('HX-Request'):
+        return render(request, 'faturamento/partials/billing_result_message.html', {
+            'created_count': created_count,
+            'email_count': email_count
+        })
         
-        # Create Account Receivable
-        AccountReceivable.objects.create(
-            description=f"Fatura Contrato #{contract.id} - {month}/{year}",
-            client=contract.client,
-            category=category,
-            amount=contract.value,
-            due_date=due_date,
-            status='PENDING',
-            invoice=invoice
-        )
-        
-        created_count += 1
-        
-        
-    messages.success(request, f'{created_count} faturas geradas com sucesso.')
+    messages.success(request, f'{created_count} faturas geradas ({email_count} e-mails enviados).')
     return redirect('faturamento:contract_billing_summary')
 
 @login_required

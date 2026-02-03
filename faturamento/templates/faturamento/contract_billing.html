@@ -33,7 +33,8 @@
                 </div>
                 <div class="col-md-3">
                     <label for="year" class="form-label">Ano</label>
-                    <input type="number" class="form-control" id="year" name="year" value="{{ current_year }}" required>
+                    <input type="number" class="form-control" id="year" name="year"
+                        value="{{ current_year|stringformat:'d' }}" required>
                 </div>
                 <div class="col-md-3">
                     <label for="billing_group" class="form-label">Grupo de Faturamento</label>
@@ -62,9 +63,13 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Contratos Encontrados</h5>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" id="btnSubmitBilling">
                         <i class="bi bi-cash-coin me-2"></i>Faturar Selecionados
                     </button>
+                    <!-- User wanted HTMX version: -->
+                    <!-- <button type="button" class="btn btn-primary" hx-post="/financeiro/processar-lote/" hx-include="[name='selected_contracts']" hx-vals='js:{competence_month: document.getElementById("month").value, competence_year: document.getElementById("year").value}'>
+                        Gerar Faturas e Enviar E-mails
+                    </button> -->
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -99,9 +104,9 @@
     document.getElementById('month').value = new Date().getMonth() + 1;
 
     function toggleAll(source) {
-        checkboxes = document.getElementsByName('selected_contracts');
-        for (var i = 0, n = checkboxes.length; i < n; i++) {
-            checkboxes[i].checked = source.checked;
+        const checkboxes = document.getElementsByName('selected_contracts');
+        for (let checkbox of checkboxes) {
+            checkbox.checked = source.checked;
         }
     }
 

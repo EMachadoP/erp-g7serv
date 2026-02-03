@@ -17,6 +17,14 @@ class Invoice(models.Model):
     competence_month = models.IntegerField(verbose_name="Mês de Competência", null=True)
     competence_year = models.IntegerField(verbose_name="Ano de Competência", null=True)
     
+    # Rastreamento de Documentos
+    boleto_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="URL do Boleto")
+    nfse_link = models.URLField(max_length=500, blank=True, null=True, verbose_name="Link da NFSe")
+    pdf_fatura = models.FileField(upload_to='faturas/pdf/', blank=True, null=True, verbose_name="PDF da Fatura")
+    
+    # Status de Comunicação
+    email_sent_at = models.DateTimeField(null=True, blank=True, verbose_name="E-mail enviado em")
+    
     number = models.CharField(max_length=30, unique=True)
     issue_date = models.DateField(default=timezone.now)
     due_date = models.DateField()

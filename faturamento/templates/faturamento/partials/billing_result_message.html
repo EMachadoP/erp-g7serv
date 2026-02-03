@@ -1,0 +1,15 @@
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <strong>Processamento concluído!</strong><br>
+    {{ created_count }} faturas geradas com sucesso.<br>
+    {{ email_count }} e-mails enviados aos clientes.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'faturamento:contract_billing_summary' %}" class="btn btn-outline-primary">
+        <i class="bi bi-list-check me-2"></i>Ver Resumo do Faturamento
+    </a>
+    <button type="button" class="btn btn-secondary" onclick="window.location.reload()">
+        <i class="bi bi-arrow-clockwise me-2"></i>Nova Busca
+    </button>
+</div>

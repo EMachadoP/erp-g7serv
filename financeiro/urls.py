@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from faturamento import views as views_faturamento
 
 app_name = 'financeiro'
 urlpatterns = [
@@ -31,4 +32,7 @@ urlpatterns = [
     path('planejamento/novo/', views.budget_plan_create, name='budget_plan_create'),
     path('planejamento/<int:pk>/', views.budget_plan_detail, name='budget_plan_detail'),
     path('planejamento/item/update/', views.budget_item_update, name='budget_item_update'),
+    
+    # Batch Billing (Requested in Passo 3)
+    path('processar-lote/', views_faturamento.process_contract_billing, name='process_batch_billing'),
 ]

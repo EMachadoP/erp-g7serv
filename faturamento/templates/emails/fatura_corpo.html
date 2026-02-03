@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #eee;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fatura Disponível</h1>
+        </div>
+        <div class="content">
+            <p>Olá, <strong>{{ client_name }}</strong>,</p>
+            <p>Sua fatura referente ao serviço de <strong>{{ competence }}</strong> já está disponível para consulta e
+                pagamento.</p>
+
+            <div class="details">
+                <p><strong>Valor:</strong> R$ {{ amount }}</p>
+                <p><strong>Data de Vencimento:</strong> {{ due_date }}</p>
+            </div>
+
+            {% if boleto_url %}
+            <p>Você pode acessar seu boleto bancário diretamente pelo link abaixo:</p>
+            <a href="{{ boleto_url }}" class="btn">Abrir Boleto</a>
+            {% endif %}
+
+            {% if nfse_link %}
+            <p>A Nota Fiscal de Serviço (NFSe) também pode ser visualizada aqui: <a href="{{ nfse_link }}">Ver Nota
+                    Fiscal</a></p>
+            {% endif %}
+
+            <p>Em anexo, você encontrará uma cópia em PDF desta fatura.</p>
+
+            <p>Se tiver qualquer dúvida, entre em contato conosco.</p>
+
+            <p>Atenciosamente,<br>Equipe Descartex</p>
+        </div>
+        <div class="footer">
+            <p>Este é um e-mail automático, por favor não responda diretamente.</p>
+        </div>
+    </div>
+</body>
+
+</html>
