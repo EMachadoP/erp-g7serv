@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
 <div class="row mb-4">
@@ -19,14 +19,14 @@
                 <label for="status" class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="">Todos</option>
-                    <option value="PENDING" {% if request.GET.status=='PENDING' %}selected{% endif %}>Pendente</option>
-                    <option value="RECEIVED" {% if request.GET.status=='RECEIVED' %}selected{% endif %}>Recebido
+                    <option value="PENDING" {% if request.GET.status == 'PENDING' %}selected{% endif %}>Pendente</option>
+                    <option value="RECEIVED" {% if request.GET.status == 'RECEIVED' %}selected{% endif %}>Recebido
                     </option>
-                    <option value="OVERDUE" {% if request.GET.status=='OVERDUE' %}selected{% endif %}>Vencido</option>
+                    <option value="OVERDUE" {% if request.GET.status == 'OVERDUE' %}selected{% endif %}>Vencido</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="start_date" class="form-label">Vencimento Início</label>
+                <label for="start_date" class="form-label">Vencimento InÃ­cio</label>
                 <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
             </div>
             <div class="col-md-3">
@@ -49,12 +49,12 @@
                 <thead class="bg-light">
                     <tr>
                         <th class="ps-4" style="width: 120px;">Vencimento</th>
-                        <th>Descrição</th>
+                        <th>DescriÃ§Ã£o</th>
                         <th>Cliente</th>
                         <th>Categoria</th>
                         <th class="text-end" style="width: 150px;">Valor</th>
                         <th class="text-center" style="width: 120px;">Status</th>
-                        <th class="text-end pe-4" style="width: 80px;">Ações</th>
+                        <th class="text-end pe-4" style="width: 80px;">AÃ§Ãµes</th>
                     </tr>
                 </thead>
                 <tbody>
