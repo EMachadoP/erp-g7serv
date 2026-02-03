@@ -265,6 +265,9 @@ def account_receivable_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Conta a receber atualizada com sucesso.')
+            # If we came from detail, return to detail
+            if 'next' in request.POST:
+                return redirect(request.POST.get('next'))
             return redirect('financeiro:account_receivable_list')
     else:
         form = AccountReceivableForm(instance=receivable)

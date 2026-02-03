@@ -92,6 +92,8 @@
                                 <input type="hidden" name="amount" value="{{ receivable.amount }}">
                                 <input type="hidden" name="client" value="{{ receivable.client.id }}">
                                 <input type="hidden" name="status" value="{{ receivable.status }}">
+                                <input type="hidden" name="next"
+                                    value="{% url 'financeiro:account_receivable_detail' receivable.id %}">
                                 <button type="submit" class="btn btn-sm btn-primary w-100 shadow-sm">
                                     <i class="bi bi-save me-1"></i>Salvar
                                 </button>
