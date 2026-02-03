@@ -6,6 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from .integrations.cora import CoraService
 from django.views.decorators.http import require_POST
 import json
+import requests
 from core.models import Person
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -277,26 +278,38 @@ def account_receivable_update(request, pk):
 def testar_conexao_cora(request):
     try:
         service = CoraService()
-        token = service.obter_token()
+        # Vamos capturar a resposta bruta aqui
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": service.client_id
+        }
         
-        if token:
-            return HttpResponse(f"""
-                <div style='color: green; font-family: sans-serif; padding: 20px;'>
-                    <h1>✅ Conexão com Cora Stage: SUCESSO!</h1>
-                    <p>O mTLS funcionou e o servidor obteve um Token válido.</p>
-                    <p><b>Token parcial:</b> {token[:15]}...</p>
-                </div>
-            """)
+        response = requests.post(
+            service.auth_url, 
+            data=payload, 
+            cert=service.cert_pair, 
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=15
+        )
+        
+        status = response.status_code
+        texto_erro = response.text
+
+        if status == 200:
+            token = response.json().get('access_token', 'N/A')
+            return HttpResponse(f"<h1 style='color:green; font-family: sans-serif;'>✅ Sucesso! Token: {token[:10]}...</h1>")
         else:
             return HttpResponse(f"""
-                <div style='color: red; font-family: sans-serif; padding: 20px;'>
-                    <h1>❌ Falha na Conexão</h1>
-                    <p>O certificado foi enviado, mas a Cora recusou. Verifique o Client-ID e os arquivos Base64.</p>
+                <div style="font-family: sans-serif; padding: 20px;">
+                    <h1 style='color:red'>❌ Erro {status}</h1>
+                    <p><b>Resposta da Cora:</b> {texto_erro}</p>
+                    <hr>
+                    <p><b>Dica Técnica:</b> Se for 401, o Client-ID ou Certificado estão errados. Se for 403, o certificado não tem permissão de 'Partner'.</p>
                 </div>
-            """, status=401)
+            """, status=status)
             
     except Exception as e:
-        return HttpResponse(f"Erro técnico: {str(e)}", status=500)
+        return HttpResponse(f"<h1 style='color:orange; font-family: sans-serif;'>⚠️ Erro de Infra: {str(e)}</h1>", status=500)
 
 @login_required(login_url='/accounts/login/')
 def account_receivable_create(request):
