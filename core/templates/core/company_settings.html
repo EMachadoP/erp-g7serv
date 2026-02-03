@@ -35,14 +35,12 @@
                         <div class="col-md-8">
                             <label class="form-label fw-bold small text-uppercase">Nome da Empresa</label>
                             {{ form.name }}
-                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif
-                            %}
+                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold small text-uppercase">CNPJ</label>
                             {{ form.cnpj }}
-                            {% if form.cnpj.errors %}<div class="text-danger small">{{ form.cnpj.errors }}</div>{% endif
-                            %}
+                            {% if form.cnpj.errors %}<div class="text-danger small">{{ form.cnpj.errors }}</div>{% endif %}
                         </div>
                     </div>
 
@@ -70,16 +68,14 @@
                             {{ form.cora_environment }}
                             <div class="form-text small">Mude para 'Produção' somente após validar as chaves no
                                 diagnostico.</div>
-                            {% if form.cora_environment.errors %}<div class="text-danger small">{{
-                                form.cora_environment.errors }}</div>{% endif %}
+                            {% if form.cora_environment.errors %}<div class="text-danger small">{{ form.cora_environment.errors }}</div>{% endif %}
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-uppercase">Cora Client ID</label>
                         {{ form.cora_client_id }}
-                        {% if form.cora_client_id.errors %}<div class="text-danger small">{{ form.cora_client_id.errors
-                            }}</div>{% endif %}
+                        {% if form.cora_client_id.errors %}<div class="text-danger small">{{ form.cora_client_id.errors }}</div>{% endif %}
                         <div class="form-text small">Obtido no painel de desenvolvedor da Cora (padrao 'int-xxxx').
                         </div>
                     </div>
@@ -87,8 +83,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-uppercase">Cora Certificado (Base64)</label>
                         {{ form.cora_cert_base64 }}
-                        {% if form.cora_cert_base64.errors %}<div class="text-danger small">{{
-                            form.cora_cert_base64.errors }}</div>{% endif %}
+                        {% if form.cora_cert_base64.errors %}<div class="text-danger small">{{ form.cora_cert_base64.errors }}</div>{% endif %}
                         <div class="form-text small">Conteúdo do arquivo .pem ou .crt em Base64 (incluindo as tags
                             BEGIN/END).</div>
                     </div>
@@ -96,8 +91,7 @@
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-uppercase">Cora Chave Privada (Base64)</label>
                         {{ form.cora_key_base64 }}
-                        {% if form.cora_key_base64.errors %}<div class="text-danger small">{{
-                            form.cora_key_base64.errors }}</div>{% endif %}
+                        {% if form.cora_key_base64.errors %}<div class="text-danger small">{{ form.cora_key_base64.errors }}</div>{% endif %}
                         <div class="form-text small">Conteúdo do arquivo .key em Base64 (incluindo as tags BEGIN/END).
                         </div>
                     </div>
