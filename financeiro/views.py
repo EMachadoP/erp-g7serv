@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import AccountPayable, AccountReceivable, FinancialCategory, CashAccount, CostCenter, Receipt, BudgetPlan, BudgetItem, FinancialTransaction
 from .forms import AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from .integrations.cora import CoraService
 from django.views.decorators.http import require_POST
 import json
 from core.models import Person

@@ -36,4 +36,7 @@ urlpatterns = [
     
     # Batch Billing (Requested in Passo 3)
     path('processar-lote/', views_faturamento.process_contract_billing, name='process_batch_billing'),
+    
+    # Diagnóstico Cora mTLS
+    path('diagnostico/cora/', views.testar_conexao_cora, name='diagnostico_cora'),
 ]
