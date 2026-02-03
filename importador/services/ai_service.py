@@ -505,6 +505,12 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
         # Muito curto para ser nome (menos de 2 caracteres)
         if len(s) < 2:
             return True
+        # Verifica se parece um telefone (começa com ( ou tem formato de telefone)
+        if s.startswith('(') or (len(s) >= 8 and s.replace('-', '').replace(' ', '').replace('(', '').replace(')', '').isdigit()):
+            return True
+        # Verifica se é só hífen ou traço
+        if s in ['-', '–', '—']:
+            return True
         return False
     
     def detect_format(df: pd.DataFrame) -> str:
