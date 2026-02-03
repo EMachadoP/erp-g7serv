@@ -122,3 +122,23 @@ class Technician(BaseModel):
     class Meta:
         verbose_name = "Técnico"
         verbose_name_plural = "Técnicos"
+
+class EmailTemplate(BaseModel):
+    TEMPLATE_TYPES = [
+        ('BOLETO_NF', 'Boleto + NF'),
+        ('BOLETO', 'Apenas Boleto'),
+        ('FATURA', 'Apenas Fatura'),
+        ('COBRANCA', 'Cobrança'),
+        ('ORCAMENTO', 'Orçamento'),
+    ]
+    name = models.CharField(max_length=100, verbose_name="Nome do Template")
+    subject = models.CharField(max_length=255, verbose_name="Assunto")
+    body = models.TextField(verbose_name="Corpo do E-mail", help_text="Use tags como {cliente}, {valor}, {vencimento}")
+    template_type = models.CharField(max_length=20, choices=TEMPLATE_TYPES, default='BOLETO_NF', verbose_name="Tipo de Template")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Template de E-mail"
+        verbose_name_plural = "Templates de E-mail"

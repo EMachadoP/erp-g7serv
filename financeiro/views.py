@@ -597,3 +597,115 @@ def budget_item_update(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+@login_required
+@require_POST
+def bulk_generate_boletos(request):
+    """
+    Gera boletos em lote para os IDs selecionados.
+    """
+    receivable_ids = request.POST.getlist('receivable_ids[]')
+    if not receivable_ids:
+        # Tenta pegar via corpo JSON se for chamado via Fetch/JS direto
+        try:
+            data = json.loads(request.body)
+            receivable_ids = data.get('receivable_ids', [])
+        except:
+            pass
+
+    if not receivable_ids:
+        return JsonResponse({'status': 'error', 'message': 'Nenhum item selecionado.'}, status=400)
+
+    receivables = AccountReceivable.objects.filter(id__in=receivable_ids, cora_id__isnull=True)
+    cora = CoraService()
+    success_count = 0
+    errors = []
+
+    for receivable in receivables:
+        try:
+            # Payload format according to Cora v2
+            fatura_data = {
+                "customer": {
+                    "name": receivable.client.name,
+                    "email": receivable.client.email or "faturamento@g7serv.com.br",
+                    "document": {
+                        "identity": receivable.client.document or "00000000000",
+                        "type": "CNPJ" if len(receivable.client.document or "") > 11 else "CPF"
+                    }
+                },
+                "payment_methods": ["BANK_SLIP", "PIX"],
+                "services": [
+                    {
+                        "name": receivable.description,
+                        "amount": int(receivable.amount * 100),
+                        "quantity": 1
+                    }
+                ],
+                "due_date": receivable.due_date.strftime("%Y-%m-%d")
+            }
+            
+            cora_response = cora.gerar_fatura(fatura_data)
+            
+            if "payment_url" in cora_response or "id" in cora_response:
+                receivable.cora_id = cora_response.get("id")
+                receivable.cora_pdf_url = cora_response.get("url") or cora_response.get("payment_url")
+                receivable.cora_status = cora_response.get("status", "OPEN")
+                receivable.save()
+                success_count += 1
+            else:
+                errors.append(f"Recebível #{receivable.id}: {cora_response.get('erro', 'Erro desconhecido')}")
+        except Exception as e:
+            errors.append(f"Recebível #{receivable.id}: {str(e)}")
+
+    return JsonResponse({
+        'status': 'success', 
+        'message': f'{success_count} boletos gerados com sucesso.',
+        'errors': errors
+    })
+
+@login_required
+@require_POST
+def bulk_send_emails(request):
+    """
+    Envia e-mails em lote para os IDs selecionados.
+    """
+    receivable_ids = request.POST.getlist('receivable_ids[]')
+    template_id = request.POST.get('template_id')
+    
+    if not receivable_ids:
+        try:
+            data = json.loads(request.body)
+            receivable_ids = data.get('receivable_ids', [])
+            template_id = data.get('template_id')
+        except:
+            pass
+
+    if not receivable_ids:
+        return JsonResponse({'status': 'error', 'message': 'Nenhum item selecionado.'}, status=400)
+
+    receivables = AccountReceivable.objects.filter(id__in=receivable_ids)
+    success_count = 0
+    errors = []
+
+    for receivable in receivables:
+        if not receivable.invoice:
+            # Se não houver fatura vinculada, cria uma temporária ou pula
+            # Por enquanto, o sistema espera uma fatura para o BillingEmailService
+            # Vamos garantir que ele funcione mesmo sem Invoice se possível no futuro
+            errors.append(f"Recebível #{receivable.id}: Não possui fatura vinculada.")
+            continue
+
+        try:
+            if BillingEmailService.send_invoice_email(receivable.invoice, template_id=template_id):
+                receivable.invoice.email_sent_at = timezone.now()
+                receivable.invoice.save()
+                success_count += 1
+            else:
+                errors.append(f"Recebível #{receivable.id}: Falha ao enviar e-mail.")
+        except Exception as e:
+            errors.append(f"Recebível #{receivable.id}: {str(e)}")
+
+    return JsonResponse({
+        'status': 'success', 
+        'message': f'{success_count} e-mails enviados com sucesso.',
+        'errors': errors
+    })

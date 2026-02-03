@@ -115,6 +115,11 @@ class AccountPayable(BaseModel):
     document_number = models.CharField(max_length=50, blank=True, null=True, verbose_name="Nº Documento")
     account = models.ForeignKey(CashAccount, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Conta Caixa")
     cost_center = models.ForeignKey(CostCenter, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Centro de Resultado")
+    
+    # Detalhes de Parcelamento
+    current_installment = models.IntegerField(default=1, verbose_name="Parcela Atual")
+    total_installments = models.IntegerField(default=1, verbose_name="Total de Parcelas")
+    
     notes = models.TextField(blank=True, null=True, verbose_name="Observações")
 
     def __str__(self):
@@ -159,6 +164,11 @@ class AccountReceivable(BaseModel):
     document_number = models.CharField(max_length=50, blank=True, null=True, verbose_name="Nº Documento")
     account = models.ForeignKey(CashAccount, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Conta Caixa")
     cost_center = models.ForeignKey(CostCenter, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Centro de Resultado")
+    
+    # Detalhes de Parcelamento
+    current_installment = models.IntegerField(default=1, verbose_name="Parcela Atual")
+    total_installments = models.IntegerField(default=1, verbose_name="Total de Parcelas")
+    
     notes = models.TextField(blank=True, null=True, verbose_name="Observações")
 
     def __str__(self):

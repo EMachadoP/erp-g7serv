@@ -4,28 +4,30 @@
 {% block content %}
 <div class="container-fluid mt-4">
     <h2>Contas a Pagar</h2>
-    
+
     <!-- Filtros -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-3">
                     <label>Fornecedor</label>
-                    <input type="text" name="fornecedor" class="form-control" value="{{ request.GET.fornecedor|default:'' }}">
+                    <input type="text" name="fornecedor" class="form-control"
+                        value="{{ request.GET.fornecedor|default:'' }}">
                 </div>
                 <div class="col-md-2">
                     <label>Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pendente</option>
-                        <option value="PAID" {% if status_filter == 'PAID' %}selected{% endif %}>Pago</option>
+                        <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendente</option>
+                        <option value="PAID" {% if status_filter=='PAID' %}selected{% endif %}>Pago</option>
                     </select>
                 </div>
                 <div class="col-md-2 align-self-end">
                     <button type="submit" class="btn btn-primary">Filtrar</button>
                 </div>
                 <div class="col-md-5 text-end align-self-end">
-                    <a href="{% url 'financeiro:account_payable_create' %}" class="btn btn-warning text-white">+ Nova Conta</a>
+                    <a href="{% url 'financeiro:account_payable_create' %}" class="btn btn-warning text-white">+ Nova
+                        Conta</a>
                 </div>
             </form>
         </div>
@@ -49,38 +51,50 @@
                     {% for conta in contas %}
                     <tr>
                         <td>{{ conta.due_date|date:"d/m/Y" }}</td>
-                        <td>{{ conta.description }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="fw-bold me-2">{{ conta.description }}</div>
+                                {% if conta.total_installments > 1 %}
+                                <span class="badge bg-primary rounded-pill small" title="Parcela">
+                                    {{ conta.current_installment }}/{{ conta.total_installments }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
                         <td>{{ conta.supplier.name }}</td>
                         <td>R$ {{ conta.amount }}</td>
                         <td>
                             {% if conta.status == 'PAID' %}
-                                <span class="badge bg-success">Pago</span>
+                            <span class="badge bg-success">Pago</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">Pendente</span>
+                            <span class="badge bg-warning text-dark">Pendente</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
                                     ⚙️
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'financeiro:account_payable_detail' conta.id %}">👁️ Detalhes</a></li>
+                                    <li><a class="dropdown-item"
+                                            href="{% url 'financeiro:account_payable_detail' conta.id %}">👁️
+                                            Detalhes</a></li>
                                     {% if conta.status != 'PAID' %}
                                     <li>
                                         <!-- BOTÃO GATILHO DO MODAL -->
-                                        <a class="dropdown-item btn-abrir-baixa" 
-                                           href="#" 
-                                           data-id="{{ conta.id }}" 
-                                           data-valor="{{ conta.amount }}"
-                                           data-fornecedor="{{ conta.supplier.name }}">
-                                           💸 Baixar (Pagar)
+                                        <a class="dropdown-item btn-abrir-baixa" href="#" data-id="{{ conta.id }}"
+                                            data-valor="{{ conta.amount }}" data-fornecedor="{{ conta.supplier.name }}">
+                                            💸 Baixar (Pagar)
                                         </a>
                                     </li>
                                     {% endif %}
                                     {% if conta.status == 'PAID' %}
                                     <li>
-                                        <form action="{% url 'financeiro:estornar_conta_pagar' conta.id %}" method="post" onsubmit="return confirm('Tem certeza que deseja estornar este pagamento? O saldo será devolvido à conta.');" style="display:inline;">
+                                        <form action="{% url 'financeiro:estornar_conta_pagar' conta.id %}"
+                                            method="post"
+                                            onsubmit="return confirm('Tem certeza que deseja estornar este pagamento? O saldo será devolvido à conta.');"
+                                            style="display:inline;">
                                             {% csrf_token %}
                                             <button type="submit" class="dropdown-item text-danger">
                                                 ↩️ Estornar (Desfazer)
@@ -93,7 +107,9 @@
                         </td>
                     </tr>
                     {% empty %}
-                        <tr><td colspan="6" class="text-center">Nenhuma conta encontrada.</td></tr>
+                    <tr>
+                        <td colspan="6" class="text-center">Nenhuma conta encontrada.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -113,13 +129,13 @@
                 </div>
                 <div class="modal-body">
                     <p><strong>Fornecedor:</strong> <span id="spanFornecedor"></span></p>
-                    
+
                     <div class="mb-3">
                         <label>Conta de Saída *</label>
                         <!-- O Backend deve mandar 'contas_bancarias' no contexto -->
                         <select name="conta_saida" class="form-select" required>
                             {% for banco in contas_bancarias %}
-                                <option value="{{ banco.id }}">{{ banco.name }} (R$ {{ banco.current_balance }})</option>
+                            <option value="{{ banco.id }}">{{ banco.name }} (R$ {{ banco.current_balance }})</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -136,14 +152,18 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-4"><label>Juros</label><input type="number" step="0.01" name="juros" class="form-control calc-input" value="0"></div>
-                        <div class="col-4"><label>Multa</label><input type="number" step="0.01" name="multa" class="form-control calc-input" value="0"></div>
-                        <div class="col-4"><label>Desconto</label><input type="number" step="0.01" name="desconto" class="form-control calc-input" value="0"></div>
+                        <div class="col-4"><label>Juros</label><input type="number" step="0.01" name="juros"
+                                class="form-control calc-input" value="0"></div>
+                        <div class="col-4"><label>Multa</label><input type="number" step="0.01" name="multa"
+                                class="form-control calc-input" value="0"></div>
+                        <div class="col-4"><label>Desconto</label><input type="number" step="0.01" name="desconto"
+                                class="form-control calc-input" value="0"></div>
                     </div>
 
                     <div class="mt-3 p-3 bg-light border rounded">
                         <label class="fw-bold">Total a Pagar:</label>
-                        <input type="text" name="valor_final" id="valorFinal" class="form-control form-control-lg fw-bold text-success" readonly>
+                        <input type="text" name="valor_final" id="valorFinal"
+                            class="form-control form-control-lg fw-bold text-success" readonly>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -157,56 +177,56 @@
 
 <!-- JAVASCRIPT MANUAL -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Captura o clique no botão da lista
-    const botoesBaixa = document.querySelectorAll('.btn-abrir-baixa');
-    const modalElement = document.getElementById('modalBaixa');
-    // Check if bootstrap is loaded
-    if (typeof bootstrap !== 'undefined') {
-        const modal = new bootstrap.Modal(modalElement);
-        const form = document.getElementById('formBaixa');
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Captura o clique no botão da lista
+        const botoesBaixa = document.querySelectorAll('.btn-abrir-baixa');
+        const modalElement = document.getElementById('modalBaixa');
+        // Check if bootstrap is loaded
+        if (typeof bootstrap !== 'undefined') {
+            const modal = new bootstrap.Modal(modalElement);
+            const form = document.getElementById('formBaixa');
 
-        botoesBaixa.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Pega os dados do botão
-                const id = this.getAttribute('data-id');
-                // Handle localized decimals if necessary, but here we assume raw value from backend might be float
-                // Django outputs localized string with comma usually.
-                let valorStr = this.getAttribute('data-valor').replace(',', '.'); 
-                const valor = parseFloat(valorStr);
-                const fornecedor = this.getAttribute('data-fornecedor');
+            botoesBaixa.forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
 
-                // Preenche a modal
-                document.getElementById('spanFornecedor').textContent = fornecedor;
-                document.getElementById('valorOriginal').value = valor.toFixed(2);
-                document.getElementById('valorFinal').value = valor.toFixed(2);
-                
-                // Ajusta a URL do Form (Importante!)
-                form.action = `/financeiro/realizar_baixa_conta/${id}/`;
+                    // Pega os dados do botão
+                    const id = this.getAttribute('data-id');
+                    // Handle localized decimals if necessary, but here we assume raw value from backend might be float
+                    // Django outputs localized string with comma usually.
+                    let valorStr = this.getAttribute('data-valor').replace(',', '.');
+                    const valor = parseFloat(valorStr);
+                    const fornecedor = this.getAttribute('data-fornecedor');
 
-                // Abre a modal
-                modal.show();
+                    // Preenche a modal
+                    document.getElementById('spanFornecedor').textContent = fornecedor;
+                    document.getElementById('valorOriginal').value = valor.toFixed(2);
+                    document.getElementById('valorFinal').value = valor.toFixed(2);
+
+                    // Ajusta a URL do Form (Importante!)
+                    form.action = `/financeiro/realizar_baixa_conta/${id}/`;
+
+                    // Abre a modal
+                    modal.show();
+                });
+            });
+        } else {
+            console.error("Bootstrap not loaded");
+        }
+
+        // 2. Cálculo Automático
+        const inputsCalc = document.querySelectorAll('.calc-input');
+        inputsCalc.forEach(input => {
+            input.addEventListener('input', function () {
+                const original = parseFloat(document.getElementById('valorOriginal').value) || 0;
+                const juros = parseFloat(document.querySelector('input[name="juros"]').value) || 0;
+                const multa = parseFloat(document.querySelector('input[name="multa"]').value) || 0;
+                const desconto = parseFloat(document.querySelector('input[name="desconto"]').value) || 0;
+
+                const total = original + juros + multa - desconto;
+                document.getElementById('valorFinal').value = total.toFixed(2);
             });
         });
-    } else {
-        console.error("Bootstrap not loaded");
-    }
-
-    // 2. Cálculo Automático
-    const inputsCalc = document.querySelectorAll('.calc-input');
-    inputsCalc.forEach(input => {
-        input.addEventListener('input', function() {
-            const original = parseFloat(document.getElementById('valorOriginal').value) || 0;
-            const juros = parseFloat(document.querySelector('input[name="juros"]').value) || 0;
-            const multa = parseFloat(document.querySelector('input[name="multa"]').value) || 0;
-            const desconto = parseFloat(document.querySelector('input[name="desconto"]').value) || 0;
-            
-            const total = original + juros + multa - desconto;
-            document.getElementById('valorFinal').value = total.toFixed(2);
-        });
     });
-});
 </script>
 {% endblock %}

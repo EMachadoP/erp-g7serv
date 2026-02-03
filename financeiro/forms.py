@@ -24,7 +24,7 @@ class AccountPayableForm(forms.ModelForm):
         fields = [
             'description', 'supplier', 'category', 'amount', 'due_date', 
             'occurrence_date', 'document_number', 'account', 'cost_center', 
-            'payment_method', 'notes', 'status'
+            'payment_method', 'notes', 'status', 'current_installment', 'total_installments'
         ]
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -40,6 +40,8 @@ class AccountPayableForm(forms.ModelForm):
             'account': forms.Select(attrs={'class': 'form-select'}),
             'cost_center': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'current_installment': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'total_installments': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -54,7 +56,7 @@ class AccountReceivableForm(forms.ModelForm):
             'description', 'client', 'category', 'amount', 'due_date', 
             'occurrence_date', 'document_number', 'account', 'cost_center', 
             'payment_method', 'notes', 'status', 'external_reference', 
-            'fine_amount', 'interest_percent'
+            'fine_amount', 'interest_percent', 'current_installment', 'total_installments'
         ]
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -70,6 +72,11 @@ class AccountReceivableForm(forms.ModelForm):
             'account': forms.Select(attrs={'class': 'form-select'}),
             'cost_center': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'external_reference': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: NF 123'}),
+            'fine_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'interest_percent': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'current_installment': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'total_installments': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
 
     def __init__(self, *args, **kwargs):
