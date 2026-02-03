@@ -146,8 +146,7 @@
                                 <div class="col">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <strong>#{{ invoice.number }}</strong> - {{
-                                            invoice.client.name|default:"Cliente não informado" }}
+                                            <strong>#{{ invoice.number }}</strong> - {{ invoice.client.name|default:"Cliente não informado" }}
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-primary">R$ {{ invoice.amount|floatformat:2 }}</strong>
