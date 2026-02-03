@@ -58,6 +58,52 @@
                     </div>
                     {% endif %}
                 </div>
+
+                {% if not receivable.cora_id and receivable.status == 'PENDING' %}
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-primary"></i>Configurações para o
+                        Boleto Cora</h6>
+                    <form action="{% url 'financeiro:account_receivable_update' receivable.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small text-uppercase text-muted">Vencimento</label>
+                                <input type="date" name="due_date" class="form-control form-control-sm"
+                                    value="{{ receivable.due_date|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-uppercase text-muted">Referência / NF</label>
+                                <input type="text" name="external_reference" class="form-control form-control-sm"
+                                    value="{{ receivable.external_reference|default:'' }}" placeholder="Ex: NF 123">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small text-uppercase text-muted">Multa (R$)</label>
+                                <input type="number" step="0.01" name="fine_amount" class="form-control form-control-sm"
+                                    value="{{ receivable.fine_amount|stringformat:'.2f' }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small text-uppercase text-muted">Juros (%)</label>
+                                <input type="number" step="0.01" name="interest_percent"
+                                    class="form-control form-control-sm"
+                                    value="{{ receivable.interest_percent|stringformat:'.2f' }}">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <input type="hidden" name="description" value="{{ receivable.description }}">
+                                <input type="hidden" name="amount" value="{{ receivable.amount }}">
+                                <input type="hidden" name="client" value="{{ receivable.client.id }}">
+                                <input type="hidden" name="status" value="{{ receivable.status }}">
+                                <button type="submit" class="btn btn-sm btn-primary w-100 shadow-sm">
+                                    <i class="bi bi-save me-1"></i>Salvar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            <i class="bi bi-info-circle me-1"></i>Ajuste estas informações antes de clicar no botão azul
+                            de emissão abaixo.
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
             </div>
 
             {% if receivable.status == 'PENDING' or receivable.status == 'OVERDUE' %}

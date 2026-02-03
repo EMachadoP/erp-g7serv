@@ -355,7 +355,17 @@ def emitir_boleto_cora(request, pk):
     amount_cents = int(receivable.amount * 100)
     client = receivable.client
     
-    # Cora payload structure
+    # Customer Address
+    address_data = {
+        "street": client.address or "Não informado",
+        "number": client.number or "S/N",
+        "district": client.neighborhood or "Centro",
+        "city": client.city or "Recife",
+        "state": client.state or "PE",
+        "zip_code": client.zip_code.replace('-', '').replace(' ', '') if client.zip_code else "00000000"
+    }
+    
+    # Cora payload structure (Invoice v2)
     fatura_data = {
         "customer": {
             "name": client.name,
@@ -363,17 +373,31 @@ def emitir_boleto_cora(request, pk):
             "document": {
                 "identity": client.document.replace('.', '').replace('-', '').replace('/', '').replace(' ', ''),
                 "type": "CNPJ" if len(client.document.replace('.', '').replace('-', '').replace('/', '').replace(' ', '')) > 11 else "CPF"
-            }
+            },
+            "address": address_data
         },
         "services": [
             {
-                "name": receivable.description,
+                "name": f"{receivable.description} ({receivable.external_reference or ''})",
                 "amount": amount_cents
             }
         ],
         "payment_options": ["BANK_SLIP", "PIX"],
         "due_date": receivable.due_date.isoformat()
     }
+    
+    # Add configurations for Fine (Multa) and Interest (Juros) if set
+    configs = {}
+    if receivable.fine_amount > 0:
+        # Cora fine is usually in cents
+        configs["fine"] = {"amount": int(receivable.fine_amount * 100)}
+    
+    if receivable.interest_percent > 0:
+        # Cora interest is rate per month
+        configs["interest"] = {"rate": float(receivable.interest_percent)}
+        
+    if configs:
+        fatura_data["configurations"] = configs
     
     # 2. Call Cora
     result = service.gerar_fatura(fatura_data)

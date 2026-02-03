@@ -53,7 +53,8 @@ class AccountReceivableForm(forms.ModelForm):
         fields = [
             'description', 'client', 'category', 'amount', 'due_date', 
             'occurrence_date', 'document_number', 'account', 'cost_center', 
-            'payment_method', 'notes', 'status'
+            'payment_method', 'notes', 'status', 'external_reference', 
+            'fine_amount', 'interest_percent'
         ]
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),

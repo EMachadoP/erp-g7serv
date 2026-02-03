@@ -145,6 +145,11 @@ class AccountReceivable(BaseModel):
     cora_status = models.CharField(max_length=50, blank=True, null=True, verbose_name="Status Cora")
     cora_copy_paste = models.TextField(blank=True, null=True, verbose_name="Código Pix/Linha Digitável")
     cora_pdf_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="URL do PDF")
+    
+    # Financial Rules
+    fine_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Multa (R$)")
+    interest_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Juros (% ao mês)")
+    external_reference = models.CharField(max_length=100, blank=True, null=True, verbose_name="Referência / NF")
 
     # Receipt details
     # Receipt details
