@@ -352,7 +352,7 @@ def billing_batch_detail(request, pk):
     
     # Templates de email disponíveis
     from core.models import EmailTemplate
-    email_templates = EmailTemplate.objects.filter(is_active=True)
+    email_templates = EmailTemplate.objects.filter(active=True)
     
     context = {
         'batch': batch,
