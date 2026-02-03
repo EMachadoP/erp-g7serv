@@ -271,6 +271,31 @@ def account_receivable_update(request, pk):
         'receivable': receivable
     })
 
+@staff_member_required
+def testar_conexao_cora(request):
+    try:
+        service = CoraService()
+        token = service.obter_token()
+        
+        if token:
+            return HttpResponse(f"""
+                <div style='color: green; font-family: sans-serif; padding: 20px;'>
+                    <h1>✅ Conexão com Cora Stage: SUCESSO!</h1>
+                    <p>O mTLS funcionou e o servidor obteve um Token válido.</p>
+                    <p><b>Token parcial:</b> {token[:15]}...</p>
+                </div>
+            """)
+        else:
+            return HttpResponse(f"""
+                <div style='color: red; font-family: sans-serif; padding: 20px;'>
+                    <h1>❌ Falha na Conexão</h1>
+                    <p>O certificado foi enviado, mas a Cora recusou. Verifique o Client-ID e os arquivos Base64.</p>
+                </div>
+            """, status=401)
+            
+    except Exception as e:
+        return HttpResponse(f"Erro técnico: {str(e)}", status=500)
+
 @login_required(login_url='/accounts/login/')
 def account_receivable_create(request):
     if request.method == 'POST':

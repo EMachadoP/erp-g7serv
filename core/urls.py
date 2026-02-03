@@ -28,4 +28,7 @@ urlpatterns = [
     
     # System Settings
     path('configuracoes/', views.company_settings, name='company_settings'),
+    
+    # Diagnóstico Cora
+    path('diagnostico/cora/', views.testar_conexao_cora, name='diagnostico_cora'),
 ]
