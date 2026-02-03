@@ -30,12 +30,13 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Competência:</small>
-                    <strong class="text-primary">{{ batch.competence_month|stringformat:"02d" }}/{{
-                        batch.competence_year }}</strong>
+                    <strong class="text-primary">{% if batch.competence_month < 10 %}0{% endif %}{{
+                            batch.competence_month }}/{{ batch.competence_year }}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Realizado por:</small>
-                    <strong>{{ batch.user.get_full_name|default:batch.user.username }}</strong>
+                    <strong>{% if batch.user.get_full_name %}{{ batch.user.get_full_name }}{% else %}{{
+                        batch.user.username }}{% endif %}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Realizado em:</small>
@@ -45,11 +46,13 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Dia de cobrança entre:</small>
-                    <strong>Dia {{ batch.day_range_start|stringformat:"02d" }} à dia {{ batch.day_range_end }}</strong>
+                    <strong>Dia {% if batch.day_range_start < 10 %}0{% endif %}{{ batch.day_range_start }} à dia {{
+                            batch.day_range_end }}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Grupo de Faturamento:</small>
-                    <strong>{{ batch.billing_group.name|default:"Todos" }}</strong>
+                    <strong>{% if batch.billing_group %}{{ batch.billing_group.name }}{% else %}Todos{% endif
+                        %}</strong>
                 </div>
                 <div class="col-md-4 mb-3">
                     <small class="text-muted d-block">Processo:</small>
@@ -151,29 +154,28 @@
                                 <div class="col">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <strong>#{{ invoice.number }}</strong> - {{ invoice.client.name }}
-                                            {% if invoice.client.fantasy_name %}
+                                            <strong>#{{ invoice.number }}</strong> - {% if invoice.client %}{{
+                                            invoice.client.name }}{% else %}Cliente não informado{% endif %}
+                                            {% if invoice.client and invoice.client.fantasy_name %}
                                             <small class="text-muted">({{ invoice.client.fantasy_name }})</small>
                                             {% endif %}
-                                            <span class="dropdown-toggle" style="cursor: pointer;"
-                                                data-bs-toggle="collapse"
-                                                data-bs-target="#details-{{ invoice.id }}"></span>
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-primary">R$ {{ invoice.amount|floatformat:2 }}</strong>
                                         </div>
                                     </div>
                                     <div class="text-muted small mt-1">
-                                        <i class="bi bi-calendar me-1"></i>Competência: {{
-                                        invoice.competence_month|stringformat:"02d" }}/{{ invoice.competence_year }}
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-file-text me-1"></i>Contrato: <a href="#">{{
-                                            invoice.contract.id|default:"-" }}</a>
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-tag me-1"></i>Fatura de Serviços
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-person me-1"></i>Criado por: {{
-                                        batch.user.get_full_name|default:batch.user.username }}
+                                        <i class="bi bi-calendar me-1"></i>Competência: {% if invoice.competence_month <
+                                            10 %}0{% endif %}{{ invoice.competence_month }}/{{ invoice.competence_year
+                                            }} &nbsp;|&nbsp; <i class="bi bi-file-text me-1"></i>Contrato: {% if
+                                            invoice.contract %}<a href="#">{{ invoice.contract.id }}</a>{% else %}-{%
+                                            endif %}
+                                            &nbsp;|&nbsp;
+                                            <i class="bi bi-tag me-1"></i>Fatura de Serviços
+                                            &nbsp;|&nbsp;
+                                            <i class="bi bi-person me-1"></i>Criado por: {% if batch.user.get_full_name
+                                            %}{{ batch.user.get_full_name }}{% else %}{{ batch.user.username }}{% endif
+                                            %}
                                     </div>
                                     <div class="text-muted small">
                                         <i class="bi bi-calendar-check me-1"></i>Registro: {{
@@ -272,7 +274,8 @@
                         <li><a class="dropdown-item email-template-option" href="#"
                                 data-template-id="{{ template.id }}">{{ template.name }}</a></li>
                         {% empty %}
-                        <li><a class="dropdown-item" href="#">Template Padrão</a></li>
+                        <li><a class="dropdown-item email-template-option" href="#" data-template-id="">Template
+                                Padrão</a></li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -324,7 +327,7 @@
             return Array.from(selected).map(cb => cb.value);
         }
 
-        function showToast(title, message, type = 'info') {
+        function showToast(title, message, type) {
             const toast = document.getElementById('liveToast');
             const toastTitle = document.getElementById('toastTitle');
             const toastBody = document.getElementById('toastBody');
@@ -341,7 +344,8 @@
             bsToast.show();
         }
 
-        async function callBulkAction(url, extraData = {}) {
+        async function callBulkAction(url, extraData) {
+            extraData = extraData || {};
             const ids = getSelectedIds();
             if (ids.length === 0) {
                 showToast('Atenção', 'Nenhuma fatura selecionada.', 'warning');
@@ -364,10 +368,12 @@
                 const data = await response.json();
 
                 if (data.status === 'success' || data.status === 'info') {
-                    showToast('Sucesso', data.message + (data.errors && data.errors.length > 0 ? '<br><small class="text-warning">' + data.errors.length + ' erros</small>' : ''), 'success');
+                    let msg = data.message;
                     if (data.errors && data.errors.length > 0) {
+                        msg += '<br><small class="text-warning">' + data.errors.length + ' erros</small>';
                         console.log('Erros:', data.errors);
                     }
+                    showToast('Sucesso', msg, 'success');
                 } else {
                     showToast('Erro', data.message, 'error');
                 }
@@ -377,17 +383,19 @@
         }
 
         // Event Listeners
-        checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedCount));
+        checkboxes.forEach(function (cb) {
+            cb.addEventListener('change', updateSelectedCount);
+        });
 
         selectAllBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            checkboxes.forEach(cb => cb.checked = true);
+            checkboxes.forEach(function (cb) { cb.checked = true; });
             updateSelectedCount();
         });
 
         deselectAllBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            checkboxes.forEach(cb => cb.checked = false);
+            checkboxes.forEach(function (cb) { cb.checked = false; });
             updateSelectedCount();
         });
 
@@ -403,10 +411,10 @@
             showToast('Informação', 'Funcionalidade de transação por cartão em desenvolvimento.', 'info');
         });
 
-        document.querySelectorAll('.email-template-option').forEach(option => {
+        document.querySelectorAll('.email-template-option').forEach(function (option) {
             option.addEventListener('click', function (e) {
                 e.preventDefault();
-                const templateId = this.dataset.templateId;
+                var templateId = this.getAttribute('data-template-id');
                 callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", { template_id: templateId });
             });
         });
