@@ -609,10 +609,15 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
         """
         Extrai dados de planilha com prefixos como 'CPF/CNPJ:'.
         Trata cada linha que contém CPF/CNPJ como um cliente individual.
+        Também busca dados complementares nas linhas seguintes.
         """
         clientes = []
+        processed_indices = set()  # Rastrear linhas já processadas
         
         for idx, row in df.iterrows():
+            if idx in processed_indices:
+                continue
+                
             row_str = ' '.join([str(v) for v in row.values if pd.notna(v)])
             
             # Só processar linhas que têm CPF/CNPJ
@@ -620,6 +625,7 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
                 continue
             
             cliente = {}
+            processed_indices.add(idx)
             
             # Extrair CPF/CNPJ da linha
             for val in row.values:
@@ -634,7 +640,7 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
                 if nome_candidato and not is_invalid_name(nome_candidato):
                     cliente['nome'] = nome_candidato
             
-            # Extrair telefone se presente
+            # Extrair telefone se presente na linha atual
             for val in row.values:
                 if pd.notna(val):
                     val_str = str(val).strip()
@@ -649,7 +655,7 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
                             cliente['telefone'] = tel
                         break
             
-            # Extrair endereço se presente
+            # Extrair endereço se presente na linha atual
             for val in row.values:
                 if pd.notna(val) and 'Endereço:' in str(val):
                     endereco = str(val).split('Endereço:')[1].strip()
@@ -662,6 +668,51 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
                 if pd.notna(val) and str(val).strip() in ['ATIVO', 'INATIVO']:
                     cliente['status'] = str(val).strip()
                     break
+            
+            # ========================================
+            # Buscar dados complementares nas próximas 5 linhas
+            # ========================================
+            for offset in range(1, 6):
+                next_idx = idx + offset
+                if next_idx >= len(df):
+                    break
+                    
+                next_row = df.iloc[next_idx]
+                next_row_str = ' '.join([str(v) for v in next_row.values if pd.notna(v)])
+                
+                # Se encontrar outro CPF/CNPJ, parar (próximo cliente)
+                if 'CPF/CNPJ:' in next_row_str:
+                    break
+                
+                # Marcar como processada
+                processed_indices.add(next_idx)
+                
+                # Buscar telefone se ainda não tem
+                if 'telefone' not in cliente and 'Telefone:' in next_row_str:
+                    for val in next_row.values:
+                        if pd.notna(val) and 'Telefone:' in str(val):
+                            tel = str(val).split('Telefone:')[1].strip()
+                            if tel and tel != '-':
+                                cliente['telefone'] = tel
+                            break
+                
+                # Buscar endereço se ainda não tem
+                if 'endereco' not in cliente and 'Endereço:' in next_row_str:
+                    for val in next_row.values:
+                        if pd.notna(val) and 'Endereço:' in str(val):
+                            endereco = str(val).split('Endereço:')[1].strip()
+                            if endereco and endereco != 'Endereço não encontrado.':
+                                cliente['endereco'] = endereco
+                            break
+                
+                # Buscar RG/IE se ainda não tem
+                if 'rg_ie' not in cliente and 'RG/Inscrição' in next_row_str:
+                    for val in next_row.values:
+                        if pd.notna(val) and 'RG/Inscrição' in str(val):
+                            rg_ie_parts = str(val).split(':')
+                            if len(rg_ie_parts) > 1:
+                                cliente['rg_ie'] = rg_ie_parts[1].strip()
+                            break
             
             # Só adicionar se tiver ao menos CPF/CNPJ
             if cliente.get('cpf_cnpj'):
@@ -678,13 +729,24 @@ def extract_cliente_data(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df_clientes = extract_hierarchical(df)
     
-    # Limpar CPF/CNPJ
+    # Limpar CPF/CNPJ - remover prefixo e formatar
     if not df_clientes.empty and 'cpf_cnpj' in df_clientes.columns:
-        df_clientes['cpf_cnpj'] = df_clientes['cpf_cnpj'].apply(
-            lambda x: detect_and_convert_cnpj(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 14 
-            else detect_and_convert_cpf(x) if pd.notna(x) and len(str(x).replace('.', '').replace('-', '').replace('/', '')) == 11
-            else x
-        )
+        def clean_cpf_cnpj(x):
+            if pd.isna(x):
+                return x
+            s = str(x).strip()
+            # Remover prefixo 'CPF/CNPJ:' se existir
+            if 'CPF/CNPJ:' in s:
+                s = s.split('CPF/CNPJ:')[1].strip()
+            # Remover caracteres de formatação para contar dígitos
+            digits_only = s.replace('.', '').replace('-', '').replace('/', '').replace(' ', '')
+            if len(digits_only) == 14:
+                return detect_and_convert_cnpj(s)
+            elif len(digits_only) == 11:
+                return detect_and_convert_cpf(s)
+            return s
+        
+        df_clientes['cpf_cnpj'] = df_clientes['cpf_cnpj'].apply(clean_cpf_cnpj)
     
     return df_clientes
 
