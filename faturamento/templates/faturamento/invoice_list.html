@@ -37,7 +37,7 @@
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
                         {% for y in years %}
-                        <option value="{{ y }}" {% if year_filter==y|stringformat:"s" %}selected{% endif %}>{{ y }}
+                        <option value="{{ y }}" {% if year_filter|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}
                         </option>
                         {% endfor %}
                     </select>
@@ -47,7 +47,7 @@
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
                         {% for m_num, m_name in months %}
-                        <option value="{{ m_num }}" {% if month_filter==m_num|stringformat:"s" %}selected{% endif %}>{{
+                        <option value="{{ m_num }}" {% if month_filter|stringformat:"s" == m_num|stringformat:"s" %}selected{% endif %}>{{
                             m_name }}</option>
                         {% endfor %}
                     </select>
