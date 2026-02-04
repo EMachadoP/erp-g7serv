@@ -81,6 +81,7 @@ class BoletoCora(models.Model):
     )
 
     nfse = models.ForeignKey(NFSe, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="NFS-e", related_name="boletos_cora")
+    fatura = models.ForeignKey('faturamento.Invoice', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Fatura Avulsa", related_name="boletos_cora")
     cliente = models.ForeignKey(Person, on_delete=models.PROTECT, verbose_name="Cliente", related_name="boletos_cora")
     cora_id = models.CharField(max_length=100, unique=True, verbose_name="ID Cora")
     valor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")

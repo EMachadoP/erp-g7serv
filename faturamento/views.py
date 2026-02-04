@@ -489,6 +489,7 @@ def invoice_bulk_generate_boletos(request):
             # Cria objeto que simula NFSe para compatibilidade com CoraBoleto
             class FaturaWrapper:
                 def __init__(self, inv):
+                    self.original_invoice = inv
                     self.numero_dps = inv.number
                     self.cliente = inv.client
                     self.due_date = inv.due_date

@@ -2,6 +2,7 @@ import requests
 import json
 import uuid
 from django.utils import timezone
+from nfse_nacional.models import NFSe
 from integracao_cora.models import CoraConfig, BoletoCora
 from integracao_cora.services.auth import CoraAuth
 from integracao_cora.services.base import mTLS_cert_paths
@@ -109,11 +110,27 @@ class CoraBoleto:
             # Assuming:
             # { "id": "...", "payment_options": { "bank_slip": { "barcode": "...", "digitable": "...", "url": "..." } } }
             
+            # 4. Save BoletoCora
             boleto_id = data.get('id')
             bank_slip = data.get('payment_options', {}).get('bank_slip', {})
             
+            # Prepare optional relations
+            rel_nfse = None
+            rel_fatura = None
+            
+            # Check if nfse_obj is a real model instance or a wrapper
+            if hasattr(nfse_obj, 'pk'):
+                if isinstance(nfse_obj, NFSe):
+                    rel_nfse = nfse_obj
+                else:
+                    # In case it's an Invoice model instance passed directly
+                    rel_fatura = nfse_obj
+            elif hasattr(nfse_obj, 'original_invoice'):
+                rel_fatura = nfse_obj.original_invoice
+
             boleto = BoletoCora.objects.create(
-                nfse=nfse_obj,
+                nfse=rel_nfse,
+                fatura=rel_fatura,
                 cliente=nfse_obj.cliente,
                 cora_id=boleto_id,
                 valor=nfse_obj.servico.sale_price,
