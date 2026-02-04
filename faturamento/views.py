@@ -515,6 +515,7 @@ def invoice_bulk_generate_boletos(request):
     return JsonResponse({
         'status': 'success' if success_count > 0 else 'warning',
         'message': message,
+        'success_count': success_count,
         'errors': errors
     })
 
