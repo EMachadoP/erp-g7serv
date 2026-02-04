@@ -39,27 +39,29 @@ class CoraAuth:
             # Determine URL
             url = self.URL_PRODUCAO if config.ambiente == 1 else self.URL_HOMOLOGACAO
 
-            # Payload
+            # Preparar credenciais limpando espaços
+            client_id = config.client_id.strip() if config.client_id else ""
+            client_secret = config.client_secret.strip() if config.client_secret else ""
+
+            # Payload (apenas grant_type, id/secret podem ir no header via Basic Auth)
+            # No entanto, a Cora aceita ambos. Vou mandar grant_type e client_id no body
+            # e usar auth=(id, secret) que gera o header Authorization: Basic.
             payload = {
                 'grant_type': 'client_credentials',
-                'client_id': config.client_id
+                'client_id': client_id  # Mantém no body por precaução/compatibilidade
             }
             
-            # Só envia secret se não for nulo/vazio
-            if config.client_secret and config.client_secret.strip():
-                payload['client_secret'] = config.client_secret.strip()
-
             # Headers explícitos
             headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'
             }
 
-            # Request
+            # Request usando Basic Auth + mTLS
             try:
                 response = requests.post(
                     url,
                     data=payload,
+                    auth=(client_id, client_secret),
                     headers=headers,
                     cert=cert_files,
                     timeout=30
@@ -74,6 +76,11 @@ class CoraAuth:
                     error_msg = error_data.get('error_description') or error_data.get('error') or response.text
                 except:
                     pass
+                
+                # Ajuda o usuário a identificar o problema
+                if "invalid_client" in str(error_msg).lower():
+                    error_msg = "invalid_client (Verifique se o Client ID e Ambiente estão corretos e se o certificado é válido)"
+                
                 raise Exception(f"Erro ao autenticar na Cora: {response.status_code} - {error_msg}")
 
             data = response.json()
