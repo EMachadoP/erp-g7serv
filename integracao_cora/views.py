@@ -5,6 +5,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import CoraConfig
 from .forms import CoraConfigForm
 from .services.auth import CoraAuth
+from django.http import HttpResponse, JsonResponse
+from .models import BoletoCora
+from faturamento.models import Invoice
+from financeiro.models import AccountReceivable, CashAccount, FinancialTransaction
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ConfiguracaoCoraView(LoginRequiredMixin, View):
     template_name = 'integracao_cora/configuracao.html'
@@ -65,3 +76,69 @@ class ConfiguracaoCoraView(LoginRequiredMixin, View):
             return redirect('configuracao_cora')
         
         return render(request, self.template_name, {'form': form})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CoraWebhookView(View):
+    """
+    Recebe notificações de eventos da Cora (Webhooks).
+    Principal uso: Baixa automática de boletos pagos.
+    """
+    def post(self, request):
+        try:
+            payload = json.loads(request.body)
+            logger.info(f"Recebido Webhook Cora: {json.dumps(payload)}")
+            
+            event_type = payload.get('event')
+            data = payload.get('data', {})
+            invoice_data = data.get('invoice', {})
+            cora_id = invoice_data.get('id')
+            status = invoice_data.get('status') # Ex: 'PAID'
+            
+            # 1. Procurar boleto correspondente
+            if cora_id:
+                boleto = BoletoCora.objects.filter(cora_id=cora_id).first()
+                
+                # Evento de pagamento
+                if event_type == 'invoice.paid' or status == 'PAID':
+                    if boleto:
+                        # Atualiza status do boleto
+                        boleto.status = 'Pago'
+                        boleto.save()
+                        
+                        # Atualiza status da Fatura se existir
+                        if boleto.fatura:
+                            boleto.fatura.status = 'PG'
+                            boleto.fatura.save()
+                        
+                        # Atualiza status do Contas a Receber
+                        receivable = AccountReceivable.objects.filter(cora_id=cora_id).first()
+                        if not receivable and boleto.fatura:
+                            receivable = AccountReceivable.objects.filter(invoice=boleto.fatura).first()
+                            
+                        if receivable and receivable.status != 'RECEIVED':
+                            receivable.status = 'RECEIVED'
+                            receivable.receipt_date = timezone.now().date()
+                            receivable.payment_method = 'PIX/Boleto Cora'
+                            receivable.save()
+                            
+                            # Opcional: Criar movimentação financeira real no caixa padrão
+                            account = CashAccount.objects.first() # Pega a primeira conta se não houver selecionada
+                            if account:
+                                FinancialTransaction.objects.create(
+                                    description=f"Recebimento Cora: {receivable.description}",
+                                    amount=receivable.amount,
+                                    transaction_type='IN',
+                                    date=timezone.now().date(),
+                                    account=account,
+                                    category=receivable.category,
+                                    related_receivable=receivable
+                                )
+                                
+                    return HttpResponse("Webhook processed", status=200)
+
+            return HttpResponse("Event ignored", status=200)
+            
+        except Exception as e:
+            logger.error(f"Erro ao processar Webhook Cora: {str(e)}")
+            return HttpResponse(f"Error: {str(e)}", status=400)
+

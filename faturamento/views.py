@@ -505,6 +505,16 @@ def invoice_bulk_generate_boletos(request):
             if boleto and boleto.url_pdf:
                 invoice.boleto_url = boleto.url_pdf
                 invoice.save()
+                
+                # Atualiza também o Contas a Receber se existir
+                from financeiro.models import AccountReceivable
+                receivable = AccountReceivable.objects.filter(invoice=invoice).first()
+                if receivable:
+                    receivable.cora_id = boleto.cora_id
+                    receivable.cora_pdf_url = boleto.url_pdf
+                    receivable.cora_status = 'Aberto'
+                    receivable.save()
+
                 success_count += 1
             else:
                 errors.append(f"Fatura #{invoice.number}: Boleto gerado mas sem URL")
