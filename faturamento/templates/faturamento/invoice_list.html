@@ -124,26 +124,107 @@
 document.addEventListener('DOMContentLoaded', function () {
     const checkboxes = document.querySelectorAll('.invoice-checkbox');
     const selectedCountEl = document.getElementById('selectedCount');
+    
+    // Atualiza contador visualmente
     function updateSelectedCount() {
         const count = document.querySelectorAll('.invoice-checkbox:checked').length;
         selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
-        if(count > 0) selectedCountEl.classList.replace('bg-primary', 'bg-success');
-        else selectedCountEl.classList.replace('bg-success', 'bg-primary');
+        // Força atualização visual
+        if(count > 0) {
+            selectedCountEl.classList.remove('bg-primary');
+            selectedCountEl.classList.add('bg-success');
+        } else {
+            selectedCountEl.classList.remove('bg-success');
+            selectedCountEl.classList.add('bg-primary');
+        }
+        console.log('Faturas selecionadas:', count);
     }
-    function getSelectedIds() { return Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value); }
-    function showToast(msg) { alert(msg); }
-    function callBulkAction(url, extra = {}) {
+    
+    function getSelectedIds() { 
+        return Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value); 
+    }
+    
+    function showToast(msg, isError = false) { 
+        alert(msg); 
+    }
+    
+    function callBulkAction(url, buttonId, extra = {}) {
         const ids = getSelectedIds();
-        if (ids.length === 0) { showToast('Selecione pelo menos uma fatura.'); return; }
-        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }, body: JSON.stringify({ invoice_ids: ids, ...extra }) })
-        .then(res => res.json()).then(data => { showToast(data.message); location.reload(); }).catch(err => showToast('Erro: ' + err.message));
+        if (ids.length === 0) { 
+            showToast('Selecione pelo menos uma fatura.'); 
+            return; 
+        }
+        
+        // Feedback de loading
+        const btn = document.getElementById(buttonId);
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+        
+        console.log('Chamando API:', url, 'IDs:', ids);
+        
+        fetch(url, { 
+            method: 'POST', 
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-CSRFToken': '{{ csrf_token }}' 
+            }, 
+            body: JSON.stringify({ invoice_ids: ids, ...extra }) 
+        })
+        .then(res => {
+            console.log('Response status:', res.status);
+            if (!res.ok) {
+                return res.json().then(data => { throw new Error(data.message || 'Erro no servidor'); });
+            }
+            return res.json();
+        })
+        .then(data => { 
+            console.log('Response data:', data);
+            showToast(data.message || 'Operação concluída!'); 
+            if (data.errors && data.errors.length > 0) {
+                console.log('Erros:', data.errors);
+            }
+            location.reload(); 
+        })
+        .catch(err => {
+            console.error('Erro:', err);
+            showToast('Erro: ' + err.message, true);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
     }
+    
+    // Event listeners para checkboxes
     checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedCount));
-    document.getElementById('selectAll').addEventListener('click', (e) => { e.preventDefault(); checkboxes.forEach(cb => cb.checked = true); updateSelectedCount(); });
-    document.getElementById('deselectAll').addEventListener('click', (e) => { e.preventDefault(); checkboxes.forEach(cb => cb.checked = false); updateSelectedCount(); });
-    document.getElementById('btnGerarNota').addEventListener('click', () => callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}"));
-    document.getElementById('btnGerarBoletos').addEventListener('click', () => callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}"));
-    document.querySelectorAll('.email-template-option').forEach(opt => opt.addEventListener('click', function(e) { e.preventDefault(); callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", { template_id: this.getAttribute('data-template-id') }); }));
+    
+    // Selecionar/Desmarcar todas
+    document.getElementById('selectAll').addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        checkboxes.forEach(cb => cb.checked = true); 
+        updateSelectedCount(); 
+    });
+    document.getElementById('deselectAll').addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        checkboxes.forEach(cb => cb.checked = false); 
+        updateSelectedCount(); 
+    });
+    
+    // Botões de ação
+    document.getElementById('btnGerarNota').addEventListener('click', () => 
+        callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota'));
+    
+    document.getElementById('btnGerarBoletos').addEventListener('click', () => 
+        callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos'));
+    
+    document.querySelectorAll('.email-template-option').forEach(opt => 
+        opt.addEventListener('click', function(e) { 
+            e.preventDefault(); 
+            callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: this.getAttribute('data-template-id') }); 
+        })
+    );
+    
+    // Atualizar contador inicial
+    updateSelectedCount();
 });
 </script>
 {% endblock %}

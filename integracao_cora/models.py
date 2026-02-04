@@ -15,6 +15,27 @@ class CoraConfig(models.Model):
     access_token = models.TextField(blank=True, null=True, verbose_name="Access Token")
     token_expires_at = models.DateTimeField(blank=True, null=True, verbose_name="Token Expira em")
     ambiente = models.IntegerField(choices=AMBIENTE_CHOICES, default=2, verbose_name="Ambiente")
+    
+    # Configurações de Boleto
+    taxa_multa = models.DecimalField(
+        max_digits=5, decimal_places=2, default=2.00, 
+        verbose_name="Taxa de Multa (%)", 
+        help_text="Percentual de multa por atraso (ex: 2.00 para 2%)"
+    )
+    taxa_juros = models.DecimalField(
+        max_digits=5, decimal_places=2, default=1.00, 
+        verbose_name="Taxa de Juros (% a.m.)", 
+        help_text="Percentual de juros ao mês (ex: 1.00 para 1% a.m.)"
+    )
+    dias_protesto = models.IntegerField(
+        default=0, verbose_name="Dias para Protesto",
+        help_text="Dias após vencimento para protesto (0 = sem protesto)"
+    )
+    instrucoes_boleto = models.TextField(
+        blank=True, null=True, verbose_name="Instruções do Boleto",
+        help_text="Instruções que aparecerão no boleto para o pagador",
+        default="Pagável em qualquer banco até o vencimento.\nApós o vencimento cobrar multa e juros."
+    )
 
     def __str__(self):
         return f"Configuração Cora ({self.get_ambiente_display()})"
