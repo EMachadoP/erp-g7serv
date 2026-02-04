@@ -45,19 +45,36 @@ class CoraAuth:
                 'client_id': config.client_id
             }
             
-            if config.client_secret:
-                payload['client_secret'] = config.client_secret
+            # Só envia secret se não for nulo/vazio
+            if config.client_secret and config.client_secret.strip():
+                payload['client_secret'] = config.client_secret.strip()
+
+            # Headers explícitos
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            }
 
             # Request
-            response = requests.post(
-                url,
-                data=payload,
-                cert=cert_files,
-                timeout=30
-            )
+            try:
+                response = requests.post(
+                    url,
+                    data=payload,
+                    headers=headers,
+                    cert=cert_files,
+                    timeout=30
+                )
+            except Exception as e:
+                raise Exception(f"Falha na requisição de rede para Cora: {str(e)}")
 
             if response.status_code != 200:
-                raise Exception(f"Erro ao autenticar na Cora: {response.status_code} - {response.text}")
+                error_msg = response.text
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('error_description') or error_data.get('error') or response.text
+                except:
+                    pass
+                raise Exception(f"Erro ao autenticar na Cora: {response.status_code} - {error_msg}")
 
             data = response.json()
             

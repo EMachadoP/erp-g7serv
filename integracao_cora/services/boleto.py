@@ -56,19 +56,17 @@ class CoraBoleto:
             },
             "services": [
                 {
-                    "name": nfse_obj.servico.name[:255],
-                    "description": instrucoes[:1000],
+                    "name": nfse_obj.servico.name[:100],
+                    "description": (instrucoes or "Serviços prestados")[:100],
                     "amount": int(nfse_obj.servico.sale_price * 100) # Amount in cents
                 }
             ],
             "payment_terms": {
                 "due_date": due_date,
                 "fine": {
-                    "date": due_date,
                     "amount": fine_amount_cents
                 },
                 "interest": {
-                    "date": due_date,
                     "rate": interest_rate
                 }
             },
