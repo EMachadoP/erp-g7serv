@@ -334,6 +334,35 @@ def sync_receables_view(request):
     messages.success(request, f"Sincronização concluída! Criados: {created_count}, Já existentes: {skipped_count}.")
     return redirect('financeiro:account_receivable_list')
 
+@login_required
+def receivables_diagnostics(request):
+    """View de diagnóstico para verificar o link entre Faturas e Contas a Receber."""
+    if not request.user.is_superuser:
+        from django.http import JsonResponse
+        return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+    from faturamento.models import Invoice
+    from .models import AccountReceivable
+    from django.http import JsonResponse
+    from django.db import models
+    
+    invoices = Invoice.objects.all().order_by('-id')[:100]
+    data = []
+    for inv in invoices:
+        receivable = AccountReceivable.objects.filter(invoice=inv).first()
+        data.append({
+            'invoice_id': inv.id,
+            'number': inv.number,
+            'client': inv.client.name if inv.client else None,
+            'amount': str(inv.amount),
+            'active': inv.active,
+            'has_receivable': receivable is not None,
+            'receivable_id': receivable.id if receivable else None,
+            'receivable_status': receivable.status if receivable else None,
+            'receivable_active': receivable.active if receivable else None,
+        })
+    return JsonResponse({'invoices': data})
+
 @login_required(login_url='/accounts/login/')
 def account_receivable_update(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)
