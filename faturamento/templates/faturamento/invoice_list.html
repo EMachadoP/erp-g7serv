@@ -10,8 +10,9 @@
                 <h2 class="text-primary mb-0"><i class="bi bi-receipt me-2"></i>Faturas Geradas</h2>
                 <p class="text-muted mb-0">Gerencie e acompanhe todas as faturas do sistema.</p>
             </div>
-            <a href="{% url 'faturamento:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nova
-                Fatura</a>
+            <a href="{% url 'faturamento:create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Nova Fatura
+            </a>
         </div>
     </div>
     <div class="card shadow-sm border-0 mb-4">
@@ -26,31 +27,36 @@
                     <label class="form-label small text-uppercase fw-bold">Ano</label>
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
-                        {% for y in years %}<option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{
-                            y.label }}</option>{% endfor %}
+                        {% for y in years %}
+                        <option value="{{ y.value }}" {% if y.selected %} selected{% endif %}>{{ y.label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-uppercase fw-bold">Mes</label>
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
-                        {% for m in months %}<option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{
-                            m.label }}</option>{% endfor %}
+                        {% for m in months %}
+                        <option value="{{ m.value }}" {% if m.selected %} selected{% endif %}>{{ m.label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        {% for s in statuses %}<option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{
-                            s.label }}</option>{% endfor %}
+                        {% for s in statuses %}
+                        <option value="{{ s.value }}" {% if s.selected %} selected{% endif %}>{{ s.label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i
-                            class="bi bi-filter me-1"></i>Filtrar</button>
-                    <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary"><i
-                            class="bi bi-x-circle"></i></a>
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-filter me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
                 </div>
             </form>
         </div>
@@ -75,30 +81,41 @@
                     <div class="col">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h6 class="mb-1 fw-bold">#{{ invoice.number }} - {{ invoice.client.name|default:"Cliente
-                                    nao informado" }}</h6>
-                                <div class="text-muted small"><i class="bi bi-calendar-event me-1"></i>Competencia: {{
-                                    invoice.competence_month }}/{{ invoice.competence_year }} | <i
-                                        class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
-                                    | <i class="bi bi-tag me-1"></i>Fatura de Servicos</div>
-                                <div class="text-muted small mt-1"><i class="bi bi-calendar-check me-1"></i>Registro: {{
-                                    invoice.created_at|date:"d/m/Y" }}{% if invoice.boleto_url %} | <a
-                                        href="{{ invoice.boleto_url }}" target="_blank" class="text-danger"
-                                        download>Boleto</a>{% endif %}{% if invoice.nfse_link %} | <a
-                                        href="{{ invoice.nfse_link }}" target="_blank" class="text-success">NFSe</a>{%
-                                    endif %}</div>
+                                <h6 class="mb-1 fw-bold">#{{ invoice.number }} - {{ invoice.client.name }}</h6>
+                                <div class="text-muted small">
+                                    <i class="bi bi-calendar-event me-1"></i>Competencia: {{ invoice.competence_month
+                                    }}/{{ invoice.competence_year }} |
+                                    <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id }} |
+                                    <i class="bi bi-tag me-1"></i>Fatura de Servicos
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-calendar-check me-1"></i>Registro: {{
+                                    invoice.created_at|date:"d/m/Y" }}
+                                    {% if invoice.boleto_url %}
+                                    | <a href="{{ invoice.boleto_url }}" target="_blank" class="text-danger"
+                                        download>Boleto</a>
+                                    {% endif %}
+                                    {% if invoice.nfse_link %}
+                                    | <a href="{{ invoice.nfse_link }}" target="_blank" class="text-success">NFSe</a>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2 }}</h5>
-                                {% if invoice.status == "PG" %}<span class="badge bg-success">Paga</span>{% elif
-                                invoice.status == "CN" %}<span class="badge bg-danger">Cancelada</span>{% else %}<span
-                                    class="badge bg-warning text-dark">Pendente</span>{% endif %}
+                                {% if invoice.status == "PG" %}
+                                <span class="badge bg-success">Paga</span>
+                                {% elif invoice.status == "CN" %}
+                                <span class="badge bg-danger">Cancelada</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pendente</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                     <div class="col-auto">
-                        <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="btn btn-light btn-sm"><i
-                                class="bi bi-eye"></i></a>
+                        <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="btn btn-light btn-sm">
+                            <i class="bi bi-eye"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -113,16 +130,25 @@
         <div class="card-footer bg-white py-3">
             <nav>
                 <ul class="pagination pagination-sm justify-content-center mb-0">
-                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
                             href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Anterior</a>
-                    </li>{% endif %}
-                    {% for i in page_obj.paginator.page_range %}<li
-                        class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link"
+                    </li>
+                    {% endif %}
+                    {% for i in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link"
                             href="?page={{ i }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">{{
-                            i }}</a></li>{% endfor %}
-                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+                            i }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
                             href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Proximo</a>
-                    </li>{% endif %}
+                    </li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
@@ -132,18 +158,29 @@
         <div class="card-body d-flex justify-content-between align-items-center py-3">
             <span class="badge bg-primary px-3 py-2 rounded-pill" id="selectedCount">0 fatura(s) selecionada(s)</span>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-warning" id="btnGerarNota"><i
-                        class="bi bi-file-earmark-text me-1"></i>Gerar NFSe</button>
-                <button type="button" class="btn btn-outline-primary" id="btnGerarBoletos"><i
-                        class="bi bi-upc me-1"></i>Gerar Boletos</button>
+                <button type="button" class="btn btn-warning" id="btnGerarNota">
+                    <i class="bi bi-file-earmark-text me-1"></i>Gerar NFSe
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="btnGerarBoletos">
+                    <i class="bi bi-upc me-1"></i>Gerar Boletos
+                </button>
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                        id="btnEmail"><i class="bi bi-envelope me-1"></i>Enviar E-mail</button>
+                        id="btnEmail">
+                        <i class="bi bi-envelope me-1"></i>Enviar E-mail
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        {% for template in email_templates %}<li><a class="dropdown-item email-template-option" href="#"
-                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>{% empty %}<li><a
-                                class="dropdown-item email-template-option" href="#" data-template-id="">Template
-                                Padrao</a></li>{% endfor %}
+                        {% for template in email_templates %}
+                        <li>
+                            <a class="dropdown-item email-template-option" href="#"
+                                data-template-id="{{ template.id }}">{{ template.name }}</a>
+                        </li>
+                        {% empty %}
+                        <li>
+                            <a class="dropdown-item email-template-option" href="#" data-template-id="">Template
+                                Padrao</a>
+                        </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
@@ -151,6 +188,7 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
     (function () {
@@ -160,56 +198,81 @@
         function updateSelectedCount() {
             var count = document.querySelectorAll('.invoice-checkbox:checked').length;
             selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
-            selectedCountEl.className = 'badge px-3 py-2 rounded-pill ' + (count > 0 ? 'bg-success' : 'bg-primary');
+            if (count > 0) {
+                selectedCountEl.className = 'badge bg-success px-3 py-2 rounded-pill';
+            } else {
+                selectedCountEl.className = 'badge bg-primary px-3 py-2 rounded-pill';
+            }
         }
 
         function getSelectedIds() {
             var ids = [];
             var boxes = document.querySelectorAll('.invoice-checkbox:checked');
-            for (var i = 0; i < boxes.length; i++) { ids.push(boxes[i].value); }
+            for (var i = 0; i < boxes.length; i++) {
+                ids.push(boxes[i].value);
+            }
             return ids;
         }
 
         function callBulkAction(url, buttonId, extra) {
             var ids = getSelectedIds();
-            if (ids.length === 0) { alert('Selecione pelo menos uma fatura.'); return; }
+            if (ids.length === 0) {
+                alert('Selecione pelo menos uma fatura.');
+                return;
+            }
             var btn = document.getElementById(buttonId);
             var orig = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
             var payload = { invoice_ids: ids };
-            if (extra) { for (var k in extra) { payload[k] = extra[k]; } }
+            if (extra) {
+                for (var k in extra) {
+                    payload[k] = extra[k];
+                }
+            }
             fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
                 body: JSON.stringify(payload)
-            }).then(function (r) { return r.json(); }).then(function (d) {
-                alert(d.message || 'Sucesso!');
-                location.reload();
-            }).catch(function (e) {
-                alert('Erro: ' + e.message);
-                btn.disabled = false;
-                btn.innerHTML = orig;
-            });
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    alert(d.message || 'Sucesso!');
+                    location.reload();
+                })
+                .catch(function (e) {
+                    alert('Erro: ' + e.message);
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                });
         }
 
         if (listContainer) {
             listContainer.addEventListener('change', function (e) {
-                if (e.target.classList.contains('invoice-checkbox')) { updateSelectedCount(); }
+                if (e.target.classList.contains('invoice-checkbox')) {
+                    updateSelectedCount();
+                }
             });
         }
 
         document.getElementById('selectAll').onclick = function (e) {
             e.preventDefault();
             var boxes = document.querySelectorAll('.invoice-checkbox');
-            for (var i = 0; i < boxes.length; i++) { boxes[i].checked = true; }
+            for (var i = 0; i < boxes.length; i++) {
+                boxes[i].checked = true;
+            }
             updateSelectedCount();
         };
 
         document.getElementById('deselectAll').onclick = function (e) {
             e.preventDefault();
             var boxes = document.querySelectorAll('.invoice-checkbox');
-            for (var i = 0; i < boxes.length; i++) { boxes[i].checked = false; }
+            for (var i = 0; i < boxes.length; i++) {
+                boxes[i].checked = false;
+            }
             updateSelectedCount();
         };
 
@@ -225,7 +288,8 @@
             var opt = e.target.closest('.email-template-option');
             if (opt) {
                 e.preventDefault();
-                callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: opt.getAttribute('data-template-id') });
+                var tid = opt.getAttribute('data-template-id');
+                callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: tid });
             }
         });
 
