@@ -89,26 +89,26 @@ def api_upload_file(request):
         # Se for clientes ou contratos, usar processamento especial
         if module_type == 'clientes':
             from .services.ai_service import extract_cliente_data
-            import math
-            import numpy as np
             
             df = file_service.read_file(file_path, file_type=file_type)
             df_clientes = extract_cliente_data(df)
             
-            # Converter DataFrame para lista de dicts com limpeza robusta de NaN
+            # Função para limpar qualquer valor NaN de forma segura
+            def clean_value(val):
+                try:
+                    if val is None:
+                        return ""
+                    if pd.isna(val):
+                        return ""
+                    # Converter para string para garantir serialização
+                    return str(val)
+                except (TypeError, ValueError):
+                    return ""
+            
+            # Converter DataFrame para lista de dicts com limpeza robusta
             preview_data = []
             for _, row in df_clientes.head(10).iterrows():
-                clean_row = {}
-                for col, val in row.items():
-                    # Verificar e limpar todos os tipos de NaN/None
-                    if val is None:
-                        clean_row[col] = ""
-                    elif isinstance(val, float) and (math.isnan(val) or np.isnan(val)):
-                        clean_row[col] = ""
-                    elif pd.isna(val):
-                        clean_row[col] = ""
-                    else:
-                        clean_row[col] = str(val) if not isinstance(val, str) else val
+                clean_row = {col: clean_value(val) for col, val in row.items()}
                 preview_data.append(clean_row)
             
             return JsonResponse({
