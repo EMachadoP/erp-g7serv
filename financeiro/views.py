@@ -283,6 +283,45 @@ def account_receivable_list(request):
         'email_templates': email_templates
     })
 
+@login_required
+def sync_receables_view(request):
+    """View manual para garantir que todas as faturas tenham um contas a receber."""
+    if not request.user.is_superuser:
+        messages.error(request, "Acesso negado.")
+        return redirect('financeiro:account_receivable_list')
+        
+    from faturamento.models import Invoice
+    from .models import AccountReceivable, FinancialCategory
+    
+    invoices = Invoice.objects.all()
+    created_count = 0
+    
+    category, _ = FinancialCategory.objects.get_or_create(
+        name="Receita de Faturas",
+        defaults={'type': 'REVENUE'}
+    )
+    
+    for inv in invoices:
+        if not AccountReceivable.objects.filter(invoice=inv).exists():
+            description = f"Fatura #{inv.number}"
+            if inv.client:
+                description += f" - {inv.client.name}"
+            
+            AccountReceivable.objects.create(
+                description=description,
+                client=inv.client,
+                category=category,
+                amount=inv.amount,
+                due_date=inv.due_date,
+                status='PENDING' if inv.status == 'PD' else ('RECEIVED' if inv.status == 'PG' else 'CANCELLED'),
+                invoice=inv,
+                document_number=inv.number
+            )
+            created_count += 1
+            
+    messages.success(request, f"Sincronização concluída. {created_count} contas a receber criadas.")
+    return redirect('financeiro:account_receivable_list')
+
 @login_required(login_url='/accounts/login/')
 def account_receivable_update(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)

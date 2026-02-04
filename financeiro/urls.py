@@ -18,6 +18,7 @@ urlpatterns = [
     # Contas a Receber
     path('contas-a-receber/', views.account_receivable_list, name='account_receivable_list'),
     path('contas-a-receber/nova/', views.account_receivable_create, name='account_receivable_create'),
+    path('contas-a-receber/sincronizar/', views.sync_receables_view, name='sync_receivables'),
     path('contas-a-receber/<int:pk>/', views.account_receivable_detail, name='account_receivable_detail'),
     path('contas-a-receber/<int:pk>/editar/', views.account_receivable_update, name='account_receivable_update'),
     path('contas-a-receber/<int:pk>/receber/', views.account_receivable_receive, name='account_receivable_receive'),
