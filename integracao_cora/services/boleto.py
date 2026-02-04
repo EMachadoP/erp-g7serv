@@ -29,14 +29,19 @@ class CoraBoleto:
         # Determine Identity Type
         identity_type = 'CNPJ' if len(customer_document) > 11 else 'CPF'
 
-        # Calculate Due Date (Assuming 10 days from emission if not specified, or use a field)
-        # Ideally, NFSe or Service should have payment terms. For now, let's use +5 days from today.
-        # Or better, check if there is a 'vencimento' field in NFSe or related Financeiro.
-        # Let's assume +5 days for now as placeholder or check if user provided logic.
-        # User said: "Use os dados ... e da NFSe (Valor, Vencimento)."
-        # NFSe model doesn't have 'vencimento' explicitly in the snippet I saw, but let's check.
-        # I'll default to today + 5 days if not found.
-        
+        # 2b. Load Billing Configs
+        fine_amount_cents = 0
+        interest_rate = 0
+        if config:
+            # Fine: amount in cents
+            fine_amount_cents = int(float(nfse_obj.servico.sale_price) * (float(config.taxa_multa) / 100) * 100)
+            # Interest: rate (decimal/percentage)
+            interest_rate = float(config.taxa_juros)
+            instrucoes = config.instrucoes_boleto or ""
+        else:
+            instrucoes = ""
+
+        # Calculate Due Date (Assuming +5 days if not specified)
         due_date = (timezone.now() + timezone.timedelta(days=5)).strftime('%Y-%m-%d')
         
         # Payload Structure for V2
@@ -48,11 +53,11 @@ class CoraBoleto:
                     "identity": customer_document,
                     "type": identity_type
                 },
-                # Optional: email, address
             },
             "services": [
                 {
                     "name": nfse_obj.servico.name[:255],
+                    "description": instrucoes[:1000],
                     "amount": int(nfse_obj.servico.sale_price * 100) # Amount in cents
                 }
             ],
@@ -60,11 +65,11 @@ class CoraBoleto:
                 "due_date": due_date,
                 "fine": {
                     "date": due_date,
-                    "amount": 0 # Optional fine
+                    "amount": fine_amount_cents
                 },
                 "interest": {
                     "date": due_date,
-                    "rate": 0 # Optional interest
+                    "rate": interest_rate
                 }
             },
             "payment_forms": [
