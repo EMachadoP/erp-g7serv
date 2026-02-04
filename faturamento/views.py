@@ -64,7 +64,7 @@ def invoice_list(request):
     from core.models import EmailTemplate
     email_templates = EmailTemplate.objects.filter(active=True)
     
-    return render(request, 'faturamento/invoice_list.html', {
+    return render(request, 'faturamento/invoice_list_v5.html', {
         'page_obj': page_obj, 
         'search_query': search_query,
         'status_filter': status_filter,
@@ -478,6 +478,11 @@ def invoice_bulk_generate_boletos(request):
                 errors.append(f"Fatura #{invoice.number}: CPF/CNPJ do cliente não informado")
                 continue
             
+            # Verificar valor mínimo exigido pela Cora (R$ 5,00)
+            if invoice.amount < Decimal('5.00'):
+                errors.append(f"Fatura #{invoice.number}: Valor R$ {invoice.amount} é inferior ao mínimo de R$ 5,00 para boletos.")
+                continue
+
             # Instancia serviço de boleto Cora
             cora = CoraBoleto()
             
