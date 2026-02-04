@@ -27,8 +27,9 @@
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
                         {% for y in years %}
-                        <option value="{{ y }}" {% if year_filter == y|stringformat:"s" %}selected{% endif %}>{{ y }}
-                        </option>
+                        {% with y_str=y|stringformat:"s" %}
+                        <option value="{{ y }}" {% if year_filter==y_str %}selected{% endif %}>{{ y }}</option>
+                        {% endwith %}
                         {% endfor %}
                     </select>
                 </div>
@@ -37,8 +38,10 @@
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
                         {% for m_num, m_name in months %}
-                        <option value="{{ m_num }}" {% if month_filter == m_num|stringformat:"s" %}selected{% endif %}>{{
-                            m_name }}</option>
+                        {% with m_str=m_num|stringformat:"s" %}
+                        <option value="{{ m_num }}" {% if month_filter==m_str %}selected{% endif %}>{{ m_name }}
+                        </option>
+                        {% endwith %}
                         {% endfor %}
                     </select>
                 </div>
@@ -46,9 +49,9 @@
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PD" {% if status_filter == "PD" %}selected{% endif %}>Pendente</option>
-                        <option value="PG" {% if status_filter == "PG" %}selected{% endif %}>Paga</option>
-                        <option value="CN" {% if status_filter == "CN" %}selected{% endif %}>Cancelada</option>
+                        <option value="PD" {% if status_filter=="PD" %}selected{% endif %}>Pendente</option>
+                        <option value="PG" {% if status_filter=="PG" %}selected{% endif %}>Paga</option>
+                        <option value="CN" {% if status_filter=="CN" %}selected{% endif %}>Cancelada</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -95,9 +98,10 @@
                             </div>
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2 }}</h5>
-                                {% if invoice.status  ==  "PG" %}<span class="badge bg-success">Paga</span>{% elif
-                                invoice.status  ==  "CN" %}<span class="badge bg-danger">Cancelada</span>{% else %}<span
-                                    class="badge bg-warning text-dark">Pendente</span>{% endif %}
+                                {% if invoice.status == "PG" %}<span class="badge bg-success">Paga</span>
+                                {% elif invoice.status == "CN" %}<span class="badge bg-danger">Cancelada</span>
+                                {% else %}<span class="badge bg-warning text-dark">Pendente</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -121,7 +125,7 @@
                             href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Anterior</a>
                     </li>{% endif %}
                     {% for i in page_obj.paginator.page_range %}<li
-                        class="page-item {% if page_obj.number  ==  i %}active{% endif %}"><a class="page-link"
+                        class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link"
                             href="?page={{ i }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">{{
                             i }}</a></li>{% endfor %}
                     {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
@@ -161,16 +165,10 @@
         const listContainer = document.getElementById('invoicesList');
         const selectedCountEl = document.getElementById('selectedCount');
 
-        // Funcao para atualizar o contador
         function updateSelectedCount() {
-            // Busca todos os checkboxes marcados NO MOMENTO
             const selectedCheckboxes = document.querySelectorAll('.invoice-checkbox:checked');
             const count = selectedCheckboxes.length;
-
-            console.log(`Atualizando contador: ${count} selecionados`);
-
             selectedCountEl.textContent = `${count} fatura(s) selecionada(s)`;
-
             if (count > 0) {
                 selectedCountEl.classList.remove('bg-primary');
                 selectedCountEl.classList.add('bg-success');
@@ -190,17 +188,13 @@
 
         function callBulkAction(url, buttonId, extra = {}) {
             const ids = getSelectedIds();
-            console.log(`Chamando acao em massa. URL: ${url}, Botao: ${buttonId}, IDs:`, ids);
-
-            if (ids.length  == = 0) {
+            if (ids.length === 0) {
                 showToast('Selecione pelo menos uma fatura clicando nas caixas de selecao ao lado de cada registro.');
                 return;
             }
 
             const btn = document.getElementById(buttonId);
             const originalContent = btn.innerHTML;
-
-            // Estado de carregamento
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
 
@@ -215,7 +209,6 @@
                 .then(async res => {
                     const isJson = res.headers.get('content-type')?.includes('application/json');
                     const data = isJson ? await res.json() : null;
-
                     if (!res.ok) {
                         throw new Error(data?.message || `Erro no servidor (${res.status})`);
                     }
@@ -223,9 +216,6 @@
                 })
                 .then(data => {
                     showToast(data.message || 'Operacao realizada com sucesso!');
-                    if (data.errors && data.errors.length > 0) {
-                        console.warn('Erros detalhados:', data.errors);
-                    }
                     location.reload();
                 })
                 .catch(err => {
@@ -236,7 +226,6 @@
                 });
         }
 
-        // 1. Delegacao de Eventos para os Checkboxes (muito mais robusto)
         if (listContainer) {
             listContainer.addEventListener('change', (e) => {
                 if (e.target.classList.contains('invoice-checkbox')) {
@@ -245,29 +234,24 @@
             });
         }
 
-        // 2. Selecionar Todas / Desmarcar Todas
         document.getElementById('selectAll').addEventListener('click', (e) => {
             e.preventDefault();
-            const allCheckboxes = document.querySelectorAll('.invoice-checkbox');
-            allCheckboxes.forEach(cb => cb.checked = true);
+            document.querySelectorAll('.invoice-checkbox').forEach(cb => cb.checked = true);
             updateSelectedCount();
         });
 
         document.getElementById('deselectAll').addEventListener('click', (e) => {
             e.preventDefault();
-            const allCheckboxes = document.querySelectorAll('.invoice-checkbox');
-            allCheckboxes.forEach(cb => cb.checked = false);
+            document.querySelectorAll('.invoice-checkbox').forEach(cb => cb.checked = false);
             updateSelectedCount();
         });
 
-        // 3. Botoes de Acao
         document.getElementById('btnGerarNota').addEventListener('click', () =>
             callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota'));
 
         document.getElementById('btnGerarBoletos').addEventListener('click', () =>
             callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos'));
 
-        // Delegacao de eventos para as opcoes de email (caso o dropdown seja dinamico)
         document.body.addEventListener('click', (e) => {
             const emailOption = e.target.closest('.email-template-option');
             if (emailOption) {
@@ -277,7 +261,6 @@
             }
         });
 
-        // Inicializacao do contador (caso venha algum marcado)
         updateSelectedCount();
     });
 </script>
