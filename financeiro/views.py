@@ -247,7 +247,16 @@ def account_receivable_list(request):
     status = request.GET.get('status')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    search_query = request.GET.get('q', '')
     
+    if search_query:
+        receivables = receivables.filter(
+            Q(description__icontains=search_query) |
+            Q(client__name__icontains=search_query) |
+            Q(document_number__icontains=search_query) |
+            Q(external_reference__icontains=search_query)
+        )
+        
     if status:
         receivables = receivables.filter(status=status)
     if start_date:
@@ -270,6 +279,7 @@ def account_receivable_list(request):
         'status_filter': status,
         'start_date': start_date,
         'end_date': end_date,
+        'search_query': search_query,
         'email_templates': email_templates
     })
 

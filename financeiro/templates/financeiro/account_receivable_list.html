@@ -16,6 +16,14 @@
     <div class="card-body">
         <form method="get" class="row g-3">
             <div class="col-md-3">
+                <label for="q" class="form-label">Buscar / Pesquisar</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Cliente, descrição..."
+                        value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2">
                 <label for="status" class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="">Todos</option>
@@ -25,18 +33,22 @@
                     <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelado</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="start_date" class="form-label">Vencimento Início</label>
-                <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="end_date" class="form-label">Vencimento Fim</label>
-                <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
             </div>
-            <div class="col-md-3 d-flex align-items-end">
+            <div class="col-md-3 d-flex align-items-end gap-2">
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="bi bi-filter me-2"></i>Filtrar
                 </button>
+                <a href="{% url 'financeiro:account_receivable_list' %}" class="btn btn-outline-secondary"
+                    title="Limpar Filtros">
+                    <i class="bi bi-x-circle"></i>
+                </a>
             </div>
         </form>
     </div>
