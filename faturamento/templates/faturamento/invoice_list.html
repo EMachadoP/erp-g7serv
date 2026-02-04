@@ -28,7 +28,7 @@
                         <option value="">Todos</option>
                         {% for y in years %}
                         {% with y_str=y|stringformat:"s" %}
-                        <option value="{{ y }}" {% if year_filter==y_str %}selected{% endif %}>{{ y }}</option>
+                        <option value="{{ y }}" {% if year_filter == y_str %}selected{% endif %}>{{ y }}</option>
                         {% endwith %}
                         {% endfor %}
                     </select>
@@ -39,7 +39,7 @@
                         <option value="">Todos</option>
                         {% for m_num, m_name in months %}
                         {% with m_str=m_num|stringformat:"s" %}
-                        <option value="{{ m_num }}" {% if month_filter==m_str %}selected{% endif %}>{{ m_name }}
+                        <option value="{{ m_num }}" {% if month_filter == m_str %}selected{% endif %}>{{ m_name }}
                         </option>
                         {% endwith %}
                         {% endfor %}
@@ -49,9 +49,9 @@
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PD" {% if status_filter=="PD" %}selected{% endif %}>Pendente</option>
-                        <option value="PG" {% if status_filter=="PG" %}selected{% endif %}>Paga</option>
-                        <option value="CN" {% if status_filter=="CN" %}selected{% endif %}>Cancelada</option>
+                        <option value="PD" {% if status_filter == "PD" %}selected{% endif %}>Pendente</option>
+                        <option value="PG" {% if status_filter == "PG" %}selected{% endif %}>Paga</option>
+                        <option value="CN" {% if status_filter == "CN" %}selected{% endif %}>Cancelada</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
