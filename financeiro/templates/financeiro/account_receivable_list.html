@@ -100,8 +100,7 @@
                             {% endif %}
                         </td>
                         <td>{{ receivable.client.name|default:"-" }}</td>
-                        <td><span class="badge bg-light text-dark border fw-normal">{{
-                                receivable.category.name|default:"-" }}</span></td>
+                        <td><span class="badge bg-light text-dark border fw-normal">{{ receivable.category.name|default:"-" }}</span></td>
                         <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
                         <td class="text-center">
                             {% if receivable.status == 'PENDING' %}
@@ -194,8 +193,7 @@
                         <h6 class="dropdown-header">Escolha o Template</h6>
                     </li>
                     {% for template in email_templates %}
-                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{
-                            template.name }}</a></li>
+                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{ template.name }}</a></li>
                     {% empty %}
                     <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="">Padrão (Boleto+NF)</a></li>
                     {% endfor %}
