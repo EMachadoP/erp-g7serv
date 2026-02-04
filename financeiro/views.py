@@ -255,7 +255,23 @@ def account_receivable_list(request):
     if end_date:
         receivables = receivables.filter(due_date__lte=end_date)
         
-    return render(request, 'financeiro/account_receivable_list.html', {'receivables': receivables})
+    # Default sort by due date for pending, else descending due date
+    if status == 'PENDING':
+        receivables = receivables.order_by('due_date')
+    else:
+        receivables = receivables.order_by('-due_date')
+
+    # Get email templates for bulk actions
+    from core.models import EmailTemplate
+    email_templates = EmailTemplate.objects.filter(active=True)
+    
+    return render(request, 'financeiro/account_receivable_list.html', {
+        'receivables': receivables,
+        'status_filter': status,
+        'start_date': start_date,
+        'end_date': end_date,
+        'email_templates': email_templates
+    })
 
 @login_required(login_url='/accounts/login/')
 def account_receivable_update(request, pk):

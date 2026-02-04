@@ -19,10 +19,10 @@
                 <label for="status" class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="">Todos</option>
-                    <option value="PENDING" {% if request.GET.status == 'PENDING' %}selected{% endif %}>Pendente</option>
-                    <option value="RECEIVED" {% if request.GET.status == 'RECEIVED' %}selected{% endif %}>Recebido
-                    </option>
-                    <option value="OVERDUE" {% if request.GET.status == 'OVERDUE' %}selected{% endif %}>Vencido</option>
+                    <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendente</option>
+                    <option value="RECEIVED" {% if status_filter=='RECEIVED' %}selected{% endif %}>Recebido</option>
+                    <option value="OVERDUE" {% if status_filter=='OVERDUE' %}selected{% endif %}>Vencido</option>
+                    <option value="CANCELLED" {% if status_filter=='CANCELLED' %}selected{% endif %}>Cancelado</option>
                 </select>
             </div>
             <div class="col-md-3">
