@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
 {% block title %}Faturas Geradas | G7Serv{% endblock %}
@@ -27,7 +27,7 @@
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
                         {% for y in years %}
-                        <option value="{{ y }}" {% if year_filter==y|stringformat:"s" %}selected{% endif %}>{{ y }}
+                        <option value="{{ y }}" {% if year_filter == y|stringformat:"s" %}selected{% endif %}>{{ y }}
                         </option>
                         {% endfor %}
                     </select>
@@ -37,7 +37,7 @@
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
                         {% for m_num, m_name in months %}
-                        <option value="{{ m_num }}" {% if month_filter==m_num|stringformat:"s" %}selected{% endif %}>{{
+                        <option value="{{ m_num }}" {% if month_filter == m_num|stringformat:"s" %}selected{% endif %}>{{
                             m_name }}</option>
                         {% endfor %}
                     </select>
@@ -46,9 +46,9 @@
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PD" {% if status_filter=="PD" %}selected{% endif %}>Pendente</option>
-                        <option value="PG" {% if status_filter=="PG" %}selected{% endif %}>Paga</option>
-                        <option value="CN" {% if status_filter=="CN" %}selected{% endif %}>Cancelada</option>
+                        <option value="PD" {% if status_filter == "PD" %}selected{% endif %}>Pendente</option>
+                        <option value="PG" {% if status_filter == "PG" %}selected{% endif %}>Paga</option>
+                        <option value="CN" {% if status_filter == "CN" %}selected{% endif %}>Cancelada</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -95,8 +95,8 @@
                             </div>
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2 }}</h5>
-                                {% if invoice.status == "PG" %}<span class="badge bg-success">Paga</span>{% elif
-                                invoice.status == "CN" %}<span class="badge bg-danger">Cancelada</span>{% else %}<span
+                                {% if invoice.status  ==  "PG" %}<span class="badge bg-success">Paga</span>{% elif
+                                invoice.status  ==  "CN" %}<span class="badge bg-danger">Cancelada</span>{% else %}<span
                                     class="badge bg-warning text-dark">Pendente</span>{% endif %}
                             </div>
                         </div>
@@ -121,7 +121,7 @@
                             href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Anterior</a>
                     </li>{% endif %}
                     {% for i in page_obj.paginator.page_range %}<li
-                        class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link"
+                        class="page-item {% if page_obj.number  ==  i %}active{% endif %}"><a class="page-link"
                             href="?page={{ i }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">{{
                             i }}</a></li>{% endfor %}
                     {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
@@ -161,7 +161,7 @@
         const listContainer = document.getElementById('invoicesList');
         const selectedCountEl = document.getElementById('selectedCount');
 
-        // Função para atualizar o contador
+        // Funcao para atualizar o contador
         function updateSelectedCount() {
             // Busca todos os checkboxes marcados NO MOMENTO
             const selectedCheckboxes = document.querySelectorAll('.invoice-checkbox:checked');
@@ -190,10 +190,10 @@
 
         function callBulkAction(url, buttonId, extra = {}) {
             const ids = getSelectedIds();
-            console.log(`Chamando ação em massa. URL: ${url}, Botão: ${buttonId}, IDs:`, ids);
+            console.log(`Chamando acao em massa. URL: ${url}, Botao: ${buttonId}, IDs:`, ids);
 
-            if (ids.length === 0) {
-                showToast('Selecione pelo menos uma fatura clicando nas caixas de seleção ao lado de cada registro.');
+            if (ids.length  == = 0) {
+                showToast('Selecione pelo menos uma fatura clicando nas caixas de selecao ao lado de cada registro.');
                 return;
             }
 
@@ -222,21 +222,21 @@
                     return data;
                 })
                 .then(data => {
-                    showToast(data.message || 'Operação realizada com sucesso!');
+                    showToast(data.message || 'Operacao realizada com sucesso!');
                     if (data.errors && data.errors.length > 0) {
                         console.warn('Erros detalhados:', data.errors);
                     }
                     location.reload();
                 })
                 .catch(err => {
-                    console.error('Erro na ação em massa:', err);
-                    showToast('Falha na operação: ' + err.message);
+                    console.error('Erro na acao em massa:', err);
+                    showToast('Falha na operacao: ' + err.message);
                     btn.disabled = false;
                     btn.innerHTML = originalContent;
                 });
         }
 
-        // 1. Delegação de Eventos para os Checkboxes (muito mais robusto)
+        // 1. Delegacao de Eventos para os Checkboxes (muito mais robusto)
         if (listContainer) {
             listContainer.addEventListener('change', (e) => {
                 if (e.target.classList.contains('invoice-checkbox')) {
@@ -260,14 +260,14 @@
             updateSelectedCount();
         });
 
-        // 3. Botões de Ação
+        // 3. Botoes de Acao
         document.getElementById('btnGerarNota').addEventListener('click', () =>
             callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota'));
 
         document.getElementById('btnGerarBoletos').addEventListener('click', () =>
             callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos'));
 
-        // Delegação de eventos para as opções de email (caso o dropdown seja dinâmico)
+        // Delegacao de eventos para as opcoes de email (caso o dropdown seja dinamico)
         document.body.addEventListener('click', (e) => {
             const emailOption = e.target.closest('.email-template-option');
             if (emailOption) {
@@ -277,7 +277,7 @@
             }
         });
 
-        // Inicialização do contador (caso venha algum marcado)
+        // Inicializacao do contador (caso venha algum marcado)
         updateSelectedCount();
     });
 </script>
