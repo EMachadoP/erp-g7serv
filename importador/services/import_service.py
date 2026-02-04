@@ -163,7 +163,21 @@ class ImportService:
             for col in df_preview.columns:
                 if df_preview[col].dtype == 'datetime64[ns]':
                     df_preview[col] = df_preview[col].dt.strftime('%Y-%m-%d')
-            result.preview = df_preview.to_dict('records')
+            
+            # Limpar NaN para evitar erro de JSON
+            def clean_value(val):
+                try:
+                    if val is None or pd.isna(val):
+                        return ""
+                    return str(val)
+                except:
+                    return ""
+            
+            preview_data = []
+            for _, row in df_preview.iterrows():
+                clean_row = {col: clean_value(val) for col, val in row.items()}
+                preview_data.append(clean_row)
+            result.preview = preview_data
             
             # Se for dry_run, apenas simular
             if job.dry_run:
