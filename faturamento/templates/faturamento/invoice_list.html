@@ -26,27 +26,24 @@
                     <label class="form-label small text-uppercase fw-bold">Ano</label>
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
-                        {% for y in years %}
-                        <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
-                        {% endfor %}
+                        {% for y in years %}<option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{
+                            y.label }}</option>{% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-uppercase fw-bold">Mes</label>
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
-                        {% for m in months %}
-                        <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
-                        {% endfor %}
+                        {% for m in months %}<option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{
+                            m.label }}</option>{% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        {% for s in statuses %}
-                        <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
-                        {% endfor %}
+                        {% for s in statuses %}<option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{
+                            s.label }}</option>{% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -80,31 +77,22 @@
                             <div>
                                 <h6 class="mb-1 fw-bold">#{{ invoice.number }} - {{ invoice.client.name|default:"Cliente
                                     nao informado" }}</h6>
-                                <div class="text-muted small">
-                                    <i class="bi bi-calendar-event me-1"></i>Competencia: {{ invoice.competence_month
-                                    }}/{{ invoice.competence_year }} |
-                                    <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
-                                    |
-                                    <i class="bi bi-tag me-1"></i>Fatura de Servicos
-                                </div>
-                                <div class="text-muted small mt-1">
-                                    <i class="bi bi-calendar-check me-1"></i>Registro: {{
-                                    invoice.created_at|date:"d/m/Y" }}
-                                    {% if invoice.boleto_url %} | <a href="{{ invoice.boleto_url }}" target="_blank"
-                                        class="text-danger" download>Boleto</a>{% endif %}
-                                    {% if invoice.nfse_link %} | <a href="{{ invoice.nfse_link }}" target="_blank"
-                                        class="text-success">NFSe</a>{% endif %}
-                                </div>
+                                <div class="text-muted small"><i class="bi bi-calendar-event me-1"></i>Competencia: {{
+                                    invoice.competence_month }}/{{ invoice.competence_year }} | <i
+                                        class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
+                                    | <i class="bi bi-tag me-1"></i>Fatura de Servicos</div>
+                                <div class="text-muted small mt-1"><i class="bi bi-calendar-check me-1"></i>Registro: {{
+                                    invoice.created_at|date:"d/m/Y" }}{% if invoice.boleto_url %} | <a
+                                        href="{{ invoice.boleto_url }}" target="_blank" class="text-danger"
+                                        download>Boleto</a>{% endif %}{% if invoice.nfse_link %} | <a
+                                        href="{{ invoice.nfse_link }}" target="_blank" class="text-success">NFSe</a>{%
+                                    endif %}</div>
                             </div>
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2 }}</h5>
-                                {% if invoice.status == "PG" %}
-                                <span class="badge bg-success">Paga</span>
-                                {% elif invoice.status == "CN" %}
-                                <span class="badge bg-danger">Cancelada</span>
-                                {% else %}
-                                <span class="badge bg-warning text-dark">Pendente</span>
-                                {% endif %}
+                                {% if invoice.status == "PG" %}<span class="badge bg-success">Paga</span>{% elif
+                                invoice.status == "CN" %}<span class="badge bg-danger">Cancelada</span>{% else %}<span
+                                    class="badge bg-warning text-dark">Pendente</span>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -125,25 +113,16 @@
         <div class="card-footer bg-white py-3">
             <nav>
                 <ul class="pagination pagination-sm justify-content-center mb-0">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link"
+                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
                             href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Anterior</a>
-                    </li>
-                    {% endif %}
-                    {% for i in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-                        <a class="page-link"
+                    </li>{% endif %}
+                    {% for i in page_obj.paginator.page_range %}<li
+                        class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link"
                             href="?page={{ i }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">{{
-                            i }}</a>
-                    </li>
-                    {% endfor %}
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link"
+                            i }}</a></li>{% endfor %}
+                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
                             href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Proximo</a>
-                    </li>
-                    {% endif %}
+                    </li>{% endif %}
                 </ul>
             </nav>
         </div>
@@ -161,13 +140,10 @@
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
                         id="btnEmail"><i class="bi bi-envelope me-1"></i>Enviar E-mail</button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        {% for template in email_templates %}
-                        <li><a class="dropdown-item email-template-option" href="#"
-                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>
-                        {% empty %}
-                        <li><a class="dropdown-item email-template-option" href="#" data-template-id="">Template
-                                Padrao</a></li>
-                        {% endfor %}
+                        {% for template in email_templates %}<li><a class="dropdown-item email-template-option" href="#"
+                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>{% empty %}<li><a
+                                class="dropdown-item email-template-option" href="#" data-template-id="">Template
+                                Padrao</a></li>{% endfor %}
                     </ul>
                 </div>
             </div>
@@ -177,126 +153,83 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    (function () {
         var listContainer = document.getElementById('invoicesList');
         var selectedCountEl = document.getElementById('selectedCount');
 
         function updateSelectedCount() {
-            var selectedCheckboxes = document.querySelectorAll('.invoice-checkbox:checked');
-            var count = selectedCheckboxes.length;
+            var count = document.querySelectorAll('.invoice-checkbox:checked').length;
             selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
-            if (count > 0) {
-                selectedCountEl.classList.remove('bg-primary');
-                selectedCountEl.classList.add('bg-success');
-            } else {
-                selectedCountEl.classList.remove('bg-success');
-                selectedCountEl.classList.add('bg-primary');
-            }
+            selectedCountEl.className = 'badge px-3 py-2 rounded-pill ' + (count > 0 ? 'bg-success' : 'bg-primary');
         }
 
         function getSelectedIds() {
-            var checkboxes = document.querySelectorAll('.invoice-checkbox:checked');
             var ids = [];
-            for (var i = 0; i < checkboxes.length; i++) {
-                ids.push(checkboxes[i].value);
-            }
+            var boxes = document.querySelectorAll('.invoice-checkbox:checked');
+            for (var i = 0; i < boxes.length; i++) { ids.push(boxes[i].value); }
             return ids;
         }
 
-        function showToast(msg) {
-            alert(msg);
-        }
-
         function callBulkAction(url, buttonId, extra) {
-            extra = extra || {};
             var ids = getSelectedIds();
-            if (ids.length === 0) {
-                showToast('Selecione pelo menos uma fatura clicando nas caixas de selecao ao lado de cada registro.');
-                return;
-            }
-
+            if (ids.length === 0) { alert('Selecione pelo menos uma fatura.'); return; }
             var btn = document.getElementById(buttonId);
-            var originalContent = btn.innerHTML;
+            var orig = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
-
             var payload = { invoice_ids: ids };
-            for (var key in extra) {
-                payload[key] = extra[key];
-            }
-
+            if (extra) { for (var k in extra) { payload[k] = extra[k]; } }
             fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                 body: JSON.stringify(payload)
-            })
-                .then(function (res) {
-                    return res.json().then(function (data) {
-                        if (!res.ok) {
-                            throw new Error(data.message || 'Erro no servidor');
-                        }
-                        return data;
-                    });
-                })
-                .then(function (data) {
-                    showToast(data.message || 'Operacao realizada com sucesso!');
-                    location.reload();
-                })
-                .catch(function (err) {
-                    console.error('Erro na acao em massa:', err);
-                    showToast('Falha na operacao: ' + err.message);
-                    btn.disabled = false;
-                    btn.innerHTML = originalContent;
-                });
+            }).then(function (r) { return r.json(); }).then(function (d) {
+                alert(d.message || 'Sucesso!');
+                location.reload();
+            }).catch(function (e) {
+                alert('Erro: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            });
         }
 
         if (listContainer) {
             listContainer.addEventListener('change', function (e) {
-                if (e.target.classList.contains('invoice-checkbox')) {
-                    updateSelectedCount();
-                }
+                if (e.target.classList.contains('invoice-checkbox')) { updateSelectedCount(); }
             });
         }
 
-        document.getElementById('selectAll').addEventListener('click', function (e) {
+        document.getElementById('selectAll').onclick = function (e) {
             e.preventDefault();
-            var checkboxes = document.querySelectorAll('.invoice-checkbox');
-            for (var i = 0; i < checkboxes.length; i++) {
-                checkboxes[i].checked = true;
-            }
+            var boxes = document.querySelectorAll('.invoice-checkbox');
+            for (var i = 0; i < boxes.length; i++) { boxes[i].checked = true; }
             updateSelectedCount();
-        });
+        };
 
-        document.getElementById('deselectAll').addEventListener('click', function (e) {
+        document.getElementById('deselectAll').onclick = function (e) {
             e.preventDefault();
-            var checkboxes = document.querySelectorAll('.invoice-checkbox');
-            for (var i = 0; i < checkboxes.length; i++) {
-                checkboxes[i].checked = false;
-            }
+            var boxes = document.querySelectorAll('.invoice-checkbox');
+            for (var i = 0; i < boxes.length; i++) { boxes[i].checked = false; }
             updateSelectedCount();
-        });
+        };
 
-        document.getElementById('btnGerarNota').addEventListener('click', function () {
+        document.getElementById('btnGerarNota').onclick = function () {
             callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota');
-        });
+        };
 
-        document.getElementById('btnGerarBoletos').addEventListener('click', function () {
+        document.getElementById('btnGerarBoletos').onclick = function () {
             callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos');
-        });
+        };
 
         document.body.addEventListener('click', function (e) {
-            var emailOption = e.target.closest('.email-template-option');
-            if (emailOption) {
+            var opt = e.target.closest('.email-template-option');
+            if (opt) {
                 e.preventDefault();
-                var templateId = emailOption.getAttribute('data-template-id');
-                callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: templateId });
+                callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: opt.getAttribute('data-template-id') });
             }
         });
 
         updateSelectedCount();
-    });
+    })();
 </script>
 {% endblock %}
