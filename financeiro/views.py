@@ -305,11 +305,6 @@ def sync_receables_view(request):
     )
     
     for inv in invoices:
-        # Força invoice como ativa se não estiver
-        if not inv.active:
-            inv.active = True
-            inv.save()
-
         # Verifica se já existe o recebível
         if not AccountReceivable.objects.filter(invoice=inv).exists():
             description = f"Fatura #{inv.number}"
@@ -355,7 +350,6 @@ def receivables_diagnostics(request):
             'number': inv.number,
             'client': inv.client.name if inv.client else None,
             'amount': str(inv.amount),
-            'active': inv.active,
             'has_receivable': receivable is not None,
             'receivable_id': receivable.id if receivable else None,
             'receivable_status': receivable.status if receivable else None,
