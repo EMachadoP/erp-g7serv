@@ -28,7 +28,7 @@
                         <option value="">Todos</option>
                         {% for y in years %}
                         {% with y_str=y|stringformat:"s" %}
-                        <option value="{{ y }}" {% if year_filter == y_str %}selected{% endif %}>{{ y }}</option>
+                        <option value="{{ y }}" {% if year_filter==y_str %}selected{% endif %}>{{ y }}</option>
                         {% endwith %}
                         {% endfor %}
                     </select>
@@ -39,7 +39,7 @@
                         <option value="">Todos</option>
                         {% for m_num, m_name in months %}
                         {% with m_str=m_num|stringformat:"s" %}
-                        <option value="{{ m_num }}" {% if month_filter == m_str %}selected{% endif %}>{{ m_name }}
+                        <option value="{{ m_num }}" {% if month_filter==m_str %}selected{% endif %}>{{ m_name }}
                         </option>
                         {% endwith %}
                         {% endfor %}
@@ -49,9 +49,9 @@
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PD" {% if status_filter == "PD" %}selected{% endif %}>Pendente</option>
-                        <option value="PG" {% if status_filter == "PG" %}selected{% endif %}>Paga</option>
-                        <option value="CN" {% if status_filter == "CN" %}selected{% endif %}>Cancelada</option>
+                        <option value="PD" {% if status_filter=="PD" %}selected{% endif %}>Pendente</option>
+                        <option value="PG" {% if status_filter=="PG" %}selected{% endif %}>Paga</option>
+                        <option value="CN" {% if status_filter=="CN" %}selected{% endif %}>Cancelada</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -85,22 +85,30 @@
                             <div>
                                 <h6 class="mb-1 fw-bold">#{{ invoice.number }} - {{ invoice.client.name|default:"Cliente
                                     nao informado" }}</h6>
-                                <div class="text-muted small"><i class="bi bi-calendar-event me-1"></i>Competencia: {{
-                                    invoice.competence_month }}/{{ invoice.competence_year }} | <i
-                                        class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
-                                    | <i class="bi bi-tag me-1"></i>Fatura de Servicos</div>
-                                <div class="text-muted small mt-1"><i class="bi bi-calendar-check me-1"></i>Registro: {{
-                                    invoice.created_at|date:"d/m/Y" }}{% if invoice.boleto_url %} | <a
-                                        href="{{ invoice.boleto_url }}" target="_blank" class="text-danger"
-                                        download>Boleto</a>{% endif %}{% if invoice.nfse_link %} | <a
-                                        href="{{ invoice.nfse_link }}" target="_blank" class="text-success">NFSe</a>{%
-                                    endif %}</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-calendar-event me-1"></i>Competencia: {{ invoice.competence_month
+                                    }}/{{ invoice.competence_year }} |
+                                    <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
+                                    |
+                                    <i class="bi bi-tag me-1"></i>Fatura de Servicos
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-calendar-check me-1"></i>Registro: {{
+                                    invoice.created_at|date:"d/m/Y" }}
+                                    {% if invoice.boleto_url %} | <a href="{{ invoice.boleto_url }}" target="_blank"
+                                        class="text-danger" download>Boleto</a>{% endif %}
+                                    {% if invoice.nfse_link %} | <a href="{{ invoice.nfse_link }}" target="_blank"
+                                        class="text-success">NFSe</a>{% endif %}
+                                </div>
                             </div>
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2 }}</h5>
-                                {% if invoice.status == "PG" %}<span class="badge bg-success">Paga</span>
-                                {% elif invoice.status == "CN" %}<span class="badge bg-danger">Cancelada</span>
-                                {% else %}<span class="badge bg-warning text-dark">Pendente</span>
+                                {% if invoice.status == "PG" %}
+                                <span class="badge bg-success">Paga</span>
+                                {% elif invoice.status == "CN" %}
+                                <span class="badge bg-danger">Cancelada</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pendente</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -112,7 +120,8 @@
                 </div>
             </div>
             {% empty %}
-            <div class="p-5 text-center text-muted"><i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
                 <p class="mb-0">Nenhuma fatura encontrada.</p>
             </div>
             {% endfor %}
@@ -121,16 +130,25 @@
         <div class="card-footer bg-white py-3">
             <nav>
                 <ul class="pagination pagination-sm justify-content-center mb-0">
-                    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
                             href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Anterior</a>
-                    </li>{% endif %}
-                    {% for i in page_obj.paginator.page_range %}<li
-                        class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link"
+                    </li>
+                    {% endif %}
+                    {% for i in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link"
                             href="?page={{ i }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">{{
-                            i }}</a></li>{% endfor %}
-                    {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+                            i }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
                             href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}&month={{ month_filter }}&year={{ year_filter }}">Proximo</a>
-                    </li>{% endif %}
+                    </li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
@@ -148,10 +166,13 @@
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
                         id="btnEmail"><i class="bi bi-envelope me-1"></i>Enviar E-mail</button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        {% for template in email_templates %}<li><a class="dropdown-item email-template-option" href="#"
-                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>{% empty %}<li><a
-                                class="dropdown-item email-template-option" href="#" data-template-id="">Template
-                                Padrao</a></li>{% endfor %}
+                        {% for template in email_templates %}
+                        <li><a class="dropdown-item email-template-option" href="#"
+                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>
+                        {% empty %}
+                        <li><a class="dropdown-item email-template-option" href="#" data-template-id="">Template
+                                Padrao</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
@@ -168,7 +189,7 @@
         function updateSelectedCount() {
             const selectedCheckboxes = document.querySelectorAll('.invoice-checkbox:checked');
             const count = selectedCheckboxes.length;
-            selectedCountEl.textContent = `${count} fatura(s) selecionada(s)`;
+            selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
             if (count > 0) {
                 selectedCountEl.classList.remove('bg-primary');
                 selectedCountEl.classList.add('bg-success');
@@ -179,14 +200,15 @@
         }
 
         function getSelectedIds() {
-            return Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
+            return Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(function (cb) { return cb.value; });
         }
 
         function showToast(msg) {
             alert(msg);
         }
 
-        function callBulkAction(url, buttonId, extra = {}) {
+        function callBulkAction(url, buttonId, extra) {
+            extra = extra || {};
             const ids = getSelectedIds();
             if (ids.length === 0) {
                 showToast('Selecione pelo menos uma fatura clicando nas caixas de selecao ao lado de cada registro.');
@@ -198,27 +220,32 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
 
+            const payload = { invoice_ids: ids };
+            for (var key in extra) {
+                payload[key] = extra[key];
+            }
+
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify({ invoice_ids: ids, ...extra })
+                body: JSON.stringify(payload)
             })
-                .then(async res => {
-                    const isJson = res.headers.get('content-type')?.includes('application/json');
-                    const data = isJson ? await res.json() : null;
-                    if (!res.ok) {
-                        throw new Error(data?.message || `Erro no servidor (${res.status})`);
-                    }
-                    return data;
+                .then(function (res) {
+                    return res.json().then(function (data) {
+                        if (!res.ok) {
+                            throw new Error(data.message || 'Erro no servidor');
+                        }
+                        return data;
+                    });
                 })
-                .then(data => {
+                .then(function (data) {
                     showToast(data.message || 'Operacao realizada com sucesso!');
                     location.reload();
                 })
-                .catch(err => {
+                .catch(function (err) {
                     console.error('Erro na acao em massa:', err);
                     showToast('Falha na operacao: ' + err.message);
                     btn.disabled = false;
@@ -227,32 +254,34 @@
         }
 
         if (listContainer) {
-            listContainer.addEventListener('change', (e) => {
+            listContainer.addEventListener('change', function (e) {
                 if (e.target.classList.contains('invoice-checkbox')) {
                     updateSelectedCount();
                 }
             });
         }
 
-        document.getElementById('selectAll').addEventListener('click', (e) => {
+        document.getElementById('selectAll').addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelectorAll('.invoice-checkbox').forEach(cb => cb.checked = true);
+            document.querySelectorAll('.invoice-checkbox').forEach(function (cb) { cb.checked = true; });
             updateSelectedCount();
         });
 
-        document.getElementById('deselectAll').addEventListener('click', (e) => {
+        document.getElementById('deselectAll').addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelectorAll('.invoice-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.invoice-checkbox').forEach(function (cb) { cb.checked = false; });
             updateSelectedCount();
         });
 
-        document.getElementById('btnGerarNota').addEventListener('click', () =>
-            callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota'));
+        document.getElementById('btnGerarNota').addEventListener('click', function () {
+            callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota');
+        });
 
-        document.getElementById('btnGerarBoletos').addEventListener('click', () =>
-            callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos'));
+        document.getElementById('btnGerarBoletos').addEventListener('click', function () {
+            callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos');
+        });
 
-        document.body.addEventListener('click', (e) => {
+        document.body.addEventListener('click', function (e) {
             const emailOption = e.target.closest('.email-template-option');
             if (emailOption) {
                 e.preventDefault();
