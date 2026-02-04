@@ -1,5 +1,6 @@
 import json
 import logging
+import pandas as pd
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import TemplateView, ListView, DetailView, View
@@ -92,7 +93,14 @@ def api_upload_file(request):
             df_clientes = extract_cliente_data(df)
             
             # Limpar NaN para evitar erro de JSON
-            df_json = df_clientes.where(df_clientes.notnull(), None)
+            df_json = df_clientes.fillna('').replace({pd.NA: '', float('nan'): ''})
+            preview_data = df_json.head(10).to_dict('records') if not df_json.empty else []
+            # Garantir que não há valores NaN remanescentes
+            import math
+            for row in preview_data:
+                for key, val in row.items():
+                    if val is None or (isinstance(val, float) and math.isnan(val)):
+                        row[key] = None
             
             return JsonResponse({
                 "success": True,
@@ -102,7 +110,7 @@ def api_upload_file(request):
                 "special_processing": True,
                 "preview_type": "clientes",
                 "total": len(df_clientes),
-                "preview": df_json.head(10).to_dict('records') if not df_json.empty else [],
+                "preview": preview_data,
                 "columns": list(df_clientes.columns) if not df_clientes.empty else [],
                 "analysis": analysis
             })
