@@ -41,12 +41,23 @@ def invoice_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Prepara lista de anos/meses para o filtro
-    years = Invoice.objects.values_list('competence_year', flat=True).distinct().order_by('-competence_year')
-    months = [
+    # Prepara lista de anos com selected pré-calculado
+    years_raw = Invoice.objects.values_list('competence_year', flat=True).distinct().order_by('-competence_year')
+    years = [{'value': str(y), 'label': str(y), 'selected': str(y) == year_filter} for y in years_raw]
+    
+    # Prepara lista de meses com selected pré-calculado
+    months_raw = [
         (1, 'Janeiro'), (2, 'Fevereiro'), (3, 'Março'), (4, 'Abril'),
         (5, 'Maio'), (6, 'Junho'), (7, 'Julho'), (8, 'Agosto'),
         (9, 'Setembro'), (10, 'Outubro'), (11, 'Novembro'), (12, 'Dezembro')
+    ]
+    months = [{'value': str(m[0]), 'label': m[1], 'selected': str(m[0]) == month_filter} for m in months_raw]
+    
+    # Prepara lista de status com selected pré-calculado
+    statuses = [
+        {'value': 'PD', 'label': 'Pendente', 'selected': status_filter == 'PD'},
+        {'value': 'PG', 'label': 'Paga', 'selected': status_filter == 'PG'},
+        {'value': 'CN', 'label': 'Cancelada', 'selected': status_filter == 'CN'},
     ]
     
     # Email templates para ações em massa
@@ -61,6 +72,7 @@ def invoice_list(request):
         'year_filter': year_filter,
         'years': years,
         'months': months,
+        'statuses': statuses,
         'email_templates': email_templates,
     })
 

@@ -27,9 +27,7 @@
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
                         {% for y in years %}
-                        {% with y_str=y|stringformat:"s" %}
-                        <option value="{{ y }}" {% if year_filter==y_str %}selected{% endif %}>{{ y }}</option>
-                        {% endwith %}
+                        <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -37,11 +35,8 @@
                     <label class="form-label small text-uppercase fw-bold">Mes</label>
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
-                        {% for m_num, m_name in months %}
-                        {% with m_str=m_num|stringformat:"s" %}
-                        <option value="{{ m_num }}" {% if month_filter==m_str %}selected{% endif %}>{{ m_name }}
-                        </option>
-                        {% endwith %}
+                        {% for m in months %}
+                        <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -49,9 +44,9 @@
                     <label class="form-label small text-uppercase fw-bold">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PD" {% if status_filter=="PD" %}selected{% endif %}>Pendente</option>
-                        <option value="PG" {% if status_filter=="PG" %}selected{% endif %}>Paga</option>
-                        <option value="CN" {% if status_filter=="CN" %}selected{% endif %}>Cancelada</option>
+                        {% for s in statuses %}
+                        <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -183,12 +178,12 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const listContainer = document.getElementById('invoicesList');
-        const selectedCountEl = document.getElementById('selectedCount');
+        var listContainer = document.getElementById('invoicesList');
+        var selectedCountEl = document.getElementById('selectedCount');
 
         function updateSelectedCount() {
-            const selectedCheckboxes = document.querySelectorAll('.invoice-checkbox:checked');
-            const count = selectedCheckboxes.length;
+            var selectedCheckboxes = document.querySelectorAll('.invoice-checkbox:checked');
+            var count = selectedCheckboxes.length;
             selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
             if (count > 0) {
                 selectedCountEl.classList.remove('bg-primary');
@@ -200,7 +195,12 @@
         }
 
         function getSelectedIds() {
-            return Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(function (cb) { return cb.value; });
+            var checkboxes = document.querySelectorAll('.invoice-checkbox:checked');
+            var ids = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                ids.push(checkboxes[i].value);
+            }
+            return ids;
         }
 
         function showToast(msg) {
@@ -209,18 +209,18 @@
 
         function callBulkAction(url, buttonId, extra) {
             extra = extra || {};
-            const ids = getSelectedIds();
+            var ids = getSelectedIds();
             if (ids.length === 0) {
                 showToast('Selecione pelo menos uma fatura clicando nas caixas de selecao ao lado de cada registro.');
                 return;
             }
 
-            const btn = document.getElementById(buttonId);
-            const originalContent = btn.innerHTML;
+            var btn = document.getElementById(buttonId);
+            var originalContent = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
 
-            const payload = { invoice_ids: ids };
+            var payload = { invoice_ids: ids };
             for (var key in extra) {
                 payload[key] = extra[key];
             }
@@ -263,13 +263,19 @@
 
         document.getElementById('selectAll').addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelectorAll('.invoice-checkbox').forEach(function (cb) { cb.checked = true; });
+            var checkboxes = document.querySelectorAll('.invoice-checkbox');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = true;
+            }
             updateSelectedCount();
         });
 
         document.getElementById('deselectAll').addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelectorAll('.invoice-checkbox').forEach(function (cb) { cb.checked = false; });
+            var checkboxes = document.querySelectorAll('.invoice-checkbox');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = false;
+            }
             updateSelectedCount();
         });
 
@@ -282,10 +288,10 @@
         });
 
         document.body.addEventListener('click', function (e) {
-            const emailOption = e.target.closest('.email-template-option');
+            var emailOption = e.target.closest('.email-template-option');
             if (emailOption) {
                 e.preventDefault();
-                const templateId = emailOption.getAttribute('data-template-id');
+                var templateId = emailOption.getAttribute('data-template-id');
                 callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: templateId });
             }
         });
