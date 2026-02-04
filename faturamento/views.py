@@ -486,10 +486,13 @@ def invoice_bulk_generate_boletos(request):
                 def __init__(self, inv):
                     self.numero_dps = inv.number
                     self.cliente = inv.client
+                    self.due_date = inv.due_date
                     self.servico = type('obj', (object,), {
                         'name': f'Fatura {inv.number}',
                         'sale_price': inv.amount
                     })()
+            
+            print(f"[DEBUG] Gerando boleto para fatura {invoice.number}")
             
             boleto = cora.gerar_boleto(FaturaWrapper(invoice))
             

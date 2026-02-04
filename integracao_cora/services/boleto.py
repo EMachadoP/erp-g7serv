@@ -24,8 +24,11 @@ class CoraBoleto:
 
         # Clean Customer Data
         customer_name = nfse_obj.cliente.name[:60]
-        customer_document = nfse_obj.cliente.document.replace('.', '').replace('-', '').replace('/', '')
+        customer_document = (nfse_obj.cliente.document or "").replace('.', '').replace('-', '').replace('/', '')
         
+        if not customer_document:
+            raise Exception(f"CPF/CNPJ do cliente {customer_name} não informado.")
+
         # Determine Identity Type
         identity_type = 'CNPJ' if len(customer_document) > 11 else 'CPF'
 
@@ -41,8 +44,11 @@ class CoraBoleto:
         else:
             instrucoes = ""
 
-        # Calculate Due Date (Assuming +5 days if not specified)
-        due_date = (timezone.now() + timezone.timedelta(days=5)).strftime('%Y-%m-%d')
+        # Calculate Due Date
+        if hasattr(nfse_obj, 'due_date') and nfse_obj.due_date:
+            due_date = nfse_obj.due_date.strftime('%Y-%m-%d')
+        else:
+            due_date = (timezone.now() + timezone.timedelta(days=5)).strftime('%Y-%m-%d')
         
         # Payload Structure for V2
         payload = {
