@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
-
+{% load static %}
+{% block title %}Novo Faturamento Avulso | G7Serv{% endblock %}
 {% block content %}
 <div class="row mt-4 justify-content-center">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3>Faturamento Avulso</h3>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 text-primary">Faturamento Avulso</h4>
             </div>
             <div class="card-body">
                 <p class="text-muted mb-4">
@@ -13,46 +14,41 @@
                 </p>
                 <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
-
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Número da Fatura</label>
+                            <label class="form-label fw-bold small text-uppercase">Número da Fatura</label>
                             {{ form.number }}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Grupo de Faturamento</label>
+                            <label class="form-label fw-bold small text-uppercase">Grupo de Faturamento</label>
                             {{ form.billing_group }}
                         </div>
-
                         <div class="col-12">
-                            <label class="form-label">Cliente</label>
+                            <label class="form-label fw-bold small text-uppercase">Cliente</label>
                             {{ form.client }}
                         </div>
-
                         <div class="col-md-4">
-                            <label class="form-label">Data de Emissão</label>
+                            <label class="form-label fw-bold small text-uppercase">Data de Emissão</label>
                             {{ form.issue_date }}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Data de Vencimento</label>
+                            <label class="form-label fw-bold small text-uppercase">Data de Vencimento</label>
                             {{ form.due_date }}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Valor (R$)</label>
+                            <label class="form-label fw-bold small text-uppercase">Valor (R$)</label>
                             {{ form.amount }}
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label">Status</label>
+                            <label class="form-label fw-bold small text-uppercase">Status</label>
                             {{ form.status }}
                         </div>
                     </div>
-
                     <div class="mt-4 d-flex justify-content-between">
                         <a href="{% url 'faturamento:list' %}" class="btn btn-secondary">
                             Cancelar
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary px-4">
                             Salvar Fatura Avulsa
                         </button>
                     </div>
