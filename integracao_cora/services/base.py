@@ -20,19 +20,25 @@ def mTLS_cert_paths():
     if not config.certificado_pem or not config.chave_privada:
         raise Exception("Certificado PEM e Chave Privada da Cora não configurados.")
 
-    # Since these are FileFields, we can access their paths directly if stored locally.
-    # Assuming standard Django FileStorage which stores files on disk.
-    # If using cloud storage (S3), we might need to download them to temp files.
-    # For now, assuming local filesystem as per previous context (G: drive).
-    
-    cert_path = config.certificado_pem.path
-    key_path = config.chave_privada.path
-    
-    # Verify files exist
-    if not os.path.exists(cert_path) or not os.path.exists(key_path):
-        raise Exception("Arquivos de certificado não encontrados no disco.")
+    # Create temporary files for the cert and key
+    # Railway/Cloud environments have ephemeral filesystems, so we extract from DB to temp files
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pem') as cert_file, \
+         tempfile.NamedTemporaryFile(delete=False, suffix='.key') as key_file:
+        
+        cert_file.write(config.certificado_pem.read())
+        key_file.write(config.chave_privada.read())
+        
+        cert_path = cert_file.name
+        key_path = key_file.name
 
-    yield (cert_path, key_path)
+    try:
+        yield (cert_path, key_path)
+    finally:
+        # Cleanup temporary files after use
+        if os.path.exists(cert_path):
+            os.remove(cert_path)
+        if os.path.exists(key_path):
+            os.remove(key_path)
     
     # No cleanup needed as we are using the stored files directly.
     # If we were downloading from S3, we would clean up here.
