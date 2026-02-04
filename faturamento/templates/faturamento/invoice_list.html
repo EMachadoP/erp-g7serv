@@ -3,7 +3,6 @@
 {% load humanize %}
 {% block title %}Faturas Geradas | G7Serv{% endblock %}
 {% block content %}
-<!-- Versao Blindada v4.1 - Protecao contra formatadores multilinhas -->
 <div class="container-fluid py-4">
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
@@ -77,12 +76,33 @@
                     <div class="col">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h6 class="mb-1 fw-bold">#{{ invoice.number }} - {{ invoice.client.name|default:"Cliente
-                                    não informado" }}</h6>
+                                <h6 class="mb-1 fw-bold">
+                                    #{{ invoice.number }} -
+                                    {% if invoice.client and invoice.client.name %}
+                                    {{ invoice.client.name }}
+                                    {% else %}
+                                    Cliente não informado
+                                    {% endif %}
+                                </h6>
                                 <div class="text-muted small">
-                                    <i class="bi bi-calendar-event me-1"></i>Competencia: {{ invoice.competence_month
-                                    }}/{{ invoice.competence_year }} |
-                                    <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
+                                    <i class="bi bi-calendar-event me-1"></i>Competência:
+                                    {% if invoice.competence_month %}
+                                    {{ invoice.competence_month }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                    /
+                                    {% if invoice.competence_year %}
+                                    {{ invoice.competence_year }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                    | <i class="bi bi-file-text me-1"></i>Contrato:
+                                    {% if invoice.contract %}
+                                    {{ invoice.contract.id }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
                                 </div>
                                 <div class="text-muted small mt-1">
                                     Registro: {{ invoice.created_at|date:"d/m/Y" }}

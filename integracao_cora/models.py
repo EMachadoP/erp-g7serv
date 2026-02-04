@@ -16,6 +16,10 @@ class CoraConfig(models.Model):
     token_expires_at = models.DateTimeField(blank=True, null=True, verbose_name="Token Expira em")
     ambiente = models.IntegerField(choices=AMBIENTE_CHOICES, default=2, verbose_name="Ambiente")
     
+    # Backup do conteúdo dos certificados para ambientes efêmeros (Railway)
+    certificado_pem_b64 = models.TextField(blank=True, null=True, verbose_name="Conteúdo Certificado (B64)")
+    chave_privada_b64 = models.TextField(blank=True, null=True, verbose_name="Conteúdo Chave (B64)")
+
     # Configurações de Boleto
     taxa_multa = models.DecimalField(
         max_digits=5, decimal_places=2, default=2.00, 
@@ -45,9 +49,26 @@ class CoraConfig(models.Model):
         verbose_name_plural = "Configuração Cora"
 
     def save(self, *args, **kwargs):
+        import base64
+        # Se os arquivos foram enviados, salvar cópia em B64 no banco
+        if self.certificado_pem:
+            try:
+                # Reset file pointer to start before reading
+                self.certificado_pem.open('rb')
+                content = self.certificado_pem.read()
+                self.certificado_pem_b64 = base64.b64encode(content).decode('utf-8')
+            except Exception as e:
+                print(f"Erro ao ler certificado_pem: {e}")
+        
+        if self.chave_privada:
+            try:
+                self.chave_privada.open('rb')
+                content = self.chave_privada.read()
+                self.chave_privada_b64 = base64.b64encode(content).decode('utf-8')
+            except Exception as e:
+                print(f"Erro ao ler chave_privada: {e}")
+            
         if not self.pk and CoraConfig.objects.exists():
-            # If you want to ensure it's a singleton, you can raise an error or handle it.
-            # For simplicity, we allow saving but typically there should be only one.
             pass
         super(CoraConfig, self).save(*args, **kwargs)
 

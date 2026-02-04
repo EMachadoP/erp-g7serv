@@ -13,20 +13,41 @@ def mTLS_cert_paths():
     """
     from integracao_cora.models import CoraConfig
     
+    import base64
+    
     config = CoraConfig.objects.first()
     if not config:
         raise Exception("Configuração da Cora não encontrada.")
         
-    if not config.certificado_pem or not config.chave_privada:
-        raise Exception("Certificado PEM e Chave Privada da Cora não configurados.")
+    # Get cert content from B64 fields (DB) or FileFields (Disk)
+    cert_content = None
+    key_content = None
+    
+    if config.certificado_pem_b64:
+        cert_content = base64.b64decode(config.certificado_pem_b64)
+    elif config.certificado_pem:
+        try:
+            config.certificado_pem.open('rb')
+            cert_content = config.certificado_pem.read()
+        except: pass
 
-    # Create temporary files for the cert and key
-    # Railway/Cloud environments have ephemeral filesystems, so we extract from DB to temp files
+    if config.chave_privada_b64:
+        key_content = base64.b64decode(config.chave_privada_b64)
+    elif config.chave_privada:
+        try:
+            config.chave_privada.open('rb')
+            key_content = config.chave_privada.read()
+        except: pass
+
+    if not cert_content or not key_content:
+        raise Exception("Certificado PEM e Chave Privada da Cora não configurados no Banco (B64) nem no Disco.")
+
+    # Create temporary files
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pem') as cert_file, \
          tempfile.NamedTemporaryFile(delete=False, suffix='.key') as key_file:
         
-        cert_file.write(config.certificado_pem.read())
-        key_file.write(config.chave_privada.read())
+        cert_file.write(cert_content)
+        key_file.write(key_content)
         
         cert_path = cert_file.name
         key_path = key_file.name
