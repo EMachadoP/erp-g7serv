@@ -17,6 +17,22 @@ class InvoiceForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
 
+
+class StandaloneInvoiceForm(forms.ModelForm):
+    """Formulário para faturas avulsas (sem vínculo de contrato)"""
+    class Meta:
+        model = Invoice
+        fields = ['billing_group', 'client', 'number', 'issue_date', 'due_date', 'amount', 'status']
+        widgets = {
+            'billing_group': forms.Select(attrs={'class': 'form-select'}),
+            'client': forms.Select(attrs={'class': 'form-select select2'}),
+            'number': forms.TextInput(attrs={'class': 'form-control'}),
+            'issue_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+        }
+
 class NotaEntradaItemForm(forms.ModelForm):
     # This field allows selecting an existing product
     produto = forms.ModelChoiceField(

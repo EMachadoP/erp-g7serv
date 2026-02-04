@@ -6,6 +6,7 @@ app_name = 'faturamento'
 urlpatterns = [
     path('faturas/', views.invoice_list, name='list'),
     path('faturas/nova/', views.invoice_create, name='create'),
+    path('faturas/avulsa/nova/', views.invoice_standalone_create, name='standalone_create'),
     path('faturas/<int:pk>/', views.invoice_detail, name='detail'),
     path('faturas/<int:pk>/editar/', views.invoice_update, name='update'),
     path('gerar-os/<int:os_id>/', views.create_invoice_from_os, name='create_from_os'),

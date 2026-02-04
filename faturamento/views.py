@@ -82,6 +82,25 @@ def invoice_create(request):
     
     return render(request, 'faturamento/invoice_form.html', {'form': form})
 
+
+@login_required
+def invoice_standalone_create(request):
+    """Cria fatura avulsa sem vínculo de contrato"""
+    from .forms import StandaloneInvoiceForm
+    
+    if request.method == 'POST':
+        form = StandaloneInvoiceForm(request.POST)
+        if form.is_valid():
+            invoice = form.save(commit=False)
+            invoice.contract = None
+            invoice.save()
+            messages.success(request, 'Fatura avulsa criada com sucesso.')
+            return redirect('faturamento:detail', pk=invoice.id)
+    else:
+        form = StandaloneInvoiceForm()
+
+    return render(request, 'faturamento/invoice_standalone_form.html', {'form': form})
+
 @login_required
 def invoice_update(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
