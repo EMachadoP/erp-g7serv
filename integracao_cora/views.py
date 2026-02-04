@@ -37,30 +37,28 @@ class ConfiguracaoCoraView(LoginRequiredMixin, View):
             
             # Action: Test Connection
             if 'test_connection' in request.POST:
+                url_tentada = ""
                 try:
                     auth = CoraAuth()
-                    # Force new token to verify credentials
-                    # We can't easily force new token with current logic unless we clear it first
-                    # or just call get_access_token() which validates existing or fetches new.
-                    # To really test credentials, let's clear the token first temporarily?
-                    # Or just trust get_access_token logic.
+                    url_tentada = auth.URL_PRODUCAO if config.ambiente == 1 else auth.URL_HOMOLOGACAO
                     
-                    # Let's try to fetch a token. If credentials are wrong, it will fail.
-                    # But if a valid token exists in DB, it returns it without hitting API.
-                    # So to test NEW credentials, we should clear the token.
-                    
+                    # Limpa token para forçar reautenticação real
                     config.access_token = None
                     config.token_expires_at = None
                     config.save()
                     
                     token = auth.get_access_token()
                     if token:
-                        messages.success(request, "Conexão realizada com sucesso! Token obtido.")
+                        messages.success(request, f"Conexão realizada com sucesso em {config.get_ambiente_display()}!")
                     else:
                         messages.error(request, "Falha ao obter token.")
                         
                 except Exception as e:
-                    messages.error(request, f"Erro na conexão: {str(e)}")
+                    aviso_ambiente = ""
+                    if "invalid_client" in str(e).lower():
+                        aviso_ambiente = f" Lembre-se: IDs de Produção só funcionam no ambiente 'Produção'. Atualmente tentando em: {url_tentada}."
+                    
+                    messages.error(request, f"Erro na conexão: {str(e)}.{aviso_ambiente}")
             else:
                 messages.success(request, "Configurações salvas com sucesso.")
                 
