@@ -5,7 +5,13 @@
     <div class="col-md-6">
         <h2>Contas a Receber</h2>
     </div>
-    <div class="col-md-6 text-end">
+    <div class="col-md-6 text-end d-flex justify-content-end gap-2">
+        {% if user.is_superuser %}
+        <a href="{% url 'financeiro:sync_receivables' %}" class="btn btn-outline-primary fw-bold"
+            title="Sincronizar faturas faltando">
+            <i class="bi bi-arrow-repeat me-2"></i>Sincronizar
+        </a>
+        {% endif %}
         <a href="{% url 'financeiro:account_receivable_create' %}" class="btn btn-success text-white fw-bold">
             <i class="bi bi-plus-lg me-2"></i>Nova Conta a Receber
         </a>
@@ -27,10 +33,10 @@
                 <label for="status" class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="">Todos</option>
-                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pendente</option>
-                    <option value="RECEIVED" {% if status_filter == 'RECEIVED' %}selected{% endif %}>Recebido</option>
-                    <option value="OVERDUE" {% if status_filter == 'OVERDUE' %}selected{% endif %}>Vencido</option>
-                    <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelado</option>
+                    <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendente</option>
+                    <option value="RECEIVED" {% if status_filter=='RECEIVED' %}selected{% endif %}>Recebido</option>
+                    <option value="OVERDUE" {% if status_filter=='OVERDUE' %}selected{% endif %}>Vencido</option>
+                    <option value="CANCELLED" {% if status_filter=='CANCELLED' %}selected{% endif %}>Cancelado</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -94,7 +100,8 @@
                             {% endif %}
                         </td>
                         <td>{{ receivable.client.name|default:"-" }}</td>
-                        <td><span class="badge bg-light text-dark border fw-normal">{{ receivable.category.name|default:"-" }}</span></td>
+                        <td><span class="badge bg-light text-dark border fw-normal">{{
+                                receivable.category.name|default:"-" }}</span></td>
                         <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
                         <td class="text-center">
                             {% if receivable.status == 'PENDING' %}
@@ -187,7 +194,8 @@
                         <h6 class="dropdown-header">Escolha o Template</h6>
                     </li>
                     {% for template in email_templates %}
-                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{ template.name }}</a></li>
+                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{
+                            template.name }}</a></li>
                     {% empty %}
                     <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="">Padrão (Boleto+NF)</a></li>
                     {% endfor %}

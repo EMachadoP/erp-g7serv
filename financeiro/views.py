@@ -293,15 +293,24 @@ def sync_receables_view(request):
     from faturamento.models import Invoice
     from .models import AccountReceivable, FinancialCategory
     
+    # Busca todas as faturas, forçando active=True para garantir visibilidade
     invoices = Invoice.objects.all()
     created_count = 0
+    skipped_count = 0
     
+    # Categoria padrão usada no Faturamento de Contratos
     category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Faturas",
+        name="Receita de Contratos",
         defaults={'type': 'REVENUE'}
     )
     
     for inv in invoices:
+        # Força invoice como ativa se não estiver
+        if not inv.active:
+            inv.active = True
+            inv.save()
+
+        # Verifica se já existe o recebível
         if not AccountReceivable.objects.filter(invoice=inv).exists():
             description = f"Fatura #{inv.number}"
             if inv.client:
@@ -315,11 +324,14 @@ def sync_receables_view(request):
                 due_date=inv.due_date,
                 status='PENDING' if inv.status == 'PD' else ('RECEIVED' if inv.status == 'PG' else 'CANCELLED'),
                 invoice=inv,
-                document_number=inv.number
+                document_number=inv.number,
+                active=True
             )
             created_count += 1
+        else:
+            skipped_count += 1
             
-    messages.success(request, f"Sincronização concluída. {created_count} contas a receber criadas.")
+    messages.success(request, f"Sincronização concluída! Criados: {created_count}, Já existentes: {skipped_count}.")
     return redirect('financeiro:account_receivable_list')
 
 @login_required(login_url='/accounts/login/')
