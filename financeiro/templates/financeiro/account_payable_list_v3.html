@@ -20,7 +20,7 @@
                         <option value="">Todos</option>
                         {% for s in suppliers %}
                         {% with supplier_id_str=s.id|stringformat:"i" %}
-                        <option value="{{ s.id }}" {% if request.GET.supplier==supplier_id_str %}selected{% endif %}>{{
+                        <option value="{{ s.id }}" {% if request.GET.supplier == supplier_id_str %}selected{% endif %}>{{
                             s.name }}</option>
                         {% endwith %}
                         {% endfor %}
@@ -30,10 +30,10 @@
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendentes</option>
-                        <option value="PAID" {% if status_filter=='PAID' %}selected{% endif %}>Pagas</option>
-                        <option value="OVERDUE" {% if status_filter=='OVERDUE' %}selected{% endif %}>Vencidas</option>
-                        <option value="CANCELLED" {% if status_filter=='CANCELLED' %}selected{% endif %}>Canceladas
+                        <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pendentes</option>
+                        <option value="PAID" {% if status_filter == 'PAID' %}selected{% endif %}>Pagas</option>
+                        <option value="OVERDUE" {% if status_filter == 'OVERDUE' %}selected{% endif %}>Vencidas</option>
+                        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Canceladas
                         </option>
                     </select>
                 </div>

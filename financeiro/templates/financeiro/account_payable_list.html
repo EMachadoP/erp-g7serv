@@ -18,8 +18,8 @@
                     <label>Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendente</option>
-                        <option value="PAID" {% if status_filter=='PAID' %}selected{% endif %}>Pago</option>
+                        <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pendente</option>
+                        <option value="PAID" {% if status_filter == 'PAID' %}selected{% endif %}>Pago</option>
                     </select>
                 </div>
                 <div class="col-md-2 align-self-end">

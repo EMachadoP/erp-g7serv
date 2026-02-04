@@ -36,7 +36,7 @@
                     <select name="group" class="form-select">
                         <option value="">Selecione...</option>
                         {% for group in groups %}
-                        <option value="{{ group.id }}" {% if user_group.id==group.id %}selected{% endif %}>
+                        <option value="{{ group.id }}" {% if user_group.id == group.id %}selected{% endif %}>
                             {{ group.name }}
                         </option>
                         {% endfor %}
