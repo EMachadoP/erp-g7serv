@@ -10,8 +10,9 @@
                 <h2 class="text-primary mb-0"><i class="bi bi-receipt me-2"></i>Faturas Geradas</h2>
                 <p class="text-muted mb-0">Gerencie e acompanhe todas as faturas do sistema.</p>
             </div>
-            <a href="{% url 'faturamento:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nova
-                Fatura</a>
+            <a href="{% url 'faturamento:create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Nova Fatura
+            </a>
         </div>
     </div>
     <div class="card shadow-sm border-0 mb-4">
@@ -27,7 +28,7 @@
                     <select name="year" class="form-select">
                         <option value="">Todos</option>
                         {% for y in years %}
-                        <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
+                        <option value="{{ y.value }}" {% if y.selected %} selected{% endif %}>{{ y.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -36,7 +37,7 @@
                     <select name="month" class="form-select">
                         <option value="">Todos</option>
                         {% for m in months %}
-                        <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
+                        <option value="{{ m.value }}" {% if m.selected %} selected{% endif %}>{{ m.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -45,15 +46,17 @@
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
                         {% for s in statuses %}
-                        <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
+                        <option value="{{ s.value }}" {% if s.selected %} selected{% endif %}>{{ s.label }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i
-                            class="bi bi-filter me-1"></i>Filtrar</button>
-                    <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary"><i
-                            class="bi bi-x-circle"></i></a>
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-filter me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
                 </div>
             </form>
         </div>
@@ -72,7 +75,8 @@
             <div class="list-group-item list-group-item-action py-3">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        <input type="checkbox" class="form-check-input invoice-checkbox" value="{{ invoice.id }}">
+                        <input type="checkbox" class="form-check-input invoice-checkbox" value="{{ invoice.id }}"
+                            id="invoice-{{ invoice.id }}">
                     </div>
                     <div class="col">
                         <div class="d-flex justify-content-between align-items-start">
@@ -80,7 +84,7 @@
                                 <h6 class="mb-1 fw-bold">#{{ invoice.number }} - {{ invoice.client.name|default:"Cliente
                                     não informado" }}</h6>
                                 <div class="text-muted small">
-                                    <i class="bi bi-calendar-event me-1"></i>Competência: {{ invoice.competence_month
+                                    <i class="bi bi-calendar-event me-1"></i>Competencia: {{ invoice.competence_month
                                     }}/{{ invoice.competence_year }} |
                                     <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
                                 </div>
@@ -89,6 +93,9 @@
                                     {% if invoice.boleto_url %}
                                     | <a href="{{ invoice.boleto_url }}" target="_blank" class="text-danger"><i
                                             class="bi bi-upc"></i> Boleto</a>
+                                    {% endif %}
+                                    {% if invoice.nfse_link %}
+                                    | <a href="{{ invoice.nfse_link }}" target="_blank" class="text-success">NFSe</a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -102,8 +109,9 @@
                         </div>
                     </div>
                     <div class="col-auto">
-                        <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="btn btn-light btn-sm"><i
-                                class="bi bi-eye"></i></a>
+                        <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="btn btn-light btn-sm">
+                            <i class="bi bi-eye"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -142,7 +150,6 @@
         </div>
         {% endif %}
     </div>
-    <!-- Sticky Bottom Bar -->
     <div class="card mt-4 shadow-sm border-0 sticky-bottom bg-white" style="z-index: 1020;">
         <div class="card-body d-flex justify-content-between align-items-center py-3">
             <span class="badge bg-primary px-3 py-2 rounded-pill" id="selectedCount">0 fatura(s) selecionada(s)</span>
@@ -171,12 +178,17 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('Invoice List JS loaded');
-        var listContainer = document.getElementById('invoicesList');
-        var selectedCountEl = document.getElementById('selectedCount');
+        function getCookie(name) {
+            if (!document.cookie) return null;
+            const token = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${name}=`));
+            return token ? decodeURIComponent(token.split('=')[1]) : null;
+        }
+
+        const selectedCountEl = document.getElementById('selectedCount');
+        const checkboxes = document.querySelectorAll('.invoice-checkbox');
 
         function updateSelectedCount() {
-            var count = document.querySelectorAll('.invoice-checkbox:checked').length;
+            const count = document.querySelectorAll('.invoice-checkbox:checked').length;
             selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
             if (count > 0) {
                 selectedCountEl.classList.remove('bg-primary');
@@ -187,82 +199,63 @@
             }
         }
 
-        if (listContainer) {
-            listContainer.addEventListener('change', function (e) {
-                if (e.target.classList.contains('invoice-checkbox')) {
-                    updateSelectedCount();
-                }
-            });
-        }
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
 
         document.getElementById('selectAll').addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelectorAll('.invoice-checkbox').forEach(function (cb) { cb.checked = true; });
+            checkboxes.forEach(cb => cb.checked = true);
             updateSelectedCount();
         });
 
         document.getElementById('deselectAll').addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelectorAll('.invoice-checkbox').forEach(function (cb) { cb.checked = false; });
+            checkboxes.forEach(cb => cb.checked = false);
             updateSelectedCount();
         });
 
         function doBulkAction(url, btnId, extraData) {
-            var ids = [];
-            document.querySelectorAll('.invoice-checkbox:checked').forEach(function (cb) { ids.push(cb.value); });
+            const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
+            if (ids.length === 0) { alert('Selecione pelo menos uma fatura.'); return; }
 
-            if (ids.length === 0) {
-                alert('Selecione pelo menos uma fatura.');
-                return;
-            }
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerHTML;
+            const csrftoken = getCookie('csrftoken');
 
-            var btn = document.getElementById(btnId);
-            var originalText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = 'Processando...';
 
-            var payload = { invoice_ids: ids };
+            const payload = { invoice_ids: ids };
             if (extraData) Object.assign(payload, extraData);
 
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': csrftoken
                 },
                 body: JSON.stringify(payload)
             })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
+                .then(res => res.json())
+                .then(data => {
                     alert(data.message || 'Operação realizada.');
-                    if (data.status === 'success' || data.status === 'warning') {
-                        location.reload();
-                    } else {
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                    }
+                    if (data.status === 'success' || data.status === 'warning') location.reload();
+                    else { btn.disabled = false; btn.innerHTML = originalText; }
                 })
-                .catch(function (err) {
+                .catch(err => {
                     alert('Erro na requisição: ' + err.message);
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 });
         }
 
-        document.getElementById('btnGerarBoletos').addEventListener('click', function () {
-            doBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos');
-        });
-
-        document.getElementById('btnGerarNota').addEventListener('click', function () {
-            // Implementar se necessário ou mostrar alerta
-            alert('Geração de NFS-e em lote ainda em desenvolvimento.');
-        });
-
-        document.querySelectorAll('.email-template-option').forEach(function (opt) {
+        document.getElementById('btnGerarBoletos').addEventListener('click', () => doBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos'));
+        document.getElementById('btnGerarNota').addEventListener('click', () => alert('Geração de NFS-e em lote ainda em desenvolvimento.'));
+        document.querySelectorAll('.email-template-option').forEach(opt => {
             opt.addEventListener('click', function (e) {
                 e.preventDefault();
-                var tid = this.getAttribute('data-template-id');
-                doBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: tid });
+                doBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', { template_id: this.getAttribute('data-template-id') });
             });
         });
     });
