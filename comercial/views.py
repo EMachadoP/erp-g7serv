@@ -12,6 +12,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 from django.contrib import messages
 import base64
+from .models import Contract, Budget, BudgetProduct, BudgetService, ContractTemplate, BillingGroup, ContractItem
 from .forms import BillingGroupForm, ContractForm, ContractItemFormSet
 from core.models import Person, Service
 from estoque.models import Product
