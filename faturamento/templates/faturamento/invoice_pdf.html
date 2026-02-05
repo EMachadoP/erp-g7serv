@@ -324,8 +324,8 @@
             {% for item in invoice.items.all %}
             <tr>
                 <td><strong>{{ item.description }}{% if item.item_type == 'SERVICE' %} *{% endif %}</strong></td>
-                <td>{% if invoice.billing_group.name|lower == 'locação' and item.item_type == 'SERVICE' %}Sim{% else
-                    %}Não{% endif %}</td>
+                <td>{% if invoice.billing_group.name|default:""|lower == 'locação' and item.item_type == 'SERVICE'
+                    %}Sim{% else %}Não{% endif %}</td>
                 <td>{{ item.quantity }}</td>
                 <td>R$ {{ item.unit_price }}</td>
                 <td>R$ {{ item.total_price }}</td>
@@ -333,7 +333,7 @@
             {% empty %}
             <tr>
                 <td><strong>{{ invoice.billing_group.name|default:"Serviços Prestados" }} *</strong></td>
-                <td>{% if invoice.billing_group.name|lower == 'locação' %}Sim{% else %}Não{% endif %}</td>
+                <td>{% if invoice.billing_group.name|default:""|lower == 'locação' %}Sim{% else %}Não{% endif %}</td>
                 <td>1</td>
                 <td>R$ {{ invoice.amount }}</td>
                 <td>R$ {{ invoice.amount }}</td>
