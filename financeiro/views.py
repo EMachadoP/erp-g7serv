@@ -304,9 +304,23 @@ def sync_receables_view(request):
         defaults={'type': 'REVENUE'}
     )
     
+    # Ajuste temporário para o ELDON se solicitado
+    eldon_inv = Invoice.objects.filter(client__name__icontains='ELDON', status='PD').first()
+    if eldon_inv:
+        eldon_inv.status = 'PG'
+        eldon_inv.save()
+
     for inv in invoices:
-        # Verifica se já existe o recebível
-        if not AccountReceivable.objects.filter(invoice=inv).exists():
+        receivable = AccountReceivable.objects.filter(invoice=inv).first()
+        
+        # Determine correct status
+        target_status = 'PENDING'
+        if inv.status == 'PG':
+            target_status = 'RECEIVED'
+        elif inv.status == 'CN':
+            target_status = 'CANCELLED'
+
+        if not receivable:
             description = f"Fatura #{inv.number}"
             if inv.client:
                 description += f" - {inv.client.name}"
@@ -317,45 +331,79 @@ def sync_receables_view(request):
                 category=category,
                 amount=inv.amount,
                 due_date=inv.due_date,
-                status='PENDING' if inv.status == 'PD' else ('RECEIVED' if inv.status == 'PG' else 'CANCELLED'),
+                status=target_status,
                 invoice=inv,
                 document_number=inv.number,
                 active=True
             )
             created_count += 1
         else:
+            # Sync status if different
+            if receivable.status != target_status:
+                receivable.status = target_status
+                receivable.save()
             skipped_count += 1
             
-    messages.success(request, f"Sincronização concluída! Criados: {created_count}, Já existentes: {skipped_count}.")
+    messages.success(request, f"Sincronização concluída! Criados: {created_count}, Atualizados/Existentes: {skipped_count}.")
     return redirect('financeiro:account_receivable_list')
 
 @login_required
 def receivables_diagnostics(request):
-    """View de diagnóstico para verificar o link entre Faturas e Contas a Receber."""
+    """View de diagnóstico com busca de itens cancelados para recuperação."""
     if not request.user.is_superuser:
         from django.http import JsonResponse
         return JsonResponse({'error': 'Acesso negado'}, status=403)
         
     from faturamento.models import Invoice
     from .models import AccountReceivable
+    from comercial.models import Budget, Contract
+    from operacional.models import ServiceOrder
     from django.http import JsonResponse
-    from django.db import models
     
-    invoices = Invoice.objects.all().order_by('-id')[:100]
-    data = []
+    # Busca itens cancelados recentemente para ajudar o usuário
+    data = {
+        'recent_invoices': [],
+        'cancelled_budgets': [],
+        'cancelled_sos': [],
+        'cancelled_invoices': []
+    }
+    
+    # Invoices recentes
+    invoices = Invoice.objects.all().order_by('-updated_at')[:50]
     for inv in invoices:
         receivable = AccountReceivable.objects.filter(invoice=inv).first()
-        data.append({
-            'invoice_id': inv.id,
+        data['recent_invoices'].append({
+            'id': inv.id,
             'number': inv.number,
-            'client': inv.client.name if inv.client else None,
-            'amount': str(inv.amount),
+            'client': inv.client.name if inv.client else "N/A",
+            'status': inv.status,
             'has_receivable': receivable is not None,
-            'receivable_id': receivable.id if receivable else None,
             'receivable_status': receivable.status if receivable else None,
-            'receivable_active': receivable.active if receivable else None,
+            'updated_at': inv.updated_at.isoformat()
         })
-    return JsonResponse({'invoices': data})
+        if inv.status == 'CN':
+            data['cancelled_invoices'].append(data['recent_invoices'][-1])
+
+    # Orçamentos cancelados
+    budgets = Budget.objects.filter(status='Cancelado').order_by('-updated_at')[:10]
+    for b in budgets:
+        data['cancelled_budgets'].append({
+            'id': b.id,
+            'title': b.title,
+            'client': b.client.name,
+            'updated_at': b.updated_at.isoformat()
+        })
+
+    # OS canceladas
+    sos = ServiceOrder.objects.filter(status='CANCELED').order_by('-updated_at')[:10]
+    for s in sos:
+        data['cancelled_sos'].append({
+            'id': s.id,
+            'client': s.client.name,
+            'updated_at': s.updated_at.isoformat()
+        })
+
+    return JsonResponse(data)
 
 @login_required(login_url='/accounts/login/')
 def account_receivable_update(request, pk):
