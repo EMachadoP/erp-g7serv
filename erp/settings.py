@@ -177,6 +177,7 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=15, cast=int)
+BREVO_API_KEY = config('BREVO_API_KEY', default='')
 
 # Authentication
 AUTHENTICATION_BACKENDS = [

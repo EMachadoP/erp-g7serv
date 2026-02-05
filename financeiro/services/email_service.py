@@ -78,6 +78,14 @@ Obrigado,
 G7Serv
 """
         
+        if getattr(settings, 'BREVO_API_KEY', None):
+            return BillingEmailService.send_via_brevo(
+                recipient_email=recipient_email,
+                subject=subject,
+                body=body,
+                invoice=invoice
+            )
+
         email = EmailMessage(
             subject=subject,
             body=body,
@@ -99,4 +107,54 @@ G7Serv
             return True
         except Exception as e:
             logger.error(f"Erro ao enviar e-mail de faturamento para {recipient_email}: {e}")
+            return False
+
+    @staticmethod
+    def send_via_brevo(recipient_email, subject, body, invoice):
+        """
+        Envia e-mail via API HTTP da Brevo (Sendinblue).
+        """
+        import requests
+        import base64
+        import os
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "api-key": settings.BREVO_API_KEY,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        
+        # Tenta extrair o nome do remetente do e-mail
+        sender_email = settings.DEFAULT_FROM_EMAIL or "g7serv@g7serv.com.br"
+        
+        data = {
+            "sender": {"email": sender_email, "name": "G7Serv"},
+            "to": [{"email": recipient_email}],
+            "subject": subject,
+            "htmlContent": body
+        }
+        
+        # Anexo
+        if invoice.pdf_fatura:
+            try:
+                with open(invoice.pdf_fatura.path, "rb") as f:
+                    content = base64.b64encode(f.read()).decode('utf-8')
+                    data["attachment"] = [{
+                        "content": content,
+                        "name": os.path.basename(invoice.pdf_fatura.name)
+                    }]
+            except Exception as e:
+                logger.warning(f"Falha ao carregar anexo para Brevo: {e}")
+
+        try:
+            response = requests.post(url, json=data, headers=headers, timeout=15)
+            if response.status_code in [200, 201]:
+                logger.info(f"E-mail enviado via Brevo para {recipient_email}")
+                return True
+            else:
+                logger.error(f"Erro Brevo ({response.status_code}): {response.text}")
+                return False
+        except Exception as e:
+            logger.error(f"Erro ao conectar com Brevo: {e}")
             return False
