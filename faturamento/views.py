@@ -588,9 +588,17 @@ def invoice_bulk_send_emails(request):
             'errors': errors
         })
     except Exception as e:
+        error_msg = str(e)
+        if "101" in error_msg or "unreachable" in error_msg.lower():
+            advice = "Dica: O servidor não conseguiu alcançar o servidor de e-mail. Verifique se o EMAIL_HOST e EMAIL_PORT estão corretos no Railway."
+        elif "authentication" in error_msg.lower() or "535" in error_msg:
+            advice = "Dica: Usuário ou senha do e-mail incorretos. Verifique se a 'Senha de App' está correta."
+        else:
+            advice = ""
+            
         return JsonResponse({
             'status': 'error',
-            'message': f'Erro crítico no servidor: {str(e)}'
+            'message': f'Erro de Conexão: {error_msg}. {advice}'
         }, status=500)
 
 
