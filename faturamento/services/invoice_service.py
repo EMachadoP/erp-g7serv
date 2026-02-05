@@ -27,17 +27,19 @@ def generate_invoice_pdf_file(invoice):
         pisa_status = pisa.CreatePDF(html, dest=result)
         
         if pisa_status.err:
-            logger.error(f"Erro ao gerar PDF para fatura {invoice.number}")
-            return False
+            msg = f"Erro ao gerar PDF para fatura {invoice.number}"
+            logger.error(msg)
+            return None, msg
         
         # Salva o arquivo no modelo
         filename = f"fatura_{invoice.number}.pdf"
         pdf_bytes = result.getvalue()
         invoice.pdf_fatura.save(filename, ContentFile(pdf_bytes), save=True)
         logger.info(f"PDF da fatura {invoice.number} gerado e salvo com sucesso.")
-        return pdf_bytes
+        return pdf_bytes, "PDF gerado com sucesso."
     except Exception as e:
         import traceback
-        logger.error(f"Exceção ao gerar PDF da fatura {invoice.number}: {e}")
+        msg = f"Exceção ao gerar PDF da fatura {invoice.number}: {e}"
+        logger.error(msg)
         logger.error(traceback.format_exc())
-        return None
+        return None, msg

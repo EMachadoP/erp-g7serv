@@ -19,8 +19,9 @@ class BillingEmailService:
         recipient_email = client.email
         
         if not recipient_email:
-            logger.error(f"Erro ao enviar e-mail: {client.name} não possui e-mail cadastrado.")
-            return False
+            msg = f"Erro ao enviar e-mail: {client.name} não possui e-mail cadastrado."
+            logger.error(msg)
+            return False, msg
 
         # 1. Obter Template (ou usar o padrão se não especificado)
         template = None
@@ -252,7 +253,7 @@ class BillingEmailService:
             
             # Se não existe ou for solicitado, gera/regenera para garantir dados frescos
             logger.info(f"Garantindo PDF da fatura para {invoice.number}")
-            pdf_content = generate_invoice_pdf_file(invoice)
+            pdf_content, pdf_err = generate_invoice_pdf_file(invoice)
             
             # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
             invoice.refresh_from_db()
@@ -295,10 +296,11 @@ class BillingEmailService:
             
         try:
             email.send()
-            return True
+            return True, "E-mail enviado com sucesso (SMTP)."
         except Exception as e:
-            logger.error(f"Erro ao enviar e-mail de faturamento via SMTP para {recipient_email}: {e}")
-            return False
+            msg = f"Erro ao enviar e-mail de faturamento via SMTP para {recipient_email}: {e}"
+            logger.error(msg)
+            return False, msg
 
     @staticmethod
     def send_via_brevo(recipient_email, subject, body, invoice, pdf_content=None):
@@ -364,10 +366,12 @@ class BillingEmailService:
             response = requests.post(url, json=data, headers=headers, timeout=20)
             if response.status_code in [200, 201]:
                 logger.info(f"E-mail enviado via Brevo para {recipient_email}")
-                return True
+                return True, "E-mail enviado com sucesso (Brevo)."
             else:
-                logger.error(f"Erro Brevo ({response.status_code}): {response.text}")
-                return False
+                msg = f"Erro Brevo ({response.status_code}): {response.text}"
+                logger.error(msg)
+                return False, msg
         except Exception as e:
-            logger.error(f"Erro ao conectar com Brevo: {e}")
-            return False
+            msg = f"Erro ao conectar com Brevo: {e}"
+            logger.error(msg)
+            return False, msg

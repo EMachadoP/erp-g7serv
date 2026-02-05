@@ -655,15 +655,16 @@ def invoice_bulk_send_emails(request):
                 try:
                     if not invoice.pdf_fatura:
                         print(f"[DEBUG] Gerando PDF faltante para fatura {invoice.number}")
-                        generate_invoice_pdf_file(invoice)
+                        pdf_bytes, pdf_err = generate_invoice_pdf_file(invoice)
                         invoice.refresh_from_db()
 
-                    if BillingEmailService.send_invoice_email(invoice, template_id=template_id, connection=connection):
+                    success, msg = BillingEmailService.send_invoice_email(invoice, template_id=template_id, connection=connection)
+                    if success:
                         invoice.email_sent_at = timezone.now()
                         invoice.save()
                         success_count += 1
                     else:
-                        errors.append(f"Fatura #{invoice.id}: Falha ao enviar e-mail.")
+                        errors.append(f"Fatura #{invoice.number}: {msg}")
                 except Exception as e:
                     errors.append(f"Fatura #{invoice.id}: {str(e)}")
         finally:
