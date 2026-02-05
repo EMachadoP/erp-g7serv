@@ -37,5 +37,7 @@ def generate_invoice_pdf_file(invoice):
         logger.info(f"PDF da fatura {invoice.number} gerado e salvo com sucesso.")
         return pdf_bytes
     except Exception as e:
+        import traceback
         logger.error(f"Exceção ao gerar PDF da fatura {invoice.number}: {e}")
+        logger.error(traceback.format_exc())
         return None

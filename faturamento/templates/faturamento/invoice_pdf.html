@@ -93,7 +93,6 @@
 
 <body>
     <div class="main-container">
-        <!-- Header Section -->
         <table>
             <tr>
                 <td style="width: 70%;" class="header-box">
@@ -119,8 +118,9 @@
                         <tr>
                             <td colspan="2">
                                 <span class="label">Endereço</span>
-                                <span class="value">{{ company.address|default:"Rua Dois de Fevereiro, 237 - Vasco da
-                                    Gama, 52280572" }}</span>
+                                <span class="value">
+                                    {{ company.address|default:"Rua Dois de Fevereiro, 237 - Vasco da Gama, 52280572" }}
+                                </span>
                             </td>
                         </tr>
                     </table>
@@ -156,7 +156,6 @@
             </tr>
         </table>
 
-        <!-- Client Section -->
         <table>
             <tr>
                 <td style="width: 70%;">
@@ -181,13 +180,14 @@
             <tr>
                 <td colspan="2">
                     <span class="label">Endereço</span>
-                    <span class="value">{{ invoice.client.address|default:"" }}, {{ invoice.client.number|default:"" }}
-                        - {{ invoice.client.neighborhood|default:"" }}, {{ invoice.client.zip_code|default:"" }}</span>
+                    <span class="value">
+                        {{ invoice.client.address|default:"" }}, {{ invoice.client.number|default:"" }}
+                        - {{ invoice.client.neighborhood|default:"" }}, {{ invoice.client.zip_code|default:"" }}
+                    </span>
                 </td>
             </tr>
         </table>
 
-        <!-- Operation Section -->
         <table>
             <tr>
                 <td colspan="5" class="section-header">Dados da Operação</td>
@@ -195,8 +195,9 @@
             <tr>
                 <td colspan="3">
                     <span class="label">Operação de Faturamento</span>
-                    <span class="value">{% if invoice.contract %}Faturamento de Contratos{% else %}Faturamento Avulso{%
-                        endif %}</span>
+                    <span class="value">
+                        {% if invoice.contract %}Contratos{% else %}Avulso{% endif %}
+                    </span>
                 </td>
                 <td colspan="2">
                     <span class="label">Forma de Pagamento</span>
@@ -204,30 +205,17 @@
                 </td>
             </tr>
             <tr>
-                <td>
-                    <span class="label">Valor Total Bruto</span>
-                    <span class="value">R$ {{ invoice.amount }}</span>
-                </td>
-                <td>
-                    <span class="label">Descontos</span>
-                    <span class="value">- R$ 0,00</span>
-                </td>
-                <td>
-                    <span class="label">Tributos</span>
-                    <span class="value">- R$ 0,00</span>
-                </td>
-                <td>
-                    <span class="label">Acréscimos</span>
-                    <span class="value">+ R$ 0,00</span>
-                </td>
+                <td><span class="label">Total Bruto</span><span class="value">R$ {{ invoice.amount }}</span></td>
+                <td><span class="label">Descontos</span><span class="value">R$ 0,00</span></td>
+                <td><span class="label">Tributos</span><span class="value">R$ 0,00</span></td>
+                <td><span class="label">Acréscimos</span><span class="value">R$ 0,00</span></td>
                 <td style="background-color: #f5f5f5;">
-                    <span class="label">Valor Total Líquido</span>
+                    <span class="label">Total Líquido</span>
                     <span class="value">R$ {{ invoice.amount }}</span>
                 </td>
             </tr>
         </table>
 
-        <!-- Contract Section -->
         <table>
             <tr>
                 <td colspan="5" class="section-header">Dados do Contrato</td>
@@ -238,49 +226,38 @@
                     <span class="value">{{ invoice.contract.id|default:"-" }}</span>
                 </td>
                 <td style="width: 35%;">
-                    <span class="label">Fatura do Contrato</span>
-                    <span class="value">{% if invoice.status == 'PD' %}Pendente{% elif invoice.status == 'PG' %}Paga{%
-                        else %}{{ invoice.get_status_display }}{% endif %}</span>
+                    <span class="label">Status</span>
+                    <span class="value">
+                        {% if invoice.status == 'PD' %}Pendente{% elif invoice.status == 'PG' %}Paga{% else %}{{
+                        invoice.get_status_display }}{% endif %}
+                    </span>
                 </td>
                 <td colspan="3">
-                    <span class="label">Grupo de Faturamento</span>
+                    <span class="label">Grupo</span>
                     <span class="value">{{ invoice.billing_group.name|default:"Locação" }}</span>
                 </td>
             </tr>
             <tr>
-                <td>
-                    <span class="label">Valor Total Bruto</span>
-                    <span class="value">R$ {{ invoice.amount }}</span>
-                </td>
-                <td>
-                    <span class="label">Bonificações</span>
-                    <span class="value">- R$ 0,00</span>
-                </td>
-                <td>
-                    <span class="label">Despesas</span>
-                    <span class="value">+ R$ 0,00</span>
-                </td>
-                <td>
-                    <span class="label">Pro-Rata</span>
-                    <span class="value">- R$ 0,00</span>
-                </td>
+                <td><span class="label">Total Bruto</span><span class="value">R$ {{ invoice.amount }}</span></td>
+                <td><span class="label">Bonificações</span><span class="value">R$ 0,00</span></td>
+                <td><span class="label">Despesas</span><span class="value">R$ 0,00</span></td>
+                <td><span class="label">Pro-Rata</span><span class="value">R$ 0,00</span></td>
                 <td style="background-color: #f5f5f5;">
-                    <span class="label">Valor Total Líquido</span>
+                    <span class="label">Total Líquido</span>
                     <span class="value">R$ {{ invoice.amount }}</span>
                 </td>
             </tr>
         </table>
 
-        <!-- Financials Section -->
         <table>
             <tr>
                 <td colspan="4" class="section-header">Dados Financeiros</td>
             </tr>
             <tr>
-                <th style="width: 30%;"><span class="label">Parcela</span></th>
-                <th style="width: 25%;"><span class="label">Data de Vencimento</span></th>
-                <th style="width: 25%;"><span class="label">Data de Pagamento</span></th>
-                <th style="width: 20%;"><span class="label">Valor</span></th>
+                <th><span class="label">Parcela</span></th>
+                <th><span class="label">Vencimento</span></th>
+                <th><span class="label">Pagamento</span></th>
+                <th><span class="label">Valor</span></th>
             </tr>
             <tr>
                 <td>1/1</td>
@@ -302,14 +279,11 @@
             <tr>
                 <td colspan="2" style="background-color: #f5f5f5; text-align: center;">
                     <span class="label">Valor Total</span>
-                    <span class="value" style="font-size: 10px;">R$ {{ invoice.amount }}</span>
+                    <span class="value">R$ {{ invoice.amount }}</span>
                 </td>
             </tr>
         </table>
 
-        <!-- Services Section -->
-        <div style="text-align: right; font-size: 7px; margin-bottom: 2px;">Serviço demarcado com "*" e em negrito, é
-            identificado como principal.</div>
         <table>
             <tr>
                 <td colspan="5" class="section-header">Serviços</td>
@@ -318,22 +292,27 @@
                 <th style="width: 45%;">Serviço</th>
                 <th style="width: 15%;">Locação</th>
                 <th style="width: 10%;">Qtde.</th>
-                <th style="width: 15%;">Valor Unitário</th>
-                <th style="width: 15%;">Total Bruto</th>
+                <th style="width: 15%;">Unitário</th>
+                <th style="width: 15%;">Total</th>
             </tr>
             {% for item in invoice.items.all %}
             <tr>
                 <td><strong>{{ item.description }}{% if item.item_type == 'SERVICE' %} *{% endif %}</strong></td>
-                <td>{% if invoice.billing_group.name|default:""|lower == 'locação' and item.item_type == 'SERVICE'
-                    %}Sim{% else %}Não{% endif %}</td>
+                <td>
+                    {% if invoice.billing_group.name == 'Locação' %}
+                    {% if item.item_type == 'SERVICE' %}Sim{% else %}Não{% endif %}
+                    {% else %}Não{% endif %}
+                </td>
                 <td>{{ item.quantity }}</td>
                 <td>R$ {{ item.unit_price }}</td>
                 <td>R$ {{ item.total_price }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td><strong>{{ invoice.billing_group.name|default:"Serviços Prestados" }} *</strong></td>
-                <td>{% if invoice.billing_group.name|default:""|lower == 'locação' %}Sim{% else %}Não{% endif %}</td>
+                <td><strong>{{ invoice.billing_group.name|default:"Serviços" }} *</strong></td>
+                <td>
+                    {% if invoice.billing_group.name == 'Locação' %}Sim{% else %}Não{% endif %}
+                </td>
                 <td>1</td>
                 <td>R$ {{ invoice.amount }}</td>
                 <td>R$ {{ invoice.amount }}</td>
