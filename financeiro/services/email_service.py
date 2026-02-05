@@ -53,12 +53,18 @@ class BillingEmailService:
             # 1. Renderizar Assunto
             try:
                 # Pré-processar tags do usuário {tag} para {{tag}}
-                subject_content = template.subject.replace('{', '{{').replace('}', '}}')
-                subject_template = Template(subject_content)
+                subject_text = template.subject
+                for placeholder in ['cliente', 'valor', 'vencimento', 'fatura', 'link_boleto', 'link_nf', 'competence']:
+                    subject_text = subject_text.replace(f'{{{placeholder}}}', f'{{{{{placeholder}}}}}')
+                
+                subject_template = Template(subject_text)
                 subject = subject_template.render(Context(context_dict))
             except Exception as e:
                 logger.error(f"Erro ao renderizar assunto do template: {e}")
+                # Fallback manual para o assunto se o Template falhar
                 subject = template.subject
+                for k, v in context_dict.items():
+                    subject = subject.replace(f'{{{k}}}', str(v))
 
             # 2. Renderizar Corpo do Usuário (aplicando linebreaksbr)
             try:
@@ -196,6 +202,12 @@ class BillingEmailService:
                 """
         
         if getattr(settings, 'BREVO_API_KEY', None):
+            # Garante que o PDF da Fatura existe antes de enviar
+            if not invoice.pdf_fatura:
+                from faturamento.services.invoice_service import generate_invoice_pdf_file
+                generate_invoice_pdf_file(invoice)
+                invoice.refresh_from_db()
+
             return BillingEmailService.send_via_brevo(
                 recipient_email=recipient_email,
                 subject=subject,
