@@ -564,9 +564,14 @@ def invoice_bulk_send_emails(request):
     errors = []
     
     try:
-        from django.core.mail import get_connection
-        connection = get_connection()
-        connection.open()
+        from django.conf import settings
+        use_brevo = bool(getattr(settings, 'BREVO_API_KEY', None))
+        connection = None
+        
+        if not use_brevo:
+            from django.core.mail import get_connection
+            connection = get_connection()
+            connection.open()
         
         try:
             for invoice in invoices:
@@ -580,7 +585,8 @@ def invoice_bulk_send_emails(request):
                 except Exception as e:
                     errors.append(f"Fatura #{invoice.id}: {str(e)}")
         finally:
-            connection.close()
+            if connection:
+                connection.close()
         
         return JsonResponse({
             'status': 'success' if success_count > 0 else 'error',
