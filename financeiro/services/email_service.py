@@ -108,6 +108,23 @@ class BillingEmailService:
                 user_body_html = linebreaksbr(template.body)
 
             # 3. Envolver no Layout Premium
+            items_html = ""
+            for item in invoice.items.all():
+                items_html += f"""
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">{item.description}</td>
+                    <td style="text-align: center; padding: 8px; border-bottom: 1px solid #f1f5f9;">{item.quantity}</td>
+                    <td style="text-align: right; padding: 8px; border-bottom: 1px solid #f1f5f9;">R$ {item.total_price}</td>
+                </tr>"""
+            
+            if not items_html:
+                items_html = f"""
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">Serviços Técnicos / Locação</td>
+                    <td style="text-align: center; padding: 8px; border-bottom: 1px solid #f1f5f9;">1</td>
+                    <td style="text-align: right; padding: 8px; border-bottom: 1px solid #f1f5f9;">R$ {invoice.amount}</td>
+                </tr>"""
+
             body = f"""
             <!DOCTYPE html>
             <html>
@@ -133,9 +150,19 @@ class BillingEmailService:
                         
                         <div class="details">
                             <p><strong>Resumo do Faturamento:</strong></p>
-                            <p>Valor: R$ {invoice.amount}<br>
-                            Vencimento: {invoice.due_date.strftime('%d/%m/%Y')}<br>
-                            Fatura: {invoice.number}</p>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 15px;">
+                                <tr style="background-color: #f1f5f9;">
+                                    <th style="text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0;">Item</th>
+                                    <th style="text-align: center; padding: 8px; border-bottom: 1px solid #e2e8f0;">Qtd</th>
+                                    <th style="text-align: right; padding: 8px; border-bottom: 1px solid #e2e8f0;">Total</th>
+                                </tr>
+                                {items_html}
+                            </table>
+                            <p style="text-align: right; font-size: 16px;"><strong>Total: R$ {invoice.amount}</strong></p>
+                            <p style="font-size: 13px; color: #64748b;">
+                                Vencimento: {invoice.due_date.strftime('%d/%m/%Y')}<br>
+                                Referência: {invoice.number}
+                            </p>
                         </div>
 
                         <div class="btn-container">

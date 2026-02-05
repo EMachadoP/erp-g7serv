@@ -3,7 +3,7 @@
 {% block title %}Novo Faturamento Avulso | G7Serv{% endblock %}
 {% block content %}
 <div class="row mt-4 justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3">
                 <h4 class="mb-0 text-primary">Faturamento Avulso</h4>
@@ -44,6 +44,79 @@
                             {{ form.status }}
                         </div>
                     </div>
+
+                    <!-- Itemized Billing Section -->
+                    <div class="mt-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-secondary fw-bold">Itens da Fatura (Serviços / Produtos)</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+                                <i class="bi bi-plus-lg"></i> Adicionar Item
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            {{ formset.management_form }}
+                            <table class="table table-hover align-middle border-top" id="items-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%;">Tipo</th>
+                                        <th style="width: 35%;">Descrição / Item</th>
+                                        <th style="width: 10%;">Qtd.</th>
+                                        <th style="width: 15%;">V. Unitário (R$)</th>
+                                        <th style="width: 15%;">V. Total (R$)</th>
+                                        <th style="width: 10%;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="form-set-container">
+                                    {% for item_form in formset %}
+                                    <tr class="formset-row">
+                                        {% for hidden in item_form.hidden_fields %}
+                                        {{ hidden }}
+                                        {% endfor %}
+                                        <td>{{ item_form.item_type }}</td>
+                                        <td>{{ item_form.description }}</td>
+                                        <td>{{ item_form.quantity }}</td>
+                                        <td>{{ item_form.unit_price }}</td>
+                                        <td class="total-row-price fw-bold text-dark">R$ 0,00</td>
+                                        <td class="text-center">
+                                            {% if formset.can_delete %}
+                                            <div class="d-none">{{ item_form.DELETE }}</div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                                                Remover
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light border-top-0">
+                                        <td colspan="4" class="text-end fw-bold py-3 text-uppercase small">Soma dos
+                                            Itens:</td>
+                                        <td colspan="2" class="fw-bold py-3 text-primary fs-5" id="grand-total">R$ 0,00
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div id="empty-row" class="d-none">
+                            <table class="table">
+                                <tr class="formset-row">
+                                    <td>{{ formset.empty_form.item_type }}</td>
+                                    <td>{{ formset.empty_form.description }}</td>
+                                    <td>{{ formset.empty_form.quantity }}</td>
+                                    <td>{{ formset.empty_form.unit_price }}</td>
+                                    <td class="total-row-price fw-bold text-dark">R$ 0,00</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+                                            Remover
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                     <div class="mt-4 d-flex justify-content-between">
                         <a href="{% url 'faturamento:list' %}" class="btn btn-secondary">
                             Cancelar
@@ -69,6 +142,71 @@
                 placeholder: 'Selecione...'
             });
         }
+
+        const formsetContainer = document.getElementById('form-set-container');
+        const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+        const grandTotalSpan = document.getElementById('grand-total');
+        const mainAmountInput = document.querySelector('input[name="amount"]');
+
+        function calculateTotals() {
+            let grandTotal = 0;
+            const rows = document.querySelectorAll('.formset-row');
+
+            rows.forEach(row => {
+                if (row.style.display === 'none') return;
+
+                const qty = parseFloat(row.querySelector('.quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.unit-price').value) || 0;
+                const total = qty * price;
+
+                row.querySelector('.total-row-price').innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                grandTotal += total;
+            });
+
+            grandTotalSpan.innerText = `R$ ${grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            // Sync with main amount field
+            if (mainAmountInput) {
+                mainAmountInput.value = grandTotal.toFixed(2).replace('.', ',');
+            }
+        }
+
+        // Event delegation for changes
+        formsetContainer.addEventListener('input', function (e) {
+            if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
+                calculateTotals();
+            }
+        });
+
+        // Add new item
+        document.getElementById('add-item').addEventListener('click', function () {
+            const formCount = parseInt(totalFormsInput.value);
+            const emptyTemplate = document.querySelector('#empty-row tbody').innerHTML;
+            const newFormHtml = emptyTemplate.replace(/__prefix__/g, formCount);
+
+            formsetContainer.insertAdjacentHTML('beforeend', newFormHtml);
+            totalFormsInput.value = formCount + 1;
+            calculateTotals();
+        });
+
+        // Remove item
+        formsetContainer.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-item')) {
+                const row = e.target.closest('.formset-row');
+                const deleteInput = row.querySelector('input[name*="DELETE"]');
+
+                if (deleteInput) {
+                    deleteInput.value = 'on';
+                    row.style.display = 'none';
+                } else {
+                    row.remove();
+                }
+                calculateTotals();
+            }
+        });
+
+        // Initial calculation
+        calculateTotals();
     });
 </script>
 {% endblock %}

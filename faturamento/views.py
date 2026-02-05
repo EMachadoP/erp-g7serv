@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Invoice, NotaEntrada, NotaEntradaItem, NotaEntradaParcela, BillingBatch
-from .forms import InvoiceForm, NotaEntradaItemForm, NotaEntradaParcelaForm
+from .models import Invoice, NotaEntrada, NotaEntradaItem, NotaEntradaParcela, BillingBatch, InvoiceItem
+from .forms import InvoiceForm, NotaEntradaItemForm, NotaEntradaParcelaForm, InvoiceItemFormSet
 from .services.nfe_import import processar_xml_nfe
 from financeiro.models import AccountPayable, FinancialCategory, CostCenter
 from estoque.models import StockMovement, Product
@@ -85,14 +85,26 @@ def invoice_detail(request, pk):
 def invoice_create(request):
     if request.method == 'POST':
         form = InvoiceForm(request.POST)
-        if form.is_valid():
-            invoice = form.save()
-            messages.success(request, 'Fatura criada com sucesso.')
-            return redirect('faturamento:detail', pk=invoice.id)
+        formset = InvoiceItemFormSet(request.POST, prefix='items')
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                invoice = form.save()
+                formset.instance = invoice
+                formset.save()
+                
+                # Recalculate amount if items exist
+                if invoice.items.exists():
+                    total_amount = sum(item.total_price for item in invoice.items.all())
+                    invoice.amount = total_amount
+                    invoice.save()
+                    
+                messages.success(request, 'Fatura criada com sucesso.')
+                return redirect('faturamento:detail', pk=invoice.id)
     else:
         form = InvoiceForm()
+        formset = InvoiceItemFormSet(prefix='items')
     
-    return render(request, 'faturamento/invoice_form.html', {'form': form})
+    return render(request, 'faturamento/invoice_form.html', {'form': form, 'formset': formset})
 
 
 @login_required
@@ -102,16 +114,28 @@ def invoice_standalone_create(request):
     
     if request.method == 'POST':
         form = StandaloneInvoiceForm(request.POST)
-        if form.is_valid():
-            invoice = form.save(commit=False)
-            invoice.contract = None
-            invoice.save()
-            messages.success(request, 'Fatura avulsa criada com sucesso.')
-            return redirect('faturamento:detail', pk=invoice.id)
+        formset = InvoiceItemFormSet(request.POST, prefix='items')
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                invoice = form.save(commit=False)
+                invoice.contract = None
+                invoice.save()
+                
+                formset.instance = invoice
+                formset.save()
+                
+                # Recalculate amount from items
+                if invoice.items.exists():
+                    invoice.amount = sum(item.total_price for item in invoice.items.all())
+                    invoice.save()
+                
+                messages.success(request, 'Fatura avulsa criada com sucesso.')
+                return redirect('faturamento:detail', pk=invoice.id)
     else:
         form = StandaloneInvoiceForm()
+        formset = InvoiceItemFormSet(prefix='items')
 
-    return render(request, 'faturamento/invoice_standalone_form.html', {'form': form})
+    return render(request, 'faturamento/invoice_standalone_form.html', {'form': form, 'formset': formset})
 
 @login_required
 def invoice_update(request, pk):
@@ -119,14 +143,28 @@ def invoice_update(request, pk):
     
     if request.method == 'POST':
         form = InvoiceForm(request.POST, instance=invoice)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Fatura atualizada com sucesso.')
-            return redirect('faturamento:detail', pk=invoice.id)
+        formset = InvoiceItemFormSet(request.POST, instance=invoice, prefix='items')
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                form.save()
+                formset.save()
+                
+                # Recalculate amount from items if present
+                if invoice.items.exists():
+                    invoice.amount = sum(item.total_price for item in invoice.items.all())
+                    invoice.save()
+                    
+                messages.success(request, 'Fatura atualizada com sucesso.')
+                return redirect('faturamento:detail', pk=invoice.id)
     else:
         form = InvoiceForm(instance=invoice)
+        formset = InvoiceItemFormSet(instance=invoice, prefix='items')
         
-    return render(request, 'faturamento/invoice_form.html', {'invoice': invoice, 'form': form})
+    return render(request, 'faturamento/invoice_form.html', {
+        'invoice': invoice, 
+        'form': form, 
+        'formset': formset
+    })
 
 from operacional.models import ServiceOrder
 from comercial.models import Contract
@@ -294,6 +332,17 @@ def process_contract_billing(request):
                     due_date=due_date,
                     amount=contract.value,
                     status='PD'
+                )
+
+                # 1.1 Create InvoiceItem for the contract service
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    item_type='SERVICE',
+                    description=f"Serviços de {contract.billing_group.name if contract.billing_group else 'Suporte'}",
+                    quantity=1,
+                    unit_price=contract.value,
+                    total_price=contract.value,
+                    notes=f"Competência: {month:02d}/{year}"
                 )
                 
                 # 2. Integrate with Cora v2 (mTLS)

@@ -72,6 +72,33 @@ class Invoice(models.Model):
     def __str__(self):
         return f"Fatura {self.number}"
 
+class InvoiceItem(models.Model):
+    ITEM_TYPE_CHOICES = [
+        ('SERVICE', 'Serviço'),
+        ('PRODUCT', 'Produto'),
+    ]
+    
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items', verbose_name="Fatura")
+    description = models.CharField(max_length=255, verbose_name="Descrição/Produto/Serviço")
+    item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES, default='SERVICE', verbose_name="Tipo")
+    
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1, verbose_name="Quantidade")
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Preço Unitário")
+    total_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Preço Total")
+    
+    notes = models.TextField(blank=True, null=True, verbose_name="Observações/Referência")
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.description} ({self.invoice.number})"
+
+    class Meta:
+        verbose_name = "Item da Fatura"
+        verbose_name_plural = "Itens da Fatura"
+
 class NotaEntrada(models.Model):
     STATUS_CHOICES = [
         ('IMPORTADA', 'Importada'),

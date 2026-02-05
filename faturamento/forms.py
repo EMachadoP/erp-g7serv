@@ -1,5 +1,6 @@
 from django import forms
-from .models import Invoice, NotaEntradaItem, NotaEntradaParcela
+from .models import Invoice, NotaEntradaItem, NotaEntradaParcela, InvoiceItem
+from django.forms import inlineformset_factory
 from estoque.models import Product
 
 class InvoiceForm(forms.ModelForm):
@@ -16,6 +17,24 @@ class InvoiceForm(forms.ModelForm):
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
+
+
+class InvoiceItemForm(forms.ModelForm):
+    class Meta:
+        model = InvoiceItem
+        fields = ['item_type', 'description', 'quantity', 'unit_price', 'notes']
+        widgets = {
+            'item_type': forms.Select(attrs={'class': 'form-select item-type'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descrição do serviço ou produto'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control quantity', 'step': '0.01'}),
+            'unit_price': forms.NumberInput(attrs={'class': 'form-control unit-price', 'step': '0.01'}),
+            'notes': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ref. / Obs.'}),
+        }
+
+InvoiceItemFormSet = inlineformset_factory(
+    Invoice, InvoiceItem, form=InvoiceItemForm,
+    extra=1, can_delete=True
+)
 
 
 class StandaloneInvoiceForm(forms.ModelForm):
