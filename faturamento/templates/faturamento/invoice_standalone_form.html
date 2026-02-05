@@ -15,11 +15,7 @@
                 <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase">Número da Fatura</label>
-                            {{ form.number }}
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label class="form-label fw-bold small text-uppercase">Grupo de Faturamento</label>
                             {{ form.billing_group }}
                         </div>

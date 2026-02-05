@@ -61,7 +61,7 @@ class Invoice(models.Model):
     # Status de Comunicação
     email_sent_at = models.DateTimeField(null=True, blank=True, verbose_name="E-mail enviado em")
     
-    number = models.CharField(max_length=30, unique=True)
+    number = models.CharField(max_length=30, unique=True, blank=True)
     issue_date = models.DateField(default=timezone.now)
     due_date = models.DateField()
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -71,6 +71,25 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Fatura {self.number}"
+
+    def save(self, *args, **kwargs):
+        if not self.number:
+            # Get the last invoice number to determine the sequence
+            # We filter for numbers starting with 'FAT-' to maintain the sequence correctly
+            last_invoice = Invoice.objects.filter(number__startswith='FAT-').order_by('id').last()
+            if not last_invoice:
+                self.number = 'FAT-0001'
+            else:
+                try:
+                    # Try to extract the numeric part
+                    last_number_str = last_invoice.number.split('-')[1]
+                    next_number = int(last_number_str) + 1
+                    self.number = f'FAT-{next_number:04d}'
+                except (IndexError, ValueError):
+                    # Fallback to ID-based if parsing fails
+                    next_id = (Invoice.objects.all().order_by('id').last().id or 0) + 1
+                    self.number = f'FAT-{next_id:04d}'
+        super().save(*args, **kwargs)
 
 class InvoiceItem(models.Model):
     ITEM_TYPE_CHOICES = [

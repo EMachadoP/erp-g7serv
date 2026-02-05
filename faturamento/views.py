@@ -327,7 +327,6 @@ def process_contract_billing(request):
                     billing_group=contract.billing_group,
                     competence_month=month,
                     competence_year=year,
-                    number=f"CTR-{contract.id}-{year}{month:02d}",
                     issue_date=timezone.now(),
                     due_date=due_date,
                     amount=contract.value,
