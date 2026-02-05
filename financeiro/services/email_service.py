@@ -52,7 +52,9 @@ class BillingEmailService:
 
             # 1. Renderizar Assunto
             try:
-                subject_template = Template(template.subject)
+                # Pré-processar tags do usuário {tag} para {{tag}}
+                subject_content = template.subject.replace('{', '{{').replace('}', '}}')
+                subject_template = Template(subject_content)
                 subject = subject_template.render(Context(context_dict))
             except Exception as e:
                 logger.error(f"Erro ao renderizar assunto do template: {e}")
@@ -60,8 +62,21 @@ class BillingEmailService:
 
             # 2. Renderizar Corpo do Usuário (aplicando linebreaksbr)
             try:
-                body_template = Template(template.body)
+                # Pré-processar tags do usuário {tag} para {{tag}}
+                body_content = template.body.replace('{', '{{').replace('}', '}}')
+                
+                # Remover tags redundantes se o usuário as deixou no template
+                # Conforme solicitado: {cliente}, {vencimento}, {valor}, {link_boleto}, {fatura}
+                tags_to_strip = ['{{cliente}}', '{{vencimento}}', '{{valor}}', '{{link_boleto}}', '{{fatura}}', '{{link_nf}}']
+                for tag in tags_to_strip:
+                    body_content = body_content.replace(tag, '')
+
+                body_template = Template(body_content)
                 user_body_html = body_template.render(Context(context_dict))
+                
+                # Limpar espaços em branco extras que podem sobrar depois de remover as tags
+                user_body_html = user_body_html.strip()
+
                 # Converter quebras de linha em <br> se não houver tags HTML detectadas
                 if '<p' not in user_body_html.lower() and '<br' not in user_body_html.lower():
                     user_body_html = linebreaksbr(user_body_html)
@@ -89,7 +104,7 @@ class BillingEmailService:
             </head>
             <body>
                 <div class="container">
-                    <div class="header"><h1>G7Serv Administradora</h1></div>
+                    <div class="header"><h1>G7 Serv</h1></div>
                     <div class="content">
                         {user_body_html}
                         
@@ -105,11 +120,11 @@ class BillingEmailService:
                         </div>
                         
                         <p style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px; font-size: 14px;">
-                            Atenciosamente,<br><strong>Equipe G7Serv</strong><br>
+                            Atenciosamente,<br><strong>Equipe G7 Serv</strong><br>
                             <span style="font-size: 12px; color: #94a3b8;">Suporte: 81 3019-5654</span>
                         </p>
                     </div>
-                    <div class="footer"><p>Este é um e-mail automático enviado por G7Serv Administradora.</p></div>
+                    <div class="footer"><p>Este é um e-mail automático enviado por G7 Serv.</p></div>
                 </div>
             </body>
             </html>
