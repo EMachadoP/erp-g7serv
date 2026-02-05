@@ -664,9 +664,13 @@ def invoice_bulk_send_emails(request):
                         invoice.save()
                         success_count += 1
                     else:
+                        invoice.email_status = 'ERRO'
+                        invoice.save(update_fields=['email_status'])
                         errors.append(f"Fatura #{invoice.number}: {msg}")
                 except Exception as e:
-                    errors.append(f"Fatura #{invoice.id}: {str(e)}")
+                    invoice.email_status = 'ERRO'
+                    invoice.save(update_fields=['email_status'])
+                    errors.append(f"Fatura #{invoice.number}: {str(e)}")
         finally:
             if connection:
                 connection.close()

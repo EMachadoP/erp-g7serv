@@ -54,6 +54,20 @@ class Invoice(models.Model):
         ('OUTRO', 'Outro'),
     )
 
+    EMAIL_STATUS_CHOICES = [
+        ('PENDENTE', 'Pendente'),
+        ('ENVIADO', 'Enviado'),
+        ('ERRO', 'Erro'),
+    ]
+
+    NFSE_STATUS_CHOICES = [
+        ('NAO_EMITIDA', 'Não Emitida'),
+        ('PROCESSANDO', 'Processando'),
+        ('EMITIDA', 'Emitida'),
+        ('ERRO', 'Erro'),
+        ('CANCELADA', 'Cancelada'),
+    ]
+
     billing_group = models.ForeignKey(BillingGroup, on_delete=models.PROTECT, related_name='invoices', null=True, blank=True)
     batch = models.ForeignKey('BillingBatch', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices', verbose_name="Lote de Faturamento")
     client = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices', verbose_name="Cliente", null=True)
@@ -68,6 +82,8 @@ class Invoice(models.Model):
     
     # Status de Comunicação
     email_sent_at = models.DateTimeField(null=True, blank=True, verbose_name="E-mail enviado em")
+    email_status = models.CharField(max_length=15, choices=EMAIL_STATUS_CHOICES, default='PENDENTE', verbose_name="Status do E-mail")
+    nfse_status = models.CharField(max_length=15, choices=NFSE_STATUS_CHOICES, default='NAO_EMITIDA', verbose_name="Status da NFSe")
     
     number = models.CharField(max_length=30, unique=True, blank=True)
     issue_date = models.DateField(default=timezone.now)

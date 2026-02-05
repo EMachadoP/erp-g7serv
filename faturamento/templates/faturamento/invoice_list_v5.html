@@ -123,8 +123,21 @@
                             <div class="text-end">
                                 <h5 class="text-primary mb-1">R$ {{ invoice.amount|floatformat:2 }}</h5>
                                 <span
-                                    class="badge {% if invoice.status == 'PG' %}bg-success{% elif invoice.status == 'CN' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                    class="badge {% if invoice.status == 'PD' %}bg-warning{% elif invoice.status == 'PG' %}bg-success{% else %}bg-secondary{% endif %}">
                                     {{ invoice.get_status_display }}
+                                </span>
+
+                                <!-- Novos Status: E-mail e NFSe -->
+                                <span
+                                    class="badge {% if invoice.email_status == 'ENVIADO' %}bg-info{% elif invoice.email_status == 'ERRO' %}bg-danger{% else %}bg-light text-dark{% endif %} ms-1"
+                                    title="Status do E-mail">
+                                    <i class="bi bi-envelope"></i> {{ invoice.get_email_status_display }}
+                                </span>
+
+                                <span
+                                    class="badge {% if invoice.nfse_status == 'EMITIDA' %}bg-success{% elif invoice.nfse_status == 'ERRO' %}bg-danger{% elif invoice.nfse_status == 'PROCESSANDO' %}bg-primary{% else %}bg-light text-dark{% endif %} ms-1"
+                                    title="Status da NFSe">
+                                    <i class="bi bi-file-earmark-text"></i> {{ invoice.get_nfse_status_display }}
                                 </span>
                             </div>
                         </div>

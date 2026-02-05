@@ -297,6 +297,8 @@ class BillingEmailService:
             
         try:
             email.send()
+            invoice.email_status = 'ENVIADO'
+            invoice.save(update_fields=['email_status'])
             return True, "E-mail enviado com sucesso (SMTP)."
         except Exception as e:
             msg = f"Erro ao enviar e-mail de faturamento via SMTP para {recipient_email}: {e}"
@@ -368,6 +370,8 @@ class BillingEmailService:
             response = requests.post(url, json=data, headers=headers, timeout=20)
             if response.status_code in [200, 201]:
                 logger.info(f"E-mail enviado via Brevo para {recipient_email}")
+                invoice.email_status = 'ENVIADO'
+                invoice.save(update_fields=['email_status'])
                 return True, "E-mail enviado com sucesso (Brevo)."
             else:
                 msg = f"Erro Brevo ({response.status_code}): {response.text}"
