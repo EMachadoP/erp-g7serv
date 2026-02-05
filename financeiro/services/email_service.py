@@ -1,5 +1,8 @@
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+from django.template import Template, Context
+from django.utils.safestring import mark_safe
+from django.template.defaultfilters import linebreaksbr
 from django.conf import settings
 from core.models import EmailTemplate
 import logging
@@ -32,23 +35,85 @@ class BillingEmailService:
             template = EmailTemplate.objects.filter(template_type='BOLETO_NF').first()
 
         if template:
-            # Substituição de Placeholders
-            placeholders = {
-                '{cliente}': client.name,
-                '{valor}': f"R$ {invoice.amount}",
-                '{vencimento}': invoice.due_date.strftime('%d/%m/%Y'),
-                '{fatura}': invoice.number,
-                '{link_boleto}': invoice.boleto_url or "Link não disponível",
-                '{link_nf}': invoice.nfse_link or "Link não disponível",
+            # Contexto para o template
+            competence = f"{invoice.competence_month:02d}/{invoice.competence_year}"
+            context_dict = {
+                'cliente': client.name,
+                'valor': f"R$ {invoice.amount}",
+                'vencimento': invoice.due_date.strftime('%d/%m/%Y'),
+                'fatura': invoice.number,
+                'link_boleto': invoice.boleto_url or "#",
+                'link_nf': invoice.nfse_link or "#",
+                'competence': competence,
+                'invoice': invoice,
             }
-            
-            subject = template.subject
-            body = template.body
-            for key, value in placeholders.items():
-                subject = subject.replace(key, str(value or "-"))
-                body = body.replace(key, str(value or "-"))
+
+            # 1. Renderizar Assunto
+            try:
+                subject_template = Template(template.subject)
+                subject = subject_template.render(Context(context_dict))
+            except Exception as e:
+                logger.error(f"Erro ao renderizar assunto do template: {e}")
+                subject = template.subject
+
+            # 2. Renderizar Corpo do Usuário (aplicando linebreaksbr)
+            try:
+                body_template = Template(template.body)
+                user_body_html = body_template.render(Context(context_dict))
+                # Converter quebras de linha em <br> se não houver tags HTML detectadas
+                if '<p' not in user_body_html.lower() and '<br' not in user_body_html.lower():
+                    user_body_html = linebreaksbr(user_body_html)
+            except Exception as e:
+                logger.error(f"Erro ao renderizar corpo do template: {e}")
+                user_body_html = linebreaksbr(template.body)
+
+            # 3. Envolver no Layout Premium
+            body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+                    .container {{ width: 100%; max-width: 600px; margin: 20px auto; border: 1px solid #e0e6ed; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }}
+                    .header {{ background-color: #0046ad; color: white; padding: 30px 20px; text-align: center; }}
+                    .header h1 {{ margin: 0; font-size: 24px; }}
+                    .content {{ padding: 30px; background-color: #ffffff; }}
+                    .details {{ background: #f8fbff; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #eef2f8; }}
+                    .btn-container {{ text-align: center; margin: 30px 0; }}
+                    .btn {{ display: inline-block; padding: 14px 30px; background-color: #0046ad; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; border: none; }}
+                    .footer {{ font-size: 12px; color: #94a3b8; text-align: center; padding: 20px; background-color: #f1f5f9; }}
+                    a {{ color: #0046ad; text-decoration: none; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header"><h1>G7Serv Administradora</h1></div>
+                    <div class="content">
+                        {user_body_html}
+                        
+                        <div class="details">
+                            <p><strong>Resumo do Faturamento:</strong></p>
+                            <p>Valor: R$ {invoice.amount}<br>
+                            Vencimento: {invoice.due_date.strftime('%d/%m/%Y')}<br>
+                            Fatura: {invoice.number}</p>
+                        </div>
+
+                        <div class="btn-container">
+                            <a href="{invoice.boleto_url or '#'}" class="btn">Visualizar Boleto / PIX</a>
+                        </div>
+                        
+                        <p style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px; font-size: 14px;">
+                            Atenciosamente,<br><strong>Equipe G7Serv</strong><br>
+                            <span style="font-size: 12px; color: #94a3b8;">Suporte: 81 3019-5654</span>
+                        </p>
+                    </div>
+                    <div class="footer"><p>Este é um e-mail automático enviado por G7Serv Administradora.</p></div>
+                </div>
+            </body>
+            </html>
+            """
         else:
-            # Fallback total (caso não existam templates no banco)
+            # Fallback total (caso não existam templates no banco ou erro grave)
             competence = f"{invoice.competence_month:02d}/{invoice.competence_year}"
             subject = f"Fatura Disponível - {client.name} - Ref. {competence}"
             context = {
@@ -63,7 +128,7 @@ class BillingEmailService:
             try:
                 body = render_to_string('emails/fatura_corpo.html', context)
             except:
-                # Fallback em HTML premium caso o template herde erro ou não exista
+                # Fallback em HTML premium rígido
                 logger.info(f"Usando fallback HTML premium para fatura {invoice.number}")
                 body = f"""
                 <!DOCTYPE html>
