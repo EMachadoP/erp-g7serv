@@ -35,8 +35,10 @@ class BillingEmailService:
             template = EmailTemplate.objects.filter(template_type='BOLETO_NF').first()
 
         if template:
-            # Contexto para o template
-            competence = f"{invoice.competence_month:02d}/{invoice.competence_year}"
+            # Mês/Ano de Competência com fallback para data de emissão
+            c_month = invoice.competence_month or invoice.issue_date.month
+            c_year = invoice.competence_year or invoice.issue_date.year
+            competence = f"{c_month:02d}/{c_year}"
             context_dict = {
                 'cliente': client.name,
                 'valor': f"R$ {invoice.amount}",
@@ -114,7 +116,9 @@ class BillingEmailService:
             """
         else:
             # Fallback total (caso não existam templates no banco ou erro grave)
-            competence = f"{invoice.competence_month:02d}/{invoice.competence_year}"
+            c_month = invoice.competence_month or invoice.issue_date.month
+            c_year = invoice.competence_year or invoice.issue_date.year
+            competence = f"{c_month:02d}/{c_year}"
             subject = f"Fatura Disponível - {client.name} - Ref. {competence}"
             context = {
                 'invoice': invoice,
