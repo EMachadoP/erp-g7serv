@@ -46,6 +46,14 @@ class Invoice(models.Model):
         ('CN', 'Cancelada'),
     ]
 
+    PAYMENT_METHOD_CHOICES = (
+        ('BOLETO', 'Boleto'),
+        ('PIX', 'Pix'),
+        ('CARD', 'Cartão'),
+        ('TRANSFER', 'Transferência Bancária'),
+        ('OUTRO', 'Outro'),
+    )
+
     billing_group = models.ForeignKey(BillingGroup, on_delete=models.PROTECT, related_name='invoices', null=True, blank=True)
     batch = models.ForeignKey('BillingBatch', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices', verbose_name="Lote de Faturamento")
     client = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices', verbose_name="Cliente", null=True)
@@ -66,6 +74,7 @@ class Invoice(models.Model):
     due_date = models.DateField()
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='PD')
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default='BOLETO', verbose_name="Forma de Pagamento")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

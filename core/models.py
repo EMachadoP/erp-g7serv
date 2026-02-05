@@ -74,6 +74,9 @@ class Service(BaseModel):
 class CompanySettings(BaseModel):
     name = models.CharField(max_length=255, verbose_name="Nome da Empresa")
     cnpj = models.CharField(max_length=20, verbose_name="CNPJ")
+    address = models.TextField(blank=True, null=True, verbose_name="Endereço")
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Telefone")
+    email = models.EmailField(blank=True, null=True, verbose_name="E-mail")
     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True, verbose_name="Logo")
     
     # Integrations

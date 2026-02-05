@@ -32,13 +32,15 @@ def sync_account_receivable(sender, instance, created, **kwargs):
             due_date=instance.due_date,
             status='PENDING',
             invoice=instance,
-            document_number=instance.number
+            document_number=instance.number,
+            payment_method=instance.get_payment_method_display()
         )
     else:
         # Atualizar se já existir (valor e vencimento)
         receivable.amount = instance.amount
         receivable.due_date = instance.due_date
         receivable.description = description
+        receivable.payment_method = instance.get_payment_method_display()
         receivable.save()
 
 @receiver([post_save, post_delete], sender=InvoiceItem)

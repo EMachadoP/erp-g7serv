@@ -105,49 +105,49 @@ class CoraBoleto:
             with mTLS_cert_paths() as certs:
                 response = perform_request(certs)
 
-            if response.status_code not in (200, 201):
-                raise Exception(f"Erro ao gerar boleto Cora: {response.status_code} - {response.text}")
+        if response.status_code not in (200, 201):
+            raise Exception(f"Erro ao gerar boleto Cora: {response.status_code} - {response.text}")
 
-            data = response.json()
-            
-            # 4. Save BoletoCora
-            # Response structure usually has 'id', 'payment_options' -> 'bank_slip' -> 'barcode', 'digitable', 'url'
-            # Let's inspect typical response or assume standard V2 structure.
-            # Assuming:
-            # { "id": "...", "payment_options": { "bank_slip": { "barcode": "...", "digitable": "...", "url": "..." } } }
-            
-            # 4. Save BoletoCora
-            boleto_id = data.get('id')
-            bank_slip = data.get('payment_options', {}).get('bank_slip', {})
-            
-            # Prepare optional relations
-            rel_nfse = None
-            rel_fatura = None
-            
-            # Check if nfse_obj is a real model instance or a wrapper
-            if hasattr(nfse_obj, 'pk'):
-                if isinstance(nfse_obj, NFSe):
-                    rel_nfse = nfse_obj
-                else:
-                    # In case it's an Invoice model instance passed directly
-                    rel_fatura = nfse_obj
-            elif hasattr(nfse_obj, 'original_invoice'):
-                rel_fatura = nfse_obj.original_invoice
+        data = response.json()
 
-            boleto = BoletoCora.objects.create(
-                nfse=rel_nfse,
-                fatura=rel_fatura,
-                cliente=nfse_obj.cliente,
-                cora_id=boleto_id,
-                valor=nfse_obj.servico.sale_price,
-                status='Aberto',
-                linha_digitavel=bank_slip.get('digitable'),
-                codigo_barras=bank_slip.get('barcode'),
-                url_pdf=bank_slip.get('url'),
-                data_vencimento=due_date
-            )
+        # 4. Save BoletoCora
+        # Response structure usually has 'id', 'payment_options' -> 'bank_slip' -> 'barcode', 'digitable', 'url'
+        # Let's inspect typical response or assume standard V2 structure.
+        # Assuming:
+        # { "id": "...", "payment_options": { "bank_slip": { "barcode": "...", "digitable": "...", "url": "..." } } }
+        
+        # 4. Save BoletoCora
+        boleto_id = data.get('id')
+        bank_slip = data.get('payment_options', {}).get('bank_slip', {})
+        
+        # Prepare optional relations
+        rel_nfse = None
+        rel_fatura = None
+        
+        # Check if nfse_obj is a real model instance or a wrapper
+        if hasattr(nfse_obj, 'pk'):
+            if isinstance(nfse_obj, NFSe):
+                rel_nfse = nfse_obj
+            else:
+                # In case it's an Invoice model instance passed directly
+                rel_fatura = nfse_obj
+        elif hasattr(nfse_obj, 'original_invoice'):
+            rel_fatura = nfse_obj.original_invoice
 
-            return boleto
+        boleto = BoletoCora.objects.create(
+            nfse=rel_nfse,
+            fatura=rel_fatura,
+            cliente=nfse_obj.cliente,
+            cora_id=boleto_id,
+            valor=nfse_obj.servico.sale_price,
+            status='Aberto',
+            linha_digitavel=bank_slip.get('digitable'),
+            codigo_barras=bank_slip.get('barcode'),
+            url_pdf=bank_slip.get('url'),
+            data_vencimento=due_date
+        )
+
+        return boleto
 
     def simular_pagamento(self, boleto_obj):
         """

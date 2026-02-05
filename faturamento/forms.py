@@ -6,7 +6,7 @@ from estoque.models import Product
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ['billing_group', 'client', 'contract', 'issue_date', 'due_date', 'amount', 'status']
+        fields = ['billing_group', 'client', 'contract', 'issue_date', 'due_date', 'amount', 'status', 'payment_method']
         widgets = {
             'billing_group': forms.Select(attrs={'class': 'form-select'}),
             'client': forms.Select(attrs={'class': 'form-select select2'}),
@@ -15,6 +15,7 @@ class InvoiceForm(forms.ModelForm):
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control bg-light', 'step': '0.01', 'readonly': 'readonly'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
 
 
@@ -40,7 +41,7 @@ class StandaloneInvoiceForm(forms.ModelForm):
     """Formulário para faturas avulsas (sem vínculo de contrato)"""
     class Meta:
         model = Invoice
-        fields = ['billing_group', 'client', 'issue_date', 'due_date', 'amount', 'status']
+        fields = ['billing_group', 'client', 'issue_date', 'due_date', 'amount', 'status', 'payment_method']
         widgets = {
             'billing_group': forms.Select(attrs={'class': 'form-select'}),
             'client': forms.Select(attrs={'class': 'form-select select2'}),
@@ -48,6 +49,7 @@ class StandaloneInvoiceForm(forms.ModelForm):
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control bg-light', 'step': '0.01', 'readonly': 'readonly'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
 
 class NotaEntradaItemForm(forms.ModelForm):
