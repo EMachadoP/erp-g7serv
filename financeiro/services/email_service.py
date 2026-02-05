@@ -63,20 +63,23 @@ class BillingEmailService:
             try:
                 body = render_to_string('emails/fatura_corpo.html', context)
             except:
-                # Fallback em texto puro caso o template herde erro ou não exista
-                body = f"""Olá {client.name},
-                
-Sua fatura de {competence} está disponível para pagamento.
-Valor: R$ {invoice.amount}
-Vencimento: {invoice.due_date.strftime('%d/%m/%Y')}
-
-Links:
-Boleto: {invoice.boleto_url or 'Não disponível'}
-NF-e: {invoice.nfse_link or 'Não disponível'}
-
-Obrigado,
-G7Serv
-"""
+                # Fallback em HTML premium caso o template herde erro ou não exista
+                body = f"""
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+                    <h2 style="color: #0046ad;">Olá {client.name},</h2>
+                    <p style="font-size: 16px; color: #333;">Sua fatura de <strong>{competence}</strong> já está disponível.</p>
+                    <div style="background: #f4f7ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 5px 0;"><strong>Valor:</strong> R$ {invoice.amount}</p>
+                        <p style="margin: 5px 0;"><strong>Vencimento:</strong> {invoice.due_date.strftime('%d/%m/%Y')}</p>
+                    </div>
+                    <p style="font-size: 14px; color: #666;">Você pode acessar os documentos pelos botões abaixo ou visualizar os arquivos em anexo.</p>
+                    <div style="margin-top: 25px;">
+                        <a href="{invoice.boleto_url or '#'}" style="background-color: #0046ad; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-right: 10px;">Abrir Boleto</a>
+                        {f'<a href="{invoice.nfse_link}" style="background-color: #6c757d; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Ver Nota Fiscal</a>' if invoice.nfse_link else ''}
+                    </div>
+                    <p style="margin-top: 30px; font-size: 12px; color: #999; border-top: 1px solid #eee; pt: 10px;">Obrigado,<br><strong>G7Serv Administradora</strong></p>
+                </div>
+                """
         
         if getattr(settings, 'BREVO_API_KEY', None):
             return BillingEmailService.send_via_brevo(
@@ -100,13 +103,13 @@ G7Serv
             try:
                 email.attach_file(invoice.pdf_fatura.path)
             except Exception as e:
-                logger.warning(f"Não foi possível anexar o arquivo PDF: {e}")
+                logger.warning(f"Não foi possível anexar o arquivo PDF local: {e}")
             
         try:
             email.send()
             return True
         except Exception as e:
-            logger.error(f"Erro ao enviar e-mail de faturamento para {recipient_email}: {e}")
+            logger.error(f"Erro ao enviar e-mail de faturamento via SMTP para {recipient_email}: {e}")
             return False
 
     @staticmethod
@@ -125,30 +128,43 @@ G7Serv
             "Accept": "application/json"
         }
         
-        # Tenta extrair o nome do remetente do e-mail
         sender_email = settings.DEFAULT_FROM_EMAIL or "g7serv@g7serv.com.br"
         
         data = {
             "sender": {"email": sender_email, "name": "G7Serv"},
             "to": [{"email": recipient_email}],
             "subject": subject,
-            "htmlContent": body
+            "htmlContent": body,
+            "attachment": []
         }
         
-        # Anexo
+        # 1. Anexo: PDF da Fatura (Local)
         if invoice.pdf_fatura:
             try:
                 with open(invoice.pdf_fatura.path, "rb") as f:
                     content = base64.b64encode(f.read()).decode('utf-8')
-                    data["attachment"] = [{
+                    data["attachment"].append({
                         "content": content,
-                        "name": os.path.basename(invoice.pdf_fatura.name)
-                    }]
+                        "name": f"Fatura_{invoice.number}.pdf"
+                    })
             except Exception as e:
-                logger.warning(f"Falha ao carregar anexo para Brevo: {e}")
+                logger.warning(f"Falha ao carregar fatura local para Brevo: {e}")
+
+        # 2. Anexo: Boleto (URL Remota)
+        if invoice.boleto_url:
+            try:
+                resp = requests.get(invoice.boleto_url, timeout=10)
+                if resp.status_code == 200:
+                    content = base64.b64encode(resp.content).decode('utf-8')
+                    data["attachment"].append({
+                        "content": content,
+                        "name": f"Boleto_{invoice.number}.pdf"
+                    })
+            except Exception as e:
+                logger.warning(f"Falha ao baixar boleto remoto para Brevo: {e}")
 
         try:
-            response = requests.post(url, json=data, headers=headers, timeout=15)
+            response = requests.post(url, json=data, headers=headers, timeout=20)
             if response.status_code in [200, 201]:
                 logger.info(f"E-mail enviado via Brevo para {recipient_email}")
                 return True
