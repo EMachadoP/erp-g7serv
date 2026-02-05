@@ -11,7 +11,7 @@ class CoraBoleto:
     URL_PRODUCAO = "https://matls-clients.api.cora.com.br/v2/invoices"
     URL_HOMOLOGACAO = "https://matls-clients.api.stage.cora.com.br/v2/invoices"
 
-    def gerar_boleto(self, nfse_obj):
+    def gerar_boleto(self, nfse_obj, cert_files=None):
         """
         Gera um boleto na Cora para a NFS-e fornecida.
         """
@@ -90,14 +90,20 @@ class CoraBoleto:
             'Idempotency-Key': str(uuid.uuid4()) # Unique key
         }
 
-        with mTLS_cert_paths() as cert_files:
-            response = requests.post(
+        def perform_request(certs):
+            return requests.post(
                 url,
                 json=payload,
                 headers=headers,
-                cert=cert_files,
+                cert=certs,
                 timeout=30
             )
+
+        if cert_files:
+            response = perform_request(cert_files)
+        else:
+            with mTLS_cert_paths() as certs:
+                response = perform_request(certs)
 
             if response.status_code not in (200, 201):
                 raise Exception(f"Erro ao gerar boleto Cora: {response.status_code} - {response.text}")

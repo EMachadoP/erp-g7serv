@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class CoraService:
     def __init__(self):
+        self.cached_token = None
         # 1. Try to get from Database
         db_settings = CompanySettings.objects.first()
         cora_env = db_settings.cora_environment if db_settings else 'stage'
@@ -58,6 +59,8 @@ class CoraService:
         """
         Direct Integration Step: Exchange certificate for Access Token
         """
+        if self.cached_token:
+            return self.cached_token
         if not self.cert_pair or not self.client_id:
             logger.error("Cannot obtain token: Missing certificates or client_id.")
             return None
@@ -77,7 +80,8 @@ class CoraService:
             )
             
             if response.status_code == 200:
-                return response.json().get("access_token")
+                self.cached_token = response.json().get("access_token")
+                return self.cached_token
             
             logger.error(f"Cora Auth Error ({response.status_code}): {response.text}")
         except Exception as e:

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class BillingEmailService:
     @staticmethod
-    def send_invoice_email(invoice, template_id=None):
+    def send_invoice_email(invoice, template_id=None, connection=None):
         """
         Envia e-mail de fatura para o cliente com anexos (PDF Fatura, Boleto, etc).
         """
@@ -67,6 +67,7 @@ class BillingEmailService:
             body=body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[recipient_email],
+            connection=connection
         )
         email.content_subtype = "html"
         

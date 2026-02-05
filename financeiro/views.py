@@ -865,23 +865,27 @@ def bulk_send_emails(request):
     success_count = 0
     errors = []
 
-    for receivable in receivables:
-        if not receivable.invoice:
-            # Se não houver fatura vinculada, cria uma temporária ou pula
-            # Por enquanto, o sistema espera uma fatura para o BillingEmailService
-            # Vamos garantir que ele funcione mesmo sem Invoice se possível no futuro
-            errors.append(f"Recebível #{receivable.id}: Não possui fatura vinculada.")
-            continue
+    from django.core.mail import get_connection
+    connection = get_connection()
+    connection.open()
+    
+    try:
+        for receivable in receivables:
+            if not receivable.invoice:
+                errors.append(f"Recebível #{receivable.id}: Não possui fatura vinculada.")
+                continue
 
-        try:
-            if BillingEmailService.send_invoice_email(receivable.invoice, template_id=template_id):
-                receivable.invoice.email_sent_at = timezone.now()
-                receivable.invoice.save()
-                success_count += 1
-            else:
-                errors.append(f"Recebível #{receivable.id}: Falha ao enviar e-mail.")
-        except Exception as e:
-            errors.append(f"Recebível #{receivable.id}: {str(e)}")
+            try:
+                if BillingEmailService.send_invoice_email(receivable.invoice, template_id=template_id, connection=connection):
+                    receivable.invoice.email_sent_at = timezone.now()
+                    receivable.invoice.save()
+                    success_count += 1
+                else:
+                    errors.append(f"Recebível #{receivable.id}: Falha ao enviar e-mail.")
+            except Exception as e:
+                errors.append(f"Recebível #{receivable.id}: {str(e)}")
+    finally:
+        connection.close()
 
     return JsonResponse({
         'status': 'success', 

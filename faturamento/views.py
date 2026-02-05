@@ -461,66 +461,69 @@ def invoice_bulk_generate_boletos(request):
     skipped_count = 0
     errors = []
     
-    for invoice in invoices:
-        try:
-            # Se já tem boleto e não forçou regeneração, pula
-            if invoice.boleto_url and not invoice.boleto_url.startswith('https://www.cora.com.br/boleto/simulado'):
-                skipped_count += 1
-                continue
+    from integracao_cora.services.base import mTLS_cert_paths
+    
+    with mTLS_cert_paths() as certs:
+        for invoice in invoices:
+            try:
+                # Se já tem boleto e não forçou regeneração, pula
+                if invoice.boleto_url and not invoice.boleto_url.startswith('https://www.cora.com.br/boleto/simulado'):
+                    skipped_count += 1
+                    continue
+                    
+                # Prepara dados do cliente
+                if not invoice.client:
+                    errors.append(f"Fatura #{invoice.number}: Cliente não informado")
+                    continue
+                    
+                customer_document = (invoice.client.document or "").replace('.', '').replace('-', '').replace('/', '')
+                if not customer_document:
+                    errors.append(f"Fatura #{invoice.number}: CPF/CNPJ do cliente não informado")
+                    continue
                 
-            # Prepara dados do cliente
-            if not invoice.client:
-                errors.append(f"Fatura #{invoice.number}: Cliente não informado")
-                continue
-                
-            customer_document = (invoice.client.document or "").replace('.', '').replace('-', '').replace('/', '')
-            if not customer_document:
-                errors.append(f"Fatura #{invoice.number}: CPF/CNPJ do cliente não informado")
-                continue
-            
-            # Verificar valor mínimo exigido pela Cora (R$ 5,00)
-            if invoice.amount < Decimal('5.00'):
-                errors.append(f"Fatura #{invoice.number}: Valor R$ {invoice.amount} é inferior ao mínimo de R$ 5,00 para boletos.")
-                continue
+                # Verificar valor mínimo exigido pela Cora (R$ 5,00)
+                if invoice.amount < Decimal('5.00'):
+                    errors.append(f"Fatura #{invoice.number}: Valor R$ {invoice.amount} é inferior ao mínimo de R$ 5,00 para boletos.")
+                    continue
 
-            # Instancia serviço de boleto Cora
-            cora = CoraBoleto()
-            
-            # Cria objeto que simula NFSe para compatibilidade com CoraBoleto
-            class FaturaWrapper:
-                def __init__(self, inv):
-                    self.original_invoice = inv
-                    self.numero_dps = inv.number
-                    self.cliente = inv.client
-                    self.due_date = inv.due_date
-                    self.servico = type('obj', (object,), {
-                        'name': f'Fatura {inv.number}',
-                        'sale_price': inv.amount
-                    })()
-            
-            print(f"[DEBUG] Gerando boleto para fatura {invoice.number}")
-            
-            boleto = cora.gerar_boleto(FaturaWrapper(invoice))
-            
-            if boleto and boleto.url_pdf:
-                invoice.boleto_url = boleto.url_pdf
-                invoice.save()
+                # Instancia serviço de boleto Cora
+                cora = CoraBoleto()
                 
-                # Atualiza também o Contas a Receber se existir
-                from financeiro.models import AccountReceivable
-                receivable = AccountReceivable.objects.filter(invoice=invoice).first()
-                if receivable:
-                    receivable.cora_id = boleto.cora_id
-                    receivable.cora_pdf_url = boleto.url_pdf
-                    receivable.cora_status = 'Aberto'
-                    receivable.save()
+                # Cria objeto que simula NFSe para compatibilidade com CoraBoleto
+                class FaturaWrapper:
+                    def __init__(self, inv):
+                        self.original_invoice = inv
+                        self.numero_dps = inv.number
+                        self.cliente = inv.client
+                        self.due_date = inv.due_date
+                        self.servico = type('obj', (object,), {
+                            'name': f'Fatura {inv.number}',
+                            'sale_price': inv.amount
+                        })()
+                
+                print(f"[DEBUG] Gerando boleto para fatura {invoice.number}")
+                
+                boleto = cora.gerar_boleto(FaturaWrapper(invoice), cert_files=certs)
+            
+                if boleto and boleto.url_pdf:
+                    invoice.boleto_url = boleto.url_pdf
+                    invoice.save()
+                    
+                    # Atualiza também o Contas a Receber se existir
+                    from financeiro.models import AccountReceivable
+                    receivable = AccountReceivable.objects.filter(invoice=invoice).first()
+                    if receivable:
+                        receivable.cora_id = boleto.cora_id
+                        receivable.cora_pdf_url = boleto.url_pdf
+                        receivable.cora_status = 'Aberto'
+                        receivable.save()
 
-                success_count += 1
-            else:
-                errors.append(f"Fatura #{invoice.number}: Boleto gerado mas sem URL")
+                    success_count += 1
+                else:
+                    errors.append(f"Fatura #{invoice.number}: Boleto gerado mas sem URL")
                 
-        except Exception as e:
-            errors.append(f"Fatura #{invoice.number}: {str(e)}")
+            except Exception as e:
+                errors.append(f"Fatura #{invoice.number}: {str(e)}")
     
     message = f'{success_count} boleto(s) gerado(s) com sucesso.'
     if skipped_count > 0:
@@ -560,16 +563,23 @@ def invoice_bulk_send_emails(request):
     success_count = 0
     errors = []
     
-    for invoice in invoices:
-        try:
-            if BillingEmailService.send_invoice_email(invoice, template_id=template_id):
-                invoice.email_sent_at = timezone.now()
-                invoice.save()
-                success_count += 1
-            else:
-                errors.append(f"Fatura #{invoice.id}: Falha ao enviar e-mail.")
-        except Exception as e:
-            errors.append(f"Fatura #{invoice.id}: {str(e)}")
+    from django.core.mail import get_connection
+    connection = get_connection()
+    connection.open()
+    
+    try:
+        for invoice in invoices:
+            try:
+                if BillingEmailService.send_invoice_email(invoice, template_id=template_id, connection=connection):
+                    invoice.email_sent_at = timezone.now()
+                    invoice.save()
+                    success_count += 1
+                else:
+                    errors.append(f"Fatura #{invoice.id}: Falha ao enviar e-mail.")
+            except Exception as e:
+                errors.append(f"Fatura #{invoice.id}: {str(e)}")
+    finally:
+        connection.close()
     
     return JsonResponse({
         'status': 'success',
