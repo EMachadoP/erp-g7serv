@@ -1,13 +1,186 @@
-{% extends 'base.html' %}
-{% block title %}Fatura {{ invoice.number }}{% endblock %}
-{% block content %}
-<h1>Fatura {{ invoice.number }}</h1>
-<p><strong>Empresa:</strong> {{ invoice.billing_group.name }}</p>
-<p><strong>Cliente:</strong> {{ invoice.billing_group.name }}</p>
-<p><strong>Data de Emissão:</strong> {{ invoice.issue_date }}</p>
-<p><strong>Vencimento:</strong> {{ invoice.due_date }}</p>
-<p><strong>Valor:</strong> R$ {{ invoice.amount }}</p>
-<p><strong>Status:</strong> {{ invoice.get_status_display }}</p>
-<hr>
-<p>Obrigado por utilizar nossos serviços.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .header {
+            border-bottom: 2px solid #0046ad;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0046ad;
+        }
+
+        .invoice-title {
+            font-size: 20px;
+            text-align: right;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .info-grid {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            width: 48%;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #777;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .items-table th {
+            background-color: #f4f7ff;
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-section {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .total-box {
+            display: inline-block;
+            background: #0046ad;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td class="company-name">G7Serv Administradora</td>
+                <td class="invoice-title">Demonstrativo de Fatura</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="info-grid">
+        <tr>
+            <td class="info-box">
+                <div class="label">Emitente</div>
+                <div class="value"><strong>G7Serv Administradora e Serviços Ltda</strong></div>
+                <div class="value">CNPJ: 00.000.000/0001-00</div>
+                <div class="value">Recife - PE</div>
+            </td>
+            <td class="info-box" style="text-align: right;">
+                <div class="label">Fatura Nº</div>
+                <div class="value" style="font-size: 18px; color: #0046ad;"><strong>{{ invoice.number }}</strong></div>
+                <div class="label">Data de Emissão</div>
+                <div class="value">{{ invoice.issue_date|date:"d/m/Y" }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="info-grid" style="background: #f9f9f9; padding: 15px; border-radius: 10px;">
+        <tr>
+            <td class="info-box">
+                <div class="label">Sacado / Cliente</div>
+                <div class="value"><strong>{{ invoice.client.name }}</strong></div>
+                <div class="value">{{ invoice.client.document }}</div>
+                <div class="value">{{ invoice.client.email }}</div>
+            </td>
+            <td class="info-box" style="text-align: right;">
+                <div class="label">Vencimento</div>
+                <div class="value" style="font-size: 18px; color: #d32f2f;"><strong>{{ invoice.due_date|date:"d/m/Y"
+                        }}</strong></div>
+                <div class="label">Competência</div>
+                <div class="value">{{ invoice.competence_month|stringformat:"02d" }}/{{ invoice.competence_year }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Detalhamento dos Serviços</h3>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Descrição do Serviço</th>
+                <th style="text-align: right;">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ invoice.contract.billing_group.name|default:"Serviços Prestados" }} - Período de {{
+                    invoice.competence_month|stringformat:"02d" }}/{{ invoice.competence_year }}</td>
+                <td style="text-align: right;">R$ {{ invoice.amount }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <div class="total-box">
+            <div style="font-size: 12px; opacity: 0.8;">VALOR TOTAL A PAGAR</div>
+            <div style="font-size: 24px; font-weight: bold;">R$ {{ invoice.amount }}</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 50px;">
+        <p style="font-size: 12px; color: #666;">
+            <strong>Observações:</strong><br>
+            - Este documento não é um documento fiscal.<br>
+            - O pagamento deve ser realizado através do boleto bancário anexo.<br>
+            - Em caso de dúvidas, entre em contato pelo telefone (81) 3019-5654.
+        </p>
+    </div>
+
+    <div class="footer">
+        G7Serv Administradora - Gerado automaticamente pelo sistema em {{ now|date:"d/m/Y H:i" }}
+    </div>
+</body>
+
+</html>

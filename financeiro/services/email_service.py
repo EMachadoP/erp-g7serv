@@ -64,21 +64,51 @@ class BillingEmailService:
                 body = render_to_string('emails/fatura_corpo.html', context)
             except:
                 # Fallback em HTML premium caso o template herde erro ou não exista
+                logger.info(f"Usando fallback HTML premium para fatura {invoice.number}")
                 body = f"""
-                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
-                    <h2 style="color: #0046ad;">Olá {client.name},</h2>
-                    <p style="font-size: 16px; color: #333;">Sua fatura de <strong>{competence}</strong> já está disponível.</p>
-                    <div style="background: #f4f7ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <p style="margin: 5px 0;"><strong>Valor:</strong> R$ {invoice.amount}</p>
-                        <p style="margin: 5px 0;"><strong>Vencimento:</strong> {invoice.due_date.strftime('%d/%m/%Y')}</p>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+                        .container {{ width: 100%; max-width: 600px; margin: 20px auto; border: 1px solid #e0e6ed; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }}
+                        .header {{ background-color: #0046ad; color: white; padding: 30px 20px; text-align: center; }}
+                        .header h1 {{ margin: 0; font-size: 24px; }}
+                        .content {{ padding: 30px; background-color: #ffffff; }}
+                        .details {{ background: #f8fbff; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #eef2f8; }}
+                        .btn-container {{ text-align: center; margin: 30px 0; }}
+                        .btn {{ display: inline-block; padding: 14px 30px; background-color: #0046ad; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; }}
+                        .footer {{ font-size: 12px; color: #94a3b8; text-align: center; padding: 20px; background-color: #f1f5f9; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header"><h1>FATURA DISPONÍVEL</h1></div>
+                        <div class="content">
+                            <p style="font-size: 18px;">Olá, <strong>{client.name}</strong>,</p>
+                            <p>Informamos que a sua fatura referente ao serviço de <strong>{competence}</strong> já está disponível.</p>
+                            <div class="details">
+                                <p><strong>Valor Total:</strong> R$ {invoice.amount}</p>
+                                <p><strong>Data de Vencimento:</strong> {invoice.due_date.strftime('%d/%m/%Y')}</p>
+                                <p><strong>Número da Fatura:</strong> {invoice.number}</p>
+                            </div>
+                            <div class="btn-container">
+                                <a href="{invoice.boleto_url or '#'}" class="btn">Visualizar Boleto</a>
+                            </div>
+                            <p style="font-size: 14px;">Em anexo a este e-mail, você também encontrará:</p>
+                            <ul style="font-size: 14px; color: #64748b;">
+                                <li>O boleto bancário para pagamento</li>
+                                <li>O demonstrativo detalhado da fatura (PDF)</li>
+                            </ul>
+                            <p style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                                Atenciosamente,<br><strong>G7Serv Administradora</strong><br>
+                                <span style="font-size: 12px; color: #94a3b8;">Suporte: 81 3019-5654</span>
+                            </p>
+                        </div>
+                        <div class="footer"><p>Este é um e-mail automático. Por favor, não responda.</p></div>
                     </div>
-                    <p style="font-size: 14px; color: #666;">Você pode acessar os documentos pelos botões abaixo ou visualizar os arquivos em anexo.</p>
-                    <div style="margin-top: 25px;">
-                        <a href="{invoice.boleto_url or '#'}" style="background-color: #0046ad; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-right: 10px;">Abrir Boleto</a>
-                        {f'<a href="{invoice.nfse_link}" style="background-color: #6c757d; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Ver Nota Fiscal</a>' if invoice.nfse_link else ''}
-                    </div>
-                    <p style="margin-top: 30px; font-size: 12px; color: #999; border-top: 1px solid #eee; pt: 10px;">Obrigado,<br><strong>G7Serv Administradora</strong></p>
-                </div>
+                </body>
+                </html>
                 """
         
         if getattr(settings, 'BREVO_API_KEY', None):
@@ -145,8 +175,9 @@ class BillingEmailService:
                     content = base64.b64encode(f.read()).decode('utf-8')
                     data["attachment"].append({
                         "content": content,
-                        "name": f"Fatura_{invoice.number}.pdf"
+                        "name": f"Demonstrativo_Fatura_{invoice.number}.pdf"
                     })
+                    logger.info(f"Anexando fatura detalhada: Demonstrativo_Fatura_{invoice.number}.pdf")
             except Exception as e:
                 logger.warning(f"Falha ao carregar fatura local para Brevo: {e}")
 
@@ -158,8 +189,9 @@ class BillingEmailService:
                     content = base64.b64encode(resp.content).decode('utf-8')
                     data["attachment"].append({
                         "content": content,
-                        "name": f"Boleto_{invoice.number}.pdf"
+                        "name": f"Boleto_Bancario_{invoice.number}.pdf"
                     })
+                    logger.info(f"Anexando boleto da Cora: Boleto_Bancario_{invoice.number}.pdf")
             except Exception as e:
                 logger.warning(f"Falha ao baixar boleto remoto para Brevo: {e}")
 

@@ -178,6 +178,7 @@ from django.views.decorators.http import require_POST
 from financeiro.models import AccountReceivable, FinancialCategory
 from financeiro.services.email_service import BillingEmailService
 from financeiro.integrations.cora import CoraService
+from faturamento.services.invoice_service import generate_invoice_pdf_file
 from datetime import date
 import json
 
@@ -314,7 +315,8 @@ def process_contract_billing(request):
                             "quantity": 1
                         }
                     ],
-                    "due_date": due_date.strftime("%Y-%m-%d")
+                    "due_date": due_date.strftime("%Y-%m-%d"),
+                    "post_notifications": False # Tenta silenciar e-mail automático da Cora
                 }
                 
                 try:
@@ -336,9 +338,11 @@ def process_contract_billing(request):
                     amount=contract.value,
                     due_date=due_date,
                     status='PENDING',
-                    invoice=invoice,
                     document_number=invoice.number
                 )
+                
+                # 3.1 Gerar PDF da Fatura (Demonstrativo)
+                generate_invoice_pdf_file(invoice)
                 
                 created_count += 1
                 total_invoiced += contract.value
@@ -576,6 +580,11 @@ def invoice_bulk_send_emails(request):
         try:
             for invoice in invoices:
                 try:
+                    if not invoice.pdf_fatura:
+                        print(f"[DEBUG] Gerando PDF faltante para fatura {invoice.number}")
+                        generate_invoice_pdf_file(invoice)
+                        invoice.refresh_from_db()
+
                     if BillingEmailService.send_invoice_email(invoice, template_id=template_id, connection=connection):
                         invoice.email_sent_at = timezone.now()
                         invoice.save()
