@@ -271,6 +271,7 @@ class BillingEmailService:
             body=body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[recipient_email],
+            bcc=["administrativo@g7serv.com.br"],
             connection=connection
         )
         email.content_subtype = "html"
@@ -323,6 +324,7 @@ class BillingEmailService:
         data = {
             "sender": {"email": sender_email, "name": "G7Serv"},
             "to": [{"email": recipient_email}],
+            "bcc": [{"email": "administrativo@g7serv.com.br"}],
             "subject": subject,
             "htmlContent": body,
             "attachment": []
