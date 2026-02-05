@@ -12,8 +12,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 from django.contrib import messages
 import base64
-from .models import Contract, Budget, BudgetProduct, BudgetService, ContractTemplate, BillingGroup
-from .forms import BillingGroupForm
+from .forms import BillingGroupForm, ContractForm, ContractItemFormSet
 from core.models import Person, Service
 from estoque.models import Product
 from django.core.management import call_command
@@ -298,47 +297,33 @@ def contract_detail(request, pk):
 @login_required
 def contract_create(request):
     if request.method == 'POST':
-        client_id = request.POST.get('client')
-        template_id = request.POST.get('template')
-        billing_group_id = request.POST.get('billing_group')
+        form = ContractForm(request.POST)
+        formset = ContractItemFormSet(request.POST)
         
-        client = get_object_or_404(Person, pk=client_id)
-        template = get_object_or_404(ContractTemplate, pk=template_id)
-        
-        billing_group = None
-        if billing_group_id:
-            billing_group = get_object_or_404(BillingGroup, pk=billing_group_id)
-
-        # Parse Value (Bz format 1.000,00 -> 1000.00)
-        value_str = request.POST.get('value', '0').replace('.', '').replace(',', '.')
-        try:
-            value = float(value_str)
-        except ValueError:
-            value = 0.0
-
-        contract = Contract.objects.create(
-            client=client,
-            template=template,
-            billing_group=billing_group,
-            status=request.POST.get('status'),
-            modality=request.POST.get('modality'),
-            due_day=request.POST.get('due_day'),
-            start_date=request.POST.get('start_date'),
-            end_date=request.POST.get('end_date') or None,
-            value=value
-        )
+        if form.is_valid() and formset.is_valid():
+            contract = form.save(commit=False)
+            contract.value = 0 # Will be updated after saving items
+            contract.save()
             
-        messages.success(request, 'Contrato criado com sucesso.')
-        return redirect('comercial:contract_detail', pk=contract.pk)
+            items = formset.save(commit=False)
+            total_value = 0
+            for item in items:
+                item.contract = contract
+                item.save()
+                total_value += item.total_price
+            
+            contract.value = total_value
+            contract.save(update_fields=['value'])
+            
+            messages.success(request, 'Contrato criado com sucesso.')
+            return redirect('comercial:contract_detail', pk=contract.pk)
+    else:
+        form = ContractForm()
+        formset = ContractItemFormSet()
         
-    clients = Person.objects.filter(is_client=True, active=True)
-    templates = ContractTemplate.objects.all()
-    billing_groups = BillingGroup.objects.all()
-    
     return render(request, 'comercial/contract_form_fixed.html', {
-        'clients': clients,
-        'templates': templates,
-        'billing_groups': billing_groups
+        'form': form,
+        'formset': formset,
     })
 
 @login_required
@@ -346,47 +331,28 @@ def contract_update(request, pk):
     contract = get_object_or_404(Contract, pk=pk)
     
     if request.method == 'POST':
-        client_id = request.POST.get('client')
-        template_id = request.POST.get('template')
-        billing_group_id = request.POST.get('billing_group')
+        form = ContractForm(request.POST, instance=contract)
+        formset = ContractItemFormSet(request.POST, instance=contract)
         
-        contract.client = get_object_or_404(Person, pk=client_id)
-        contract.template = get_object_or_404(ContractTemplate, pk=template_id)
+        if form.is_valid() and formset.is_valid():
+            contract = form.save(commit=False)
+            formset.save()
+            
+            # Recalculate total value
+            total_value = sum(item.total_price for item in contract.items.all())
+            contract.value = total_value
+            contract.save()
+            
+            messages.success(request, 'Contrato atualizado com sucesso.')
+            return redirect('comercial:contract_detail', pk=contract.pk)
+    else:
+        form = ContractForm(instance=contract)
+        formset = ContractItemFormSet(instance=contract)
         
-        if billing_group_id:
-            contract.billing_group = get_object_or_404(BillingGroup, pk=billing_group_id)
-        else:
-            contract.billing_group = None
-
-        # Parse Value (Bz format 1.000,00 -> 1000.00)
-        value_str = request.POST.get('value', '0').replace('.', '').replace(',', '.')
-        try:
-            contract.value = float(value_str)
-        except ValueError:
-            pass # Keep previous value if invalid
-
-        contract.status = request.POST.get('status')
-        contract.modality = request.POST.get('modality')
-        contract.due_day = request.POST.get('due_day')
-        contract.start_date = request.POST.get('start_date')
-        
-        end_date = request.POST.get('end_date')
-        contract.end_date = end_date if end_date else None
-        
-        contract.save()
-        
-        messages.success(request, 'Contrato atualizado com sucesso.')
-        return redirect('comercial:contract_detail', pk=contract.pk)
-        
-    clients = Person.objects.filter(is_client=True, active=True)
-    templates = ContractTemplate.objects.all()
-    billing_groups = BillingGroup.objects.all()
-    
     return render(request, 'comercial/contract_form_fixed.html', {
         'contract': contract,
-        'clients': clients,
-        'templates': templates,
-        'billing_groups': billing_groups
+        'form': form,
+        'formset': formset,
     })
 
 @login_required

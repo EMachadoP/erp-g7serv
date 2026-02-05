@@ -340,16 +340,30 @@ def process_contract_billing(request):
                     status='PD'
                 )
 
-                # 1.1 Create InvoiceItem for the contract service
-                InvoiceItem.objects.create(
-                    invoice=invoice,
-                    item_type='SERVICE',
-                    description=f"Serviços de {contract.billing_group.name if contract.billing_group else 'Suporte'}",
-                    quantity=1,
-                    unit_price=contract.value,
-                    total_price=contract.value,
-                    notes=f"Competência: {month:02d}/{year}"
-                )
+                # 1.1 Create InvoiceItems from Contract items if they exist
+                contract_items = contract.items.all()
+                if contract_items.exists():
+                    for item in contract_items:
+                        InvoiceItem.objects.create(
+                            invoice=invoice,
+                            item_type='SERVICE' if item.category != 'COMODATO' else 'RENT',
+                            description=item.description,
+                            quantity=item.quantity,
+                            unit_price=item.unit_price,
+                            total_price=item.total_price,
+                            notes=f"Categoria: {item.get_category_display()}"
+                        )
+                else:
+                    # Fallback for old single-value contracts
+                    InvoiceItem.objects.create(
+                        invoice=invoice,
+                        item_type='SERVICE',
+                        description=f"Serviços de {contract.billing_group.name if contract.billing_group else 'Suporte'}",
+                        quantity=1,
+                        unit_price=contract.value,
+                        total_price=contract.value,
+                        notes=f"Competência: {month:02d}/{year}"
+                    )
                 
                 # 2. Integrate with Cora v2 (mTLS)
                 fatura_data = {

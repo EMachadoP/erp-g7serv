@@ -82,38 +82,104 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-3">
                     <label for="modality" class="form-label">Modalidade *</label>
-                    <select name="modality" id="modality" class="form-select" required>
-                        <option value="Mensal">Mensal</option>
-                        <option value="Anual">Anual</option>
-                    </select>
+                    {{ form.modality }}
                 </div>
 
                 <div class="col-md-3">
-                    <label for="value" class="form-label">Valor (R$) *</label>
-                    <input type="text" name="value" id="value" class="form-control"
-                        value="{{ contract.value|stringformat:'.2f'|default:'' }}" required>
+                    <label for="value_display" class="form-label">Valor Total (R$)</label>
+                    <input type="text" id="value_total_display" class="form-control bg-light"
+                        value="{{ contract.value|stringformat:'.2f'|default:'0,00' }}" readonly>
+                    <small class="text-muted">Calculado automaticamente pelos itens abaixo.</small>
                 </div>
 
                 <div class="col-md-3">
                     <label for="due_day" class="form-label">Dia de Vencimento *</label>
-                    <input type="number" name="due_day" id="due_day" class="form-control" min="1" max="31"
-                        value="{{ contract.due_day|default:'' }}" required>
-                </div>
-
-                <div class="col-md-3">
-                    <!-- Spacer -->
+                    {{ form.due_day }}
                 </div>
 
                 <div class="col-md-3">
                     <label for="start_date" class="form-label">Data de Início *</label>
-                    <input type="date" name="start_date" id="start_date" class="form-control"
-                        value="{{ contract.start_date|date:'Y-m-d' }}" required>
+                    {{ form.start_date }}
                 </div>
 
                 <div class="col-md-3">
                     <label for="end_date" class="form-label">Data de Término</label>
-                    <input type="date" name="end_date" id="end_date" class="form-control"
-                        value="{{ contract.end_date|date:'Y-m-d'|default:'' }}">
+                    {{ form.end_date }}
+                </div>
+            </div>
+
+            <h5 class="mb-3 text-secondary d-flex justify-content-between">
+                Itens e Serviços do Contrato
+                <button type="button" id="add-item" class="btn btn-sm btn-success">
+                    <i class="bi bi-plus-lg"></i> Adicionar Item
+                </button>
+            </h5>
+
+            <div id="items-container" class="mb-4">
+                {{ formset.management_form }}
+                {% for item_form in formset %}
+                <div class="item-row card mb-2 border-light bg-light">
+                    <div class="card-body p-3">
+                        <div class="row g-2">
+                            {{ item_form.id }}
+                            <div class="col-md-3">
+                                <label class="small text-muted">Categoria</label>
+                                {{ item_form.category }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted">Descrição</label>
+                                {{ item_form.description }}
+                            </div>
+                            <div class="col-md-1">
+                                <label class="small text-muted">Qtd</label>
+                                {{ item_form.quantity }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small text-muted">Unitário (R$)</label>
+                                {{ item_form.unit_price }}
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                {% if formset.can_delete %}
+                                <div class="form-check mb-2 me-2">
+                                    {{ item_form.DELETE }}
+                                    <label class="form-check-label small text-danger">Excluir</label>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Empty row template for JS -->
+            <div id="empty-item-row" class="d-none">
+                <div class="item-row card mb-2 border-light bg-light">
+                    <div class="card-body p-3">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label class="small text-muted">Categoria</label>
+                                {{ formset.empty_form.category }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted">Descrição</label>
+                                {{ formset.empty_form.description }}
+                            </div>
+                            <div class="col-md-1">
+                                <label class="small text-muted">Qtd</label>
+                                {{ formset.empty_form.quantity }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small text-muted">Unitário (R$)</label>
+                                {{ formset.empty_form.unit_price }}
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn mb-2">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -129,51 +195,88 @@
 
 <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
 <script>
-    // Set initial values using JS to avoid Django template syntax errors
-    document.addEventListener('DOMContentLoaded', function () {
-        {% if contract %}
-        document.getElementById('client').value = "{{ contract.client.id }}";
-        document.getElementById('template').value = "{{ contract.template.id }}";
-        document.getElementById('billing_group').value = "{{ contract.billing_group.id|default:'' }}";
-        document.getElementById('status').value = "{{ contract.status }}";
-        document.getElementById('modality').value = "{{ contract.modality }}";
-        {% endif %}
-    });
+    // Dynamic item addition/removal
+    const addBtn = document.getElementById('add-item');
+    const container = document.getElementById('items-container');
+    const emptyRow = document.getElementById('empty-item-row').innerHTML;
+    const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+
+    if (addBtn) {
+        addBtn.onclick = function () {
+            const formIdx = totalForms.value;
+            const newRowHtml = emptyRow.replace(/__prefix__/g, formIdx);
+
+            // Append as element to attach event listeners
+            const div = document.createElement('div');
+            div.innerHTML = newRowHtml;
+            const actualRow = div.firstElementChild;
+            container.appendChild(actualRow);
+
+            totalForms.value = parseInt(formIdx) + 1;
+            attachItemListeners(actualRow);
+            calculateContractTotal();
+        };
+    }
+
+    function calculateContractTotal() {
+        let total = 0;
+        document.querySelectorAll('.item-row:not(.d-none)').forEach(row => {
+            // Skip rows marked for deletion
+            const deleteInput = row.querySelector('input[name*="-DELETE"]');
+            if (deleteInput && deleteInput.checked) return;
+
+            const qty = parseFloat(row.querySelector('input[name*="-quantity"]')?.value || 0);
+            const price = parseFloat(row.querySelector('input[name*="-unit_price"]')?.value || 0);
+            total += qty * price;
+        });
+
+        const display = document.getElementById('value_total_display');
+        if (display) {
+            display.value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    }
+
+    function attachItemListeners(row) {
+        row.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateContractTotal);
+        });
+
+        const delBtn = row.querySelector('.remove-item-btn');
+        if (delBtn) {
+            delBtn.onclick = function () {
+                row.remove();
+                totalForms.value = parseInt(totalForms.value) - 1;
+                // Re-index remaining forms
+                document.querySelectorAll('#items-container .item-row').forEach((r, idx) => {
+                    r.querySelectorAll('input, select, label').forEach(el => {
+                        if (el.name) el.name = el.name.replace(/items-\d+-/, `items-${idx}-`);
+                        if (el.id) el.id = el.id.replace(/id_items-\d+-/, `id_items-${idx}-`);
+                        if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/id_items-\d+-/, `id_items-${idx}-`);
+                    });
+                });
+                calculateContractTotal();
+            };
+        }
+
+        const deleteCheckbox = row.querySelector('input[name*="-DELETE"]');
+        if (deleteCheckbox) {
+            deleteCheckbox.addEventListener('change', calculateContractTotal);
+        }
+    }
+
+    // Initial listeners for existing items
+    document.querySelectorAll('.item-row').forEach(attachItemListeners);
+    calculateContractTotal();
 
     {% verbatim %}
-    // Simple mask for currency
-    const valueInput = document.getElementById('value');
-
-    function formatCurrency(input) {
-        let value = input.value.replace(/\D/g, '');
-        value = (value / 100).toFixed(2) + '';
-        value = value.replace(".", ",");
-        value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-        input.value = value;
-    }
-
-    valueInput.addEventListener('input', function (e) {
-        formatCurrency(e.target);
-    });
-
-    // Format on load if value exists
-    if (valueInput.value) {
-        formatCurrency(valueInput);
-    }
-
-    // REMOVED: On submit, clean the value to be a float compatible string (dot decimal)
-    // This was conflicting with the Python view which expects Brazilian format (1.234,56)
-    // document.querySelector('form').addEventListener('submit', function(e) {
-    //     let value = valueInput.value.replace(/\./g, '').replace(',', '.');
-    //     valueInput.value = value;
-    // });
+    // Simple mask for currency - Updated to point to new selector if needed or handled by browser
+    // ... removed old valueField listeners to prevent conflicts with float inputs ...
 
     // Dynamic Contract Generation
-    const clientSelect = document.getElementById('client');
-    const templateSelect = document.getElementById('template');
-    const valueField = document.getElementById('value');
-    const dueDayField = document.getElementById('due_day');
-    const startDateField = document.getElementById('start_date');
+    const clientSelect = document.getElementById('id_client');
+    const templateSelect = document.getElementById('id_template');
+    const dueDayField = document.getElementById('id_due_day');
+    const startDateField = document.getElementById('id_start_date');
 
     let clientData = null;
     let templateContent = null;
@@ -190,14 +293,9 @@
 
         // Responsible
         let respName = clientData.responsible_name || '';
-        console.log('Responsible Name:', respName); // Debug
-
-        // More robust regex for responsible name (handles accents and spaces/underscores)
         content = content.replace(/{{NOME_RESPONSAVEL}}/gi, respName);
         content = content.replace(/{{NOME_SÍNDICO_OU_RESPONSÁVEL}}/gi, respName);
         content = content.replace(/{{NOME SÍNDICO OU RESPONSÁVEL}}/gi, respName);
-        // Try matching with flexible separators and accents
-        content = content.replace(/{{NOME[_\s]S[IÍ]NDICO[_\s]OU[_\s]RESPONS[AÁ]VEL}}/gi, respName);
 
         let respCpf = clientData.responsible_cpf || '';
         content = content.replace(/{{CPF_RESPONSAVEL}}/gi, respCpf);
@@ -206,69 +304,56 @@
         content = content.replace(/{{EMAIL_CLIENTE}}/gi, clientData.email || '');
         content = content.replace(/{{TELEFONE_CLIENTE}}/gi, clientData.phone || '');
 
-        // Value
-        let val = valueField.value || '';
+        // Total Value
+        let val = document.getElementById('value_total_display')?.value || '0,00';
         content = content.replace(/{{VALOR_MENSAL}}/gi, val);
         content = content.replace(/{{VALOR_MENSAL_DO_CONTRATO}}/gi, val);
         content = content.replace(/{{VALOR MENSAL DO CONTRATO}}/gi, val);
         content = content.replace(/{{valor}}/gi, val);
 
-        content = content.replace(/{{DIA_VENCIMENTO}}/gi, dueDayField.value || '');
+        content = content.replace(/{{DIA_VENCIMENTO}}/gi, dueDayField?.value || '');
 
         // Format date
-        let startDate = startDateField.value;
+        let startDate = startDateField?.value;
         if (startDate) {
             let parts = startDate.split('-');
-            startDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-
-            // Extract day, month, year
-            let dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            let formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
             content = content.replace(/{{DIA}}/gi, parts[2]);
             content = content.replace(/{{ANO}}/gi, parts[0]);
-
-            // Month name (simple approach)
-            const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho",
-                "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
             content = content.replace(/{{MÊS POR EXTENSO}}/gi, monthNames[parseInt(parts[1]) - 1]);
+            content = content.replace(/{{DATA_INICIO}}/gi, formattedDate);
         } else {
             content = content.replace(/{{DIA}}/gi, '');
             content = content.replace(/{{ANO}}/gi, '');
             content = content.replace(/{{MÊS POR EXTENSO}}/gi, '');
+            content = content.replace(/{{DATA_INICIO}}/gi, '');
         }
-        content = content.replace(/{{DATA_INICIO}}/gi, startDate || '');
 
-        // Signature Date Placeholder
         content = content.replace(/{{DATA_ASSINATURA}}/gi, '__________________');
 
-        // Update CKEditor
-        if (CKEDITOR.instances.id_description) {
-            CKEDITOR.instances.id_description.setData(content);
-        } else if (CKEDITOR.instances.description) { // Fallback name
-            CKEDITOR.instances.description.setData(content);
-        }
+        // Update CKEditor (if exists in this form) - currently not used in this specific form but kept for logic
     }
 
-    clientSelect.addEventListener('change', function () {
-        const clientId = this.value;
-        if (clientId) {
-            fetch(`/comercial/api/cliente/${clientId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    clientData = data;
-                    // Update responsible fields
-                    document.getElementById('responsible_name').value = data.responsible_name || '';
-                    document.getElementById('responsible_cpf').value = data.responsible_cpf || '';
-                    updateContractContent();
-                })
-                .catch(error => console.error('Error fetching client details:', error));
-        } else {
-            clientData = null;
-            document.getElementById('responsible_name').value = '';
-            document.getElementById('responsible_cpf').value = '';
-        }
-    });
+    if (clientSelect) {
+        clientSelect.addEventListener('change', function () {
+            const clientId = this.value;
+            if (clientId) {
+                fetch(`/comercial/api/cliente/${clientId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        clientData = data;
+                        if (document.getElementById('responsible_name'))
+                            document.getElementById('responsible_name').value = data.responsible_name || '';
+                        if (document.getElementById('responsible_cpf'))
+                            document.getElementById('responsible_cpf').value = data.responsible_cpf || '';
+                        updateContractContent();
+                    });
+            }
+        });
+    }
 
-    templateSelect.addEventListener('change', function () {
+    if (templateSelect) templateSelect.addEventListener('change', function () {
         const templateId = this.value;
         if (templateId) {
             fetch(`/comercial/api/modelo-contrato/${templateId}/`)
@@ -276,17 +361,12 @@
                 .then(data => {
                     templateContent = data.content;
                     updateContractContent();
-                })
-                .catch(error => console.error('Error fetching template details:', error));
-        } else {
-            templateContent = null;
+                });
         }
     });
 
-    // Update on field changes
-    valueField.addEventListener('blur', updateContractContent);
-    dueDayField.addEventListener('change', updateContractContent);
-    startDateField.addEventListener('change', updateContractContent);
+    if (dueDayField) dueDayField.addEventListener('change', updateContractContent);
+    if (startDateField) startDateField.addEventListener('change', updateContractContent);
     {% endverbatim %}
 </script>
 {% endblock %}

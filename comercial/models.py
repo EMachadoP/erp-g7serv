@@ -159,3 +159,30 @@ class BudgetService(models.Model):
     def save(self, *args, **kwargs):
         self.total_price = self.quantity * self.unit_price
         super().save(*args, **kwargs)
+
+class ContractItem(BaseModel):
+    CATEGORY_CHOICES = (
+        ('MANUTENCAO', 'Manutenção Mensal'),
+        ('MONITORAMENTO', 'Monitoramento'),
+        ('PONTO', 'Ponto Eletrônico'),
+        ('COMODATO', 'Comodato Equipamentos'),
+        ('OUTROS', 'Outros'),
+    )
+
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='items', verbose_name="Contrato")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='MANUTENCAO', verbose_name="Categoria")
+    description = models.CharField(max_length=255, verbose_name="Descrição")
+    quantity = models.IntegerField(default=1, verbose_name="Quantidade")
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Unitário")
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Total")
+
+    def save(self, *args, **kwargs):
+        self.total_price = (self.quantity or 1) * (self.unit_price or 0)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.description}"
+
+    class Meta:
+        verbose_name = "Item de Contrato"
+        verbose_name_plural = "Itens de Contrato"
