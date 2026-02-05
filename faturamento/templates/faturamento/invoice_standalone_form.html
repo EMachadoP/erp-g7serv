@@ -168,7 +168,7 @@
         const grandTotalSpan = document.getElementById('grand-total');
         const mainAmountInput = document.querySelector('input[name="amount"]');
 
-        function calculateTotals() {
+        function calculateTotals(isInitial = false) {
             let grandTotal = 0;
             const rows = document.querySelectorAll('.formset-row');
 
@@ -187,8 +187,14 @@
 
             // Sync with main amount field
             if (mainAmountInput) {
-                // Must use '.' for input type="number" to work correctly with JS assignment
-                mainAmountInput.value = grandTotal.toFixed(2);
+                // If it's the initial load and grandTotal is 0, don't overwrite an existing value
+                if (isInitial && grandTotal === 0 && parseFloat(mainAmountInput.value) > 0) {
+                    // Update grandTotalSpan to match mainAmountInput
+                    const initialAmount = parseFloat(mainAmountInput.value);
+                    grandTotalSpan.innerText = `R$ ${initialAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                } else {
+                    mainAmountInput.value = grandTotal.toFixed(2);
+                }
             }
         }
 
@@ -227,7 +233,7 @@
         });
 
         // Initial calculation
-        calculateTotals();
+        calculateTotals(true);
     });
 </script>
 {% endblock %}

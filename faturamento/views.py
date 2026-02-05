@@ -592,6 +592,31 @@ def invoice_bulk_generate_boletos(request):
 
 
 @login_required
+def invoice_cancel_boleto(request, pk):
+    """Cancela o boleto da fatura (limpa a URL)."""
+    invoice = get_object_or_404(Invoice, pk=pk)
+    
+    if invoice.status == 'PG':
+        messages.error(request, "Não é possível cancelar o boleto de uma fatura já paga.")
+        return redirect('faturamento:list')
+        
+    with transaction.atomic():
+        invoice.boleto_url = None
+        invoice.save()
+        
+        # Atualiza também o Contas a Receber se existir
+        from financeiro.models import AccountReceivable
+        receivable = AccountReceivable.objects.filter(invoice=invoice).first()
+        if receivable:
+            receivable.cora_id = None
+            receivable.cora_pdf_url = None
+            receivable.cora_status = None
+            receivable.save()
+            
+    messages.success(request, f"Boleto da fatura {invoice.number} cancelado com sucesso. Você pode gerar um novo agora.")
+    return redirect('faturamento:list')
+
+@login_required
 @require_POST
 def invoice_bulk_send_emails(request):
     """Envia e-mails em lote para faturas selecionadas."""

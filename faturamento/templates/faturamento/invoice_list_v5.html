@@ -107,7 +107,15 @@
                                 <div class="text-muted small mt-1">
                                     Registro: {{ invoice.created_at|date:"d/m/Y" }}
                                     {% if invoice.boleto_url %}| <a href="{{ invoice.boleto_url }}" target="_blank"
-                                        class="text-danger"><i class="bi bi-upc"></i> Boleto</a>{% endif %}
+                                        class="text-danger"><i class="bi bi-upc"></i> Boleto</a>
+                                    {% if invoice.status != 'PG' %}
+                                    <a href="{% url 'faturamento:cancel_boleto' invoice.id %}"
+                                        class="text-muted small ms-2 px-1 border rounded"
+                                        onclick="return confirm('Deseja cancelar o boleto da fatura {{ invoice.number }}?')">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </a>
+                                    {% endif %}
+                                    {% endif %}
                                     {% if invoice.nfse_link %}| <a href="{{ invoice.nfse_link }}" target="_blank"
                                         class="text-success">NFSe</a>{% endif %}
                                 </div>
