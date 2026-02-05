@@ -46,4 +46,5 @@ urlpatterns = [
     
     # Diagnóstico Cora mTLS
     path('diagnostico/cora/', views.testar_conexao_cora, name='diagnostico_cora'),
+    path('diagnostico/email/', views.testar_conexao_email, name='diagnostico_email'),
 ]

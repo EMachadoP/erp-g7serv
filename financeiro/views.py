@@ -898,3 +898,72 @@ def bulk_send_emails(request):
             'status': 'error',
             'message': f'Erro crítico no servidor: {str(e)}'
         }, status=500)
+@login_required
+def testar_conexao_email(request):
+    """
+    Realiza testes de conectividade SMTP com diferentes portas e reporta o resultado.
+    """
+    import socket
+    import smtplib
+    from django.conf import settings
+    
+    results = []
+    hosts_to_test = [
+        ('smtp.gmail.com', 465),
+        ('smtp.gmail.com', 587),
+        ('smtp.googlemail.com', 465),
+    ]
+    
+    # Adiciona o host configurado se não estiver na lista
+    if settings.EMAIL_HOST not in [h[0] for h in hosts_to_test] or settings.EMAIL_PORT not in [h[1] for h in hosts_to_test]:
+        hosts_to_test.append((settings.EMAIL_HOST, settings.EMAIL_PORT))
+
+    for host, port in hosts_to_test:
+        test_info = {
+            'target': f"{host}:{port}",
+            'dns': 'Pending',
+            'socket': 'Pending',
+            'smtp': 'Pending',
+            'error': None
+        }
+        
+        try:
+            # 1. DNS
+            ip = socket.gethostbyname(host)
+            test_info['dns'] = f"OK ({ip})"
+            
+            # 2. Socket
+            s = socket.create_connection((host, port), timeout=5)
+            test_info['socket'] = "OK"
+            s.close()
+            
+            # 3. SMTP (opcional, apenas se socket OK)
+            try:
+                if port == 465:
+                    server = smtplib.SMTP_SSL(host, port, timeout=5)
+                else:
+                    server = smtplib.SMTP(host, port, timeout=5)
+                
+                code, msg = server.ehlo()
+                test_info['smtp'] = f"OK ({code})"
+                server.quit()
+            except Exception as e_smtp:
+                test_info['smtp'] = f"Error: {str(e_smtp)}"
+                
+        except Exception as e:
+            test_info['error'] = str(e)
+            if test_info['dns'] == 'Pending': test_info['dns'] = 'Failed'
+            if test_info['socket'] == 'Pending': test_info['socket'] = 'Failed'
+            
+        results.append(test_info)
+        
+    return JsonResponse({
+        'current_settings': {
+            'EMAIL_HOST': settings.EMAIL_HOST,
+            'EMAIL_PORT': settings.EMAIL_PORT,
+            'EMAIL_USE_TLS': settings.EMAIL_USE_TLS,
+            'EMAIL_USE_SSL': settings.EMAIL_USE_SSL,
+            'DEFAULT_FROM_EMAIL': settings.DEFAULT_FROM_EMAIL
+        },
+        'connectivity_tests': results
+    })
