@@ -1,6 +1,7 @@
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.core.files.base import ContentFile
+from core.models import CompanySettings
 import io
 import logging
 
@@ -11,8 +12,12 @@ def generate_invoice_pdf_file(invoice):
     Gera o PDF da fatura e salva no campo pdf_fatura do modelo.
     """
     try:
+        company = CompanySettings.objects.first()
         template_path = 'faturamento/invoice_pdf.html'
-        context = {'invoice': invoice}
+        context = {
+            'invoice': invoice,
+            'company': company,
+        }
         template = get_template(template_path)
         html = template.render(context)
         

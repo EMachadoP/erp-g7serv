@@ -80,8 +80,25 @@ class BillingEmailService:
                 body_template = Template(body_content)
                 user_body_html = body_template.render(Context(context_dict))
                 
-                # Limpar espaços em branco extras que podem sobrar depois de remover as tags
+                # Remover assinaturas redundantes que o usuário pode ter deixado
+                # Limpa termos comuns de encerramento se aparecerem no final
+                redundant_terms = [
+                    'obrigado', 'atenciosamente', 'equipe g7 serv', 'g7 serv', 
+                    '81 3019-5654', 'att,', 'grato'
+                ]
+                
+                # Limpeza agressiva de quebras de linha no final para tirar o "espaço extra"
                 user_body_html = user_body_html.strip()
+                
+                # Tentar remover as últimas linhas se forem apenas assinatura
+                lines = user_body_html.split('\n')
+                cleaned_lines = []
+                for line in lines:
+                    line_lower = line.lower().strip()
+                    if not any(term in line_lower for term in redundant_terms) or len(line_lower) > 50:
+                        cleaned_lines.append(line)
+                
+                user_body_html = '\n'.join(cleaned_lines).strip()
 
                 # Converter quebras de linha em <br> se não houver tags HTML detectadas
                 if '<p' not in user_body_html.lower() and '<br' not in user_body_html.lower():
