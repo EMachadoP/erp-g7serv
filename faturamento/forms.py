@@ -18,6 +18,12 @@ class InvoiceForm(forms.ModelForm):
             'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.status == 'PG':
+            self.fields['status'].disabled = True
+            self.fields['status'].help_text = "Para alterar, estorne o recebimento no Financeiro."
+
 
 class InvoiceItemForm(forms.ModelForm):
     class Meta:
@@ -51,6 +57,12 @@ class StandaloneInvoiceForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
             'payment_method': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.status == 'PG':
+            self.fields['status'].disabled = True
+            self.fields['status'].help_text = "Para alterar, estorne o recebimento no Financeiro."
 
 class NotaEntradaItemForm(forms.ModelForm):
     # This field allows selecting an existing product
