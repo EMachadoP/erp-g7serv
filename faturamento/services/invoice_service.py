@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 def generate_invoice_pdf_file(invoice):
     """
     Gera o PDF da fatura e salva no campo pdf_fatura do modelo.
+    Retorna os bytes do PDF gerado ou None em caso de erro.
     """
     try:
         company = CompanySettings.objects.first()
@@ -31,9 +32,10 @@ def generate_invoice_pdf_file(invoice):
         
         # Salva o arquivo no modelo
         filename = f"fatura_{invoice.number}.pdf"
-        invoice.pdf_fatura.save(filename, ContentFile(result.getvalue()), save=True)
+        pdf_bytes = result.getvalue()
+        invoice.pdf_fatura.save(filename, ContentFile(pdf_bytes), save=True)
         logger.info(f"PDF da fatura {invoice.number} gerado e salvo com sucesso.")
-        return True
+        return pdf_bytes
     except Exception as e:
         logger.error(f"Exceção ao gerar PDF da fatura {invoice.number}: {e}")
-        return False
+        return None

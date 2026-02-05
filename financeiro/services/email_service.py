@@ -218,13 +218,14 @@ class BillingEmailService:
                 </html>
                 """
         
+        pdf_content = None
         if getattr(settings, 'BREVO_API_KEY', None):
             # Garante que o PDF da Fatura existe ou é atualizado antes de enviar
             from faturamento.services.invoice_service import generate_invoice_pdf_file
             
             # Se não existe ou for solicitado, gera/regenera para garantir dados frescos
             logger.info(f"Garantindo PDF da fatura para {invoice.number}")
-            generate_invoice_pdf_file(invoice)
+            pdf_content = generate_invoice_pdf_file(invoice)
             
             # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
             invoice.refresh_from_db()
@@ -233,7 +234,8 @@ class BillingEmailService:
                 recipient_email=recipient_email,
                 subject=subject,
                 body=body,
-                invoice=invoice
+                invoice=invoice,
+                pdf_content=pdf_content
             )
 
         email = EmailMessage(
@@ -246,9 +248,15 @@ class BillingEmailService:
         email.content_subtype = "html"
         
         # Anexar PDF da Fatura se existir
-        if invoice.pdf_fatura:
+        if pdf_content:
+            email.attach(
+                f"Demonstrativo_Fatura_{invoice.number}.pdf",
+                pdf_content,
+                "application/pdf"
+            )
+        elif invoice.pdf_fatura:
             try:
-                # Usar .open() em vez de .path para suportar S3/Cloud Storage
+                # Fallback para o arquivo salvo se os bytes não estiverem na memória
                 with invoice.pdf_fatura.open('rb') as f:
                     email.attach(
                         f"Demonstrativo_Fatura_{invoice.number}.pdf",
@@ -266,7 +274,7 @@ class BillingEmailService:
             return False
 
     @staticmethod
-    def send_via_brevo(recipient_email, subject, body, invoice):
+    def send_via_brevo(recipient_email, subject, body, invoice, pdf_content=None):
         """
         Envia e-mail via API HTTP da Brevo (Sendinblue).
         """
@@ -291,8 +299,15 @@ class BillingEmailService:
             "attachment": []
         }
         
-        # 1. Anexo: PDF da Fatura (Compatível com S3/Cloud Storage)
-        if invoice.pdf_fatura:
+        # 1. Anexo: PDF da Fatura (Prioriza bytes diretos)
+        if pdf_content:
+            content = base64.b64encode(pdf_content).decode('utf-8')
+            data["attachment"].append({
+                "content": content,
+                "name": f"Demonstrativo_Fatura_{invoice.number}.pdf"
+            })
+            logger.info(f"Anexando fatura detalhada via bytes diretos: Demonstrativo_Fatura_{invoice.number}.pdf")
+        elif invoice.pdf_fatura:
             try:
                 with invoice.pdf_fatura.open("rb") as f:
                     content = base64.b64encode(f.read()).decode('utf-8')
