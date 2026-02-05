@@ -14,6 +14,7 @@ class BaseModel(models.Model):
 
 class BillingGroup(BaseModel):
     name = models.CharField(max_length=255, verbose_name="Nome do Grupo")
+    due_day = models.IntegerField(null=True, blank=True, verbose_name="Dia de Vencimento Padrão")
 
     def __str__(self):
         return self.name

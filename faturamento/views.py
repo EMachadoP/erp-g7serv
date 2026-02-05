@@ -311,13 +311,20 @@ def process_contract_billing(request):
             
         try:
             with transaction.atomic():
-                # Calculate due date
+                # Calculate due date: Priority 1: Billing Group, Priority 2: Contract
+                due_day = contract.due_day
+                if contract.billing_group and contract.billing_group.due_day:
+                    due_day = contract.billing_group.due_day
+                
                 try:
-                    due_date = date(year, month, contract.due_day)
+                    due_date = date(year, month, due_day)
                 except ValueError:
                     import calendar
                     last_day = calendar.monthrange(year, month)[1]
                     due_date = date(year, month, last_day)
+                
+                # Issue date is today
+                issue_date = timezone.now().date()
                 
                 # 1. Create Invoice linked to batch
                 invoice = Invoice.objects.create(
@@ -327,7 +334,7 @@ def process_contract_billing(request):
                     billing_group=contract.billing_group,
                     competence_month=month,
                     competence_year=year,
-                    issue_date=timezone.now(),
+                    issue_date=issue_date,
                     due_date=due_date,
                     amount=contract.value,
                     status='PD'
@@ -386,7 +393,8 @@ def process_contract_billing(request):
                     amount=contract.value,
                     due_date=due_date,
                     status='PENDING',
-                    document_number=invoice.number
+                    document_number=invoice.number,
+                    invoice=invoice # Link important for cancellation
                 )
                 
                 # 3.1 Gerar PDF da Fatura (Demonstrativo)
@@ -407,6 +415,34 @@ def process_contract_billing(request):
         except Exception as e:
             messages.error(request, f"Erro ao processar contrato #{contract.id}: {str(e)}")
             continue
+
+@login_required
+def invoice_cancel(request, pk):
+    """Cancela a fatura e o contas a receber vinculado."""
+    invoice = get_object_or_404(Invoice, pk=pk)
+    
+    if invoice.status == 'PG':
+        messages.error(request, 'Não é possível cancelar uma fatura que já está paga.')
+        return redirect('faturamento:detail', pk=pk)
+        
+    try:
+        with transaction.atomic():
+            # 1. Update Invoice status
+            invoice.status = 'CN'
+            invoice.save(update_fields=['status'])
+            
+            # 2. Update all linked Receivables
+            receivables = AccountReceivable.objects.filter(invoice=invoice)
+            for rec in receivables:
+                if rec.status != 'RECEIVED':
+                    rec.status = 'CANCELLED'
+                    rec.save(update_fields=['status'])
+            
+            messages.success(request, f'Fatura #{invoice.number} cancelada com sucesso.')
+    except Exception as e:
+        messages.error(request, f'Erro ao cancelar fatura: {str(e)}')
+        
+    return redirect('faturamento:invoice_list')
     
     # Update batch with final stats
     batch.finished_at = timezone.now()

@@ -4,4 +4,4 @@ from .models import BillingGroup
 class BillingGroupForm(forms.ModelForm):
     class Meta:
         model = BillingGroup
-        fields = ['name', 'active']
+        fields = ['name', 'due_day', 'active']
