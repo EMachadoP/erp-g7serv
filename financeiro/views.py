@@ -304,21 +304,41 @@ def sync_receables_view(request):
         defaults={'type': 'REVENUE'}
     )
     
+    from integracao_cora.models import BoletoCora
+    
     # Ajuste temporário para o ELDON se solicitado
-    eldon_inv = Invoice.objects.filter(client__name__icontains='ELDON', status='PD').first()
+    eldon_inv = Invoice.objects.filter(client__name__icontains='ELDON', amount=5.00).first()
     if eldon_inv:
         eldon_inv.status = 'PG'
         eldon_inv.save()
 
+    # Categorias
+    fatura_category, _ = FinancialCategory.objects.get_or_create(
+        name="Receita de Faturas",
+        defaults={'type': 'REVENUE'}
+    )
+    contrato_category, _ = FinancialCategory.objects.get_or_create(
+        name="Receita de Contratos",
+        defaults={'type': 'REVENUE'}
+    )
+    
     for inv in invoices:
         receivable = AccountReceivable.objects.filter(invoice=inv).first()
         
         # Determine correct status
         target_status = 'PENDING'
-        if inv.status == 'PG':
+        # Check internal status OR Cora payment
+        cora_paid = BoletoCora.objects.filter(fatura=inv, status='Pago').exists()
+        if inv.status == 'PG' or cora_paid:
             target_status = 'RECEIVED'
+            if cora_paid and inv.status != 'PG':
+                inv.status = 'PG'
+                inv.save()
         elif inv.status == 'CN':
             target_status = 'CANCELLED'
+
+        # Determine correct category
+        target_category = contrato_category if inv.contract else fatura_category
 
         if not receivable:
             description = f"Fatura #{inv.number}"
@@ -328,19 +348,30 @@ def sync_receables_view(request):
             AccountReceivable.objects.create(
                 description=description,
                 client=inv.client,
-                category=category,
+                category=target_category,
                 amount=inv.amount,
                 due_date=inv.due_date,
                 status=target_status,
                 invoice=inv,
                 document_number=inv.number,
-                active=True
+                active=True,
+                receipt_date=timezone.now().date() if target_status == 'RECEIVED' else None
             )
             created_count += 1
         else:
-            # Sync status if different
+            # Sync status and category if different
+            changed = False
             if receivable.status != target_status:
                 receivable.status = target_status
+                if target_status == 'RECEIVED' and not receivable.receipt_date:
+                    receivable.receipt_date = timezone.now().date()
+                changed = True
+            
+            if receivable.category != target_category:
+                receivable.category = target_category
+                changed = True
+                
+            if changed:
                 receivable.save()
             skipped_count += 1
             
