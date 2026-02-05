@@ -245,12 +245,18 @@ class BillingEmailService:
         )
         email.content_subtype = "html"
         
-        # Anexar PDF da Fatura se existir e estiver acessível localmente
+        # Anexar PDF da Fatura se existir
         if invoice.pdf_fatura:
             try:
-                email.attach_file(invoice.pdf_fatura.path)
+                # Usar .open() em vez de .path para suportar S3/Cloud Storage
+                with invoice.pdf_fatura.open('rb') as f:
+                    email.attach(
+                        f"Demonstrativo_Fatura_{invoice.number}.pdf",
+                        f.read(),
+                        "application/pdf"
+                    )
             except Exception as e:
-                logger.warning(f"Não foi possível anexar o arquivo PDF local: {e}")
+                logger.warning(f"Não foi possível anexar o arquivo PDF (SMTP): {e}")
             
         try:
             email.send()
@@ -285,18 +291,18 @@ class BillingEmailService:
             "attachment": []
         }
         
-        # 1. Anexo: PDF da Fatura (Local)
+        # 1. Anexo: PDF da Fatura (Compatível com S3/Cloud Storage)
         if invoice.pdf_fatura:
             try:
-                with open(invoice.pdf_fatura.path, "rb") as f:
+                with invoice.pdf_fatura.open("rb") as f:
                     content = base64.b64encode(f.read()).decode('utf-8')
                     data["attachment"].append({
                         "content": content,
                         "name": f"Demonstrativo_Fatura_{invoice.number}.pdf"
                     })
-                    logger.info(f"Anexando fatura detalhada: Demonstrativo_Fatura_{invoice.number}.pdf")
+                    logger.info(f"Anexando fatura detalhada via buffer: Demonstrativo_Fatura_{invoice.number}.pdf")
             except Exception as e:
-                logger.warning(f"Falha ao carregar fatura local para Brevo: {e}")
+                logger.warning(f"Falha ao carregar fatura via storage para Brevo: {e}")
 
         # 2. Anexo: Boleto (URL Remota)
         if invoice.boleto_url:
