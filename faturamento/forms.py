@@ -13,7 +13,7 @@ class InvoiceForm(forms.ModelForm):
             'contract': forms.Select(attrs={'class': 'form-select'}),
             'issue_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control bg-light', 'step': '0.01', 'readonly': 'readonly'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
 
@@ -46,7 +46,7 @@ class StandaloneInvoiceForm(forms.ModelForm):
             'client': forms.Select(attrs={'class': 'form-select select2'}),
             'issue_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control bg-light', 'step': '0.01', 'readonly': 'readonly'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
 
