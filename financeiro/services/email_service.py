@@ -219,11 +219,15 @@ class BillingEmailService:
                 """
         
         if getattr(settings, 'BREVO_API_KEY', None):
-            # Garante que o PDF da Fatura existe antes de enviar
-            if not invoice.pdf_fatura:
-                from faturamento.services.invoice_service import generate_invoice_pdf_file
-                generate_invoice_pdf_file(invoice)
-                invoice.refresh_from_db()
+            # Garante que o PDF da Fatura existe ou é atualizado antes de enviar
+            from faturamento.services.invoice_service import generate_invoice_pdf_file
+            
+            # Se não existe ou for solicitado, gera/regenera para garantir dados frescos
+            logger.info(f"Garantindo PDF da fatura para {invoice.number}")
+            generate_invoice_pdf_file(invoice)
+            
+            # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
+            invoice.refresh_from_db()
 
             return BillingEmailService.send_via_brevo(
                 recipient_email=recipient_email,
