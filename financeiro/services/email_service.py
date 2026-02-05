@@ -60,7 +60,23 @@ class BillingEmailService:
                 'boleto_url': invoice.boleto_url,
                 'nfse_link': invoice.nfse_link,
             }
-            body = render_to_string('emails/fatura_corpo.html', context)
+            try:
+                body = render_to_string('emails/fatura_corpo.html', context)
+            except:
+                # Fallback em texto puro caso o template herde erro ou não exista
+                body = f"""Olá {client.name},
+                
+Sua fatura de {competence} está disponível para pagamento.
+Valor: R$ {invoice.amount}
+Vencimento: {invoice.due_date.strftime('%d/%m/%Y')}
+
+Links:
+Boleto: {invoice.boleto_url or 'Não disponível'}
+NF-e: {invoice.nfse_link or 'Não disponível'}
+
+Obrigado,
+G7Serv
+"""
         
         email = EmailMessage(
             subject=subject,

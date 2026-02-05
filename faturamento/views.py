@@ -563,29 +563,35 @@ def invoice_bulk_send_emails(request):
     success_count = 0
     errors = []
     
-    from django.core.mail import get_connection
-    connection = get_connection()
-    connection.open()
-    
     try:
-        for invoice in invoices:
-            try:
-                if BillingEmailService.send_invoice_email(invoice, template_id=template_id, connection=connection):
-                    invoice.email_sent_at = timezone.now()
-                    invoice.save()
-                    success_count += 1
-                else:
-                    errors.append(f"Fatura #{invoice.id}: Falha ao enviar e-mail.")
-            except Exception as e:
-                errors.append(f"Fatura #{invoice.id}: {str(e)}")
-    finally:
-        connection.close()
-    
-    return JsonResponse({
-        'status': 'success',
-        'message': f'{success_count} e-mails enviados com sucesso.',
-        'errors': errors
-    })
+        from django.core.mail import get_connection
+        connection = get_connection()
+        connection.open()
+        
+        try:
+            for invoice in invoices:
+                try:
+                    if BillingEmailService.send_invoice_email(invoice, template_id=template_id, connection=connection):
+                        invoice.email_sent_at = timezone.now()
+                        invoice.save()
+                        success_count += 1
+                    else:
+                        errors.append(f"Fatura #{invoice.id}: Falha ao enviar e-mail.")
+                except Exception as e:
+                    errors.append(f"Fatura #{invoice.id}: {str(e)}")
+        finally:
+            connection.close()
+        
+        return JsonResponse({
+            'status': 'success' if success_count > 0 else 'error',
+            'message': f'{success_count} e-mails enviados com sucesso.',
+            'errors': errors
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Erro crítico no servidor: {str(e)}'
+        }, status=500)
 
 
 @login_required

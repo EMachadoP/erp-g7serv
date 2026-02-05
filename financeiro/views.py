@@ -865,30 +865,36 @@ def bulk_send_emails(request):
     success_count = 0
     errors = []
 
-    from django.core.mail import get_connection
-    connection = get_connection()
-    connection.open()
-    
     try:
-        for receivable in receivables:
-            if not receivable.invoice:
-                errors.append(f"Recebível #{receivable.id}: Não possui fatura vinculada.")
-                continue
+        from django.core.mail import get_connection
+        connection = get_connection()
+        connection.open()
+        
+        try:
+            for receivable in receivables:
+                if not receivable.invoice:
+                    errors.append(f"Recebível #{receivable.id}: Não possui fatura vinculada.")
+                    continue
 
-            try:
-                if BillingEmailService.send_invoice_email(receivable.invoice, template_id=template_id, connection=connection):
-                    receivable.invoice.email_sent_at = timezone.now()
-                    receivable.invoice.save()
-                    success_count += 1
-                else:
-                    errors.append(f"Recebível #{receivable.id}: Falha ao enviar e-mail.")
-            except Exception as e:
-                errors.append(f"Recebível #{receivable.id}: {str(e)}")
-    finally:
-        connection.close()
+                try:
+                    if BillingEmailService.send_invoice_email(receivable.invoice, template_id=template_id, connection=connection):
+                        receivable.invoice.email_sent_at = timezone.now()
+                        receivable.invoice.save()
+                        success_count += 1
+                    else:
+                        errors.append(f"Recebível #{receivable.id}: Falha ao enviar e-mail.")
+                except Exception as e:
+                    errors.append(f"Recebível #{receivable.id}: {str(e)}")
+        finally:
+            connection.close()
 
-    return JsonResponse({
-        'status': 'success', 
-        'message': f'{success_count} e-mails enviados com sucesso.',
-        'errors': errors
-    })
+        return JsonResponse({
+            'status': 'success' if success_count > 0 else 'error', 
+            'message': f'{success_count} e-mails enviados com sucesso.',
+            'errors': errors
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Erro crítico no servidor: {str(e)}'
+        }, status=500)
