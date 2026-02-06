@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db import IntegrityError
 from django.views import View
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.template.loader import get_template
@@ -183,29 +184,40 @@ def client_detail(request, pk):
 def client_create(request):
     if request.method == 'POST':
         # Simple manual form handling for now, can be upgraded to Django Forms later
-        Person.objects.create(
-            is_client=request.POST.get('is_client') == 'on',
-            is_supplier=request.POST.get('is_supplier') == 'on',
-            is_final_consumer=request.POST.get('is_final_consumer') == 'on',
-            name=request.POST.get('name'),
-            fantasy_name=request.POST.get('fantasy_name'),
-            person_type=request.POST.get('person_type', 'PJ') or 'PJ',
-            document=request.POST.get('document'),
-            state_registration=request.POST.get('state_registration'),
-            responsible_name=request.POST.get('responsible_name'),
-            responsible_cpf=request.POST.get('responsible_cpf'),
-            email=request.POST.get('email'),
-            phone=request.POST.get('phone'),
-            zip_code=request.POST.get('zip_code'),
-            address=request.POST.get('address'),
-            number=request.POST.get('number'),
-            complement=request.POST.get('complement'),
-            neighborhood=request.POST.get('neighborhood'),
-            city=request.POST.get('city'),
-            state=request.POST.get('state')
-        )
-        messages.success(request, 'Cliente cadastrado com sucesso.')
-        return redirect('comercial:client_list')
+        try:
+            Person.objects.create(
+                is_client=request.POST.get('is_client') == 'on',
+                is_supplier=request.POST.get('is_supplier') == 'on',
+                is_final_consumer=request.POST.get('is_final_consumer') == 'on',
+                name=request.POST.get('name'),
+                fantasy_name=request.POST.get('fantasy_name'),
+                person_type=request.POST.get('person_type', 'PJ') or 'PJ',
+                document=request.POST.get('document'),
+                state_registration=request.POST.get('state_registration'),
+                responsible_name=request.POST.get('responsible_name'),
+                responsible_cpf=request.POST.get('responsible_cpf'),
+                email=request.POST.get('email'),
+                phone=request.POST.get('phone'),
+                zip_code=request.POST.get('zip_code'),
+                address=request.POST.get('address'),
+                number=request.POST.get('number'),
+                complement=request.POST.get('complement'),
+                neighborhood=request.POST.get('neighborhood'),
+                city=request.POST.get('city'),
+                state=request.POST.get('state')
+            )
+            messages.success(request, 'Cliente cadastrado com sucesso.')
+            return redirect('comercial:client_list')
+        except IntegrityError:
+            messages.error(request, 'Erro: Já existe um cliente cadastrado com este CPF/CNPJ.')
+            return render(request, 'comercial/client_form_v2.html', {
+                'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
+                'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
+                'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
+                'is_supplier_checked': 'checked' if request.POST.get('is_supplier') == 'on' else '',
+                'is_final_consumer_checked': 'checked' if request.POST.get('is_final_consumer') == 'on' else '',
+                'form_data': request.POST # Pass POST data back to preserve fields
+            })
     
     return render(request, 'comercial/client_form_v2.html', {
         'pj_checked': 'checked',
@@ -239,10 +251,21 @@ def client_update(request, pk):
         client.neighborhood = request.POST.get('neighborhood')
         client.city = request.POST.get('city')
         client.state = request.POST.get('state')
-        client.save()
-        
-        messages.success(request, 'Cliente atualizado com sucesso.')
-        return redirect('comercial:client_list')
+        try:
+            client.save()
+            messages.success(request, 'Cliente atualizado com sucesso.')
+            return redirect('comercial:client_list')
+        except IntegrityError:
+            messages.error(request, 'Erro: Já existe um cliente cadastrado com este CPF/CNPJ.')
+            # No need for manual state preservation here as we are editing an instance
+            return render(request, 'comercial/client_form_v2.html', {
+                'client': client,
+                'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
+                'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
+                'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
+                'is_supplier_checked': 'checked' if request.POST.get('is_supplier') == 'on' else '',
+                'is_final_consumer_checked': 'checked' if request.POST.get('is_final_consumer') == 'on' else ''
+            })
         
     pj_checked = 'checked' if client.person_type == 'PJ' else ''
     pf_checked = 'checked' if client.person_type == 'PF' else ''

@@ -44,7 +44,7 @@
                     <label for="document" class="form-label" id="document_label">CNPJ</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="document" name="document"
-                            value="{{ client.document|default:'' }}" required>
+                            value="{{ form_data.document|default:client.document|default:'' }}" required>
                         <button class="btn btn-outline-primary" type="button" id="btn-search-cnpj">
                             <i class="bi bi-search"></i> Buscar
                         </button>
@@ -56,8 +56,8 @@
                 </div>
                 <div class="col-md-8">
                     <label for="name" class="form-label">Razão Social / Nome Completo</label>
-                    <input type="text" class="form-control" id="name" name="name" value="{{ client.name|default:'' }}"
-                        required>
+                    <input type="text" class="form-control" id="name" name="name"
+                        value="{{ form_data.name|default:client.name|default:'' }}" required>
                 </div>
             </div>
 
@@ -65,13 +65,13 @@
                 <div class="col-md-6">
                     <label for="fantasy_name" class="form-label">Nome Fantasia</label>
                     <input type="text" class="form-control" id="fantasy_name" name="fantasy_name"
-                        value="{{ client.fantasy_name|default:'' }}">
+                        value="{{ form_data.fantasy_name|default:client.fantasy_name|default:'' }}">
                 </div>
                 <div class="col-md-6">
                     <label for="state_registration" class="form-label">Inscrição Estadual</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="state_registration" name="state_registration"
-                            value="{{ client.state_registration|default:'' }}">
+                            value="{{ form_data.state_registration|default:client.state_registration|default:'' }}">
                         <div class="input-group-text">
                             <input class="form-check-input mt-0 me-2" type="checkbox" id="ie_exempt"
                                 aria-label="Isento">
@@ -92,12 +92,13 @@
                 <div class="col-md-6">
                     <label for="responsible_name" class="form-label">Nome do Responsável</label>
                     <input type="text" class="form-control" id="responsible_name" name="responsible_name"
-                        value="{{ client.responsible_name|default:'' }}">
+                        value="{{ form_data.responsible_name|default:client.responsible_name|default:'' }}">
                 </div>
                 <div class="col-md-6">
                     <label for="responsible_cpf" class="form-label">CPF do Responsável</label>
                     <input type="text" class="form-control" id="responsible_cpf" name="responsible_cpf"
-                        value="{{ client.responsible_cpf|default:'' }}" maxlength="14" placeholder="000.000.000-00">
+                        value="{{ form_data.responsible_cpf|default:client.responsible_cpf|default:'' }}" maxlength="14"
+                        placeholder="000.000.000-00">
                 </div>
             </div>
 
@@ -105,12 +106,12 @@
                 <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email"
-                        value="{{ client.email|default:'' }}">
+                        value="{{ form_data.email|default:client.email|default:'' }}">
                 </div>
                 <div class="col-md-6">
                     <label for="phone" class="form-label">Telefone</label>
                     <input type="text" class="form-control" id="phone" name="phone"
-                        value="{{ client.phone|default:'' }}">
+                        value="{{ form_data.phone|default:client.phone|default:'' }}">
                 </div>
             </div>
 
@@ -119,17 +120,17 @@
                 <div class="col-md-3">
                     <label for="zip_code" class="form-label">CEP</label>
                     <input type="text" class="form-control" id="zip_code" name="zip_code"
-                        value="{{ client.zip_code|default:'' }}">
+                        value="{{ form_data.zip_code|default:client.zip_code|default:'' }}">
                 </div>
                 <div class="col-md-7">
                     <label for="address" class="form-label">Logradouro</label>
                     <input type="text" class="form-control" id="address" name="address"
-                        value="{{ client.address|default:'' }}">
+                        value="{{ form_data.address|default:client.address|default:'' }}">
                 </div>
                 <div class="col-md-2">
                     <label for="number" class="form-label">Número</label>
                     <input type="text" class="form-control" id="number" name="number"
-                        value="{{ client.number|default:'' }}">
+                        value="{{ form_data.number|default:client.number|default:'' }}">
                 </div>
             </div>
 
@@ -137,21 +138,22 @@
                 <div class="col-md-4">
                     <label for="complement" class="form-label">Complemento</label>
                     <input type="text" class="form-control" id="complement" name="complement"
-                        value="{{ client.complement|default:'' }}">
+                        value="{{ form_data.complement|default:client.complement|default:'' }}">
                 </div>
                 <div class="col-md-3">
                     <label for="neighborhood" class="form-label">Bairro</label>
                     <input type="text" class="form-control" id="neighborhood" name="neighborhood"
-                        value="{{ client.neighborhood|default:'' }}">
+                        value="{{ form_data.neighborhood|default:client.neighborhood|default:'' }}">
                 </div>
                 <div class="col-md-4">
                     <label for="city" class="form-label">Cidade</label>
-                    <input type="text" class="form-control" id="city" name="city" value="{{ client.city|default:'' }}">
+                    <input type="text" class="form-control" id="city" name="city"
+                        value="{{ form_data.city|default:client.city|default:'' }}">
                 </div>
                 <div class="col-md-1">
                     <label for="state" class="form-label">UF</label>
                     <input type="text" class="form-control" id="state" name="state"
-                        value="{{ client.state|default:'' }}">
+                        value="{{ form_data.state|default:client.state|default:'' }}">
                 </div>
             </div>
 
