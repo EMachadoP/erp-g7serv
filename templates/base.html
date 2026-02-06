@@ -157,13 +157,13 @@
                     <i class="bi bi-building me-2"></i>Administrativo
                 </a>
                 <div class="collapse" id="administrativoSubmenu">
-                    {% if perms.comercial.view_person %}
+                    {% if perms.core.view_person %}
                     <a href="{% url 'comercial:client_list' %}"
                         class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
                         Pessoas
                     </a>
                     {% endif %}
-                    {% if perms.comercial.view_service %}
+                    {% if perms.core.view_service %}
                     <a href="{% url 'comercial:service_list' %}"
                         class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
                         Serviços
