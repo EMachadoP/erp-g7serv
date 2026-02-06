@@ -180,20 +180,49 @@ def client_detail(request, pk):
     client = get_object_or_404(Person, pk=pk, is_client=True)
     return render(request, 'comercial/client_detail.html', {'client': client})
 
+def get_client_form_context(request, client=None):
+    """Helper to safely build context for client form without template lookup errors."""
+    fields = [
+        'document', 'name', 'fantasy_name', 'state_registration', 
+        'responsible_name', 'responsible_cpf', 'email', 'phone', 
+        'zip_code', 'address', 'number', 'complement', 
+        'neighborhood', 'city', 'state'
+    ]
+    ctx = {}
+    for f in fields:
+        val = request.POST.get(f)
+        if val is None and client:
+            val = getattr(client, f, '')
+        ctx[f'{f}_val'] = val or ''
+    
+    # Checkboxes and Radios
+    p_type = request.POST.get('person_type') or (client.person_type if client else 'PJ')
+    ctx['pj_checked'] = 'checked' if p_type == 'PJ' else ''
+    ctx['pf_checked'] = 'checked' if p_type == 'PF' else ''
+    
+    is_client = request.POST.get('is_client') == 'on' if request.method == 'POST' else (client.is_client if client else True)
+    ctx['is_client_checked'] = 'checked' if is_client else ''
+    
+    is_supplier = request.POST.get('is_supplier') == 'on' if request.method == 'POST' else (client.is_supplier if client else False)
+    ctx['is_supplier_checked'] = 'checked' if is_supplier else ''
+    
+    is_final_consumer = request.POST.get('is_final_consumer') == 'on' if request.method == 'POST' else (client.is_final_consumer if client else False)
+    ctx['is_final_consumer_checked'] = 'checked' if is_final_consumer else ''
+    
+    return ctx
+
 @login_required
 def client_create(request):
     if request.method == 'POST':
-        # Simple manual form handling for now, can be upgraded to Django Forms later
         try:
+            person_type = request.POST.get('person_type', 'PJ')
             Person.objects.create(
-                is_client=request.POST.get('is_client') == 'on',
-                is_supplier=request.POST.get('is_supplier') == 'on',
-                is_final_consumer=request.POST.get('is_final_consumer') == 'on',
+                person_type=person_type,
                 name=request.POST.get('name'),
                 fantasy_name=request.POST.get('fantasy_name'),
-                person_type=request.POST.get('person_type', 'PJ') or 'PJ',
                 document=request.POST.get('document'),
                 state_registration=request.POST.get('state_registration'),
+                is_final_consumer=request.POST.get('is_final_consumer') == 'on',
                 responsible_name=request.POST.get('responsible_name'),
                 responsible_cpf=request.POST.get('responsible_cpf'),
                 email=request.POST.get('email'),
@@ -204,85 +233,57 @@ def client_create(request):
                 complement=request.POST.get('complement'),
                 neighborhood=request.POST.get('neighborhood'),
                 city=request.POST.get('city'),
-                state=request.POST.get('state')
+                state=request.POST.get('state'),
+                is_client=request.POST.get('is_client') == 'on',
+                is_supplier=request.POST.get('is_supplier') == 'on',
             )
-            messages.success(request, 'Cliente cadastrado com sucesso.')
+            messages.success(request, 'Cliente cadastrado com sucesso!')
             return redirect('comercial:client_list')
         except IntegrityError:
             messages.error(request, 'Erro: Já existe um cliente cadastrado com este CPF/CNPJ.')
-            return render(request, 'comercial/client_form_v2.html', {
-                'client': {},
-                'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
-                'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
-                'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
-                'is_supplier_checked': 'checked' if request.POST.get('is_supplier') == 'on' else '',
-                'is_final_consumer_checked': 'checked' if request.POST.get('is_final_consumer') == 'on' else '',
-                'form_data': request.POST
-            })
+            context = get_client_form_context(request)
+            return render(request, 'comercial/client_form_v2.html', context)
     
-    return render(request, 'comercial/client_form_v2.html', {
-        'client': {},
-        'form_data': {},
-        'pj_checked': 'checked',
-        'pf_checked': '',
-        'is_client_checked': 'checked', # Default for new client
-        'is_supplier_checked': '',
-        'is_final_consumer_checked': ''
-    })
+    context = get_client_form_context(request)
+    return render(request, 'comercial/client_form_v2.html', context)
 
 @login_required
 def client_update(request, pk):
-    client = get_object_or_404(Person, pk=pk, is_client=True)
+    client = get_object_or_404(Person, pk=pk)
     
     if request.method == 'POST':
-        client.is_client = request.POST.get('is_client') == 'on'
-        client.is_supplier = request.POST.get('is_supplier') == 'on'
-        client.is_final_consumer = request.POST.get('is_final_consumer') == 'on'
-        client.name = request.POST.get('name')
-        client.fantasy_name = request.POST.get('fantasy_name')
-        client.person_type = request.POST.get('person_type') or client.person_type or 'PJ'
-        client.document = request.POST.get('document')
-        client.state_registration = request.POST.get('state_registration')
-        client.responsible_name = request.POST.get('responsible_name')
-        client.responsible_cpf = request.POST.get('responsible_cpf')
-        client.email = request.POST.get('email')
-        client.phone = request.POST.get('phone')
-        client.zip_code = request.POST.get('zip_code')
-        client.address = request.POST.get('address')
-        client.number = request.POST.get('number')
-        client.complement = request.POST.get('complement')
-        client.neighborhood = request.POST.get('neighborhood')
-        client.city = request.POST.get('city')
-        client.state = request.POST.get('state')
         try:
+            client.person_type = request.POST.get('person_type', client.person_type or 'PJ')
+            client.name = request.POST.get('name')
+            client.fantasy_name = request.POST.get('fantasy_name')
+            client.document = request.POST.get('document')
+            client.state_registration = request.POST.get('state_registration')
+            client.is_final_consumer = request.POST.get('is_final_consumer') == 'on'
+            client.responsible_name = request.POST.get('responsible_name')
+            client.responsible_cpf = request.POST.get('responsible_cpf')
+            client.email = request.POST.get('email')
+            client.phone = request.POST.get('phone')
+            client.zip_code = request.POST.get('zip_code')
+            client.address = request.POST.get('address')
+            client.number = request.POST.get('number')
+            client.complement = request.POST.get('complement')
+            client.neighborhood = request.POST.get('neighborhood')
+            client.city = request.POST.get('city')
+            client.state = request.POST.get('state')
+            client.is_client = request.POST.get('is_client') == 'on'
+            client.is_supplier = request.POST.get('is_supplier') == 'on'
             client.save()
-            messages.success(request, 'Cliente atualizado com sucesso.')
+            messages.success(request, 'Cliente atualizado com sucesso!')
             return redirect('comercial:client_list')
         except IntegrityError:
             messages.error(request, 'Erro: Já existe um cliente cadastrado com este CPF/CNPJ.')
-            # No need for manual state preservation here as we are editing an instance
-            return render(request, 'comercial/client_form_v2.html', {
-                'client': client,
-                'form_data': request.POST,
-                'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
-                'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
-                'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
-                'is_supplier_checked': 'checked' if request.POST.get('is_supplier') == 'on' else '',
-                'is_final_consumer_checked': 'checked' if request.POST.get('is_final_consumer') == 'on' else ''
-            })
+            context = get_client_form_context(request, client)
+            context['client'] = client 
+            return render(request, 'comercial/client_form_v2.html', context)
         
-    pj_checked = 'checked' if client.person_type == 'PJ' else ''
-    pf_checked = 'checked' if client.person_type == 'PF' else ''
-    
-    return render(request, 'comercial/client_form_v2.html', {
-        'client': client,
-        'form_data': {},
-        'pj_checked': pj_checked,
-        'pf_checked': pf_checked,
-        'is_client_checked': 'checked' if client.is_client else '',
-        'is_supplier_checked': 'checked' if client.is_supplier else '',
-        'is_final_consumer_checked': 'checked' if client.is_final_consumer else ''
-    })
+    context = get_client_form_context(request, client)
+    context['client'] = client 
+    return render(request, 'comercial/client_form_v2.html', context)
 
 @login_required
 def client_delete(request, pk):
