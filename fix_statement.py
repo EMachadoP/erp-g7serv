@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+content = """{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
@@ -114,3 +114,8 @@
     </div>
 </div>
 {% endblock %}
+"""
+
+with open("financeiro/templates/financeiro/financial_statement.html", "w", encoding="utf-8") as f:
+    f.write(content)
+print("File written successfully!")
