@@ -211,15 +211,18 @@ def client_create(request):
         except IntegrityError:
             messages.error(request, 'Erro: Já existe um cliente cadastrado com este CPF/CNPJ.')
             return render(request, 'comercial/client_form_v2.html', {
+                'client': None,
                 'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
                 'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
                 'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
                 'is_supplier_checked': 'checked' if request.POST.get('is_supplier') == 'on' else '',
                 'is_final_consumer_checked': 'checked' if request.POST.get('is_final_consumer') == 'on' else '',
-                'form_data': request.POST # Pass POST data back to preserve fields
+                'form_data': request.POST
             })
     
     return render(request, 'comercial/client_form_v2.html', {
+        'client': None,
+        'form_data': None,
         'pj_checked': 'checked',
         'pf_checked': '',
         'is_client_checked': 'checked', # Default for new client
@@ -260,6 +263,7 @@ def client_update(request, pk):
             # No need for manual state preservation here as we are editing an instance
             return render(request, 'comercial/client_form_v2.html', {
                 'client': client,
+                'form_data': request.POST,
                 'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
                 'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
                 'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
@@ -272,6 +276,7 @@ def client_update(request, pk):
     
     return render(request, 'comercial/client_form_v2.html', {
         'client': client,
+        'form_data': None,
         'pj_checked': pj_checked,
         'pf_checked': pf_checked,
         'is_client_checked': 'checked' if client.is_client else '',
