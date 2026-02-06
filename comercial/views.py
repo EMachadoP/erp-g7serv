@@ -211,7 +211,7 @@ def client_create(request):
         except IntegrityError:
             messages.error(request, 'Erro: Já existe um cliente cadastrado com este CPF/CNPJ.')
             return render(request, 'comercial/client_form_v2.html', {
-                'client': None,
+                'client': {},
                 'pj_checked': 'checked' if request.POST.get('person_type') == 'PJ' else '',
                 'pf_checked': 'checked' if request.POST.get('person_type') == 'PF' else '',
                 'is_client_checked': 'checked' if request.POST.get('is_client') == 'on' else '',
@@ -221,8 +221,8 @@ def client_create(request):
             })
     
     return render(request, 'comercial/client_form_v2.html', {
-        'client': None,
-        'form_data': None,
+        'client': {},
+        'form_data': {},
         'pj_checked': 'checked',
         'pf_checked': '',
         'is_client_checked': 'checked', # Default for new client
@@ -276,7 +276,7 @@ def client_update(request, pk):
     
     return render(request, 'comercial/client_form_v2.html', {
         'client': client,
-        'form_data': None,
+        'form_data': {},
         'pj_checked': pj_checked,
         'pf_checked': pf_checked,
         'is_client_checked': 'checked' if client.is_client else '',
