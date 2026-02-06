@@ -12,8 +12,8 @@
         <form method="get" class="row g-2 align-items-center">
             <div class="col">
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Pesquisar..."
-                        value="{{ search_query }}">
+                    <input type="text" name="search" class="form-control"
+                        placeholder="Pesquisar por Nome, Fantasia ou Documento..." value="{{ search_query }}">
                     <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
                 </div>
             </div>
@@ -58,13 +58,23 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if client.active %}
-                            <span
-                                class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Ativo</span>
-                            {% else %}
-                            <span
-                                class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Inativo</span>
-                            {% endif %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if client.is_client %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary">Cliente</span>
+                                {% endif %}
+                                {% if client.is_supplier %}
+                                <span class="badge bg-info bg-opacity-10 text-info">Fornecedor</span>
+                                {% endif %}
+                                {% if client.is_collaborator %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary">Colaborador</span>
+                                {% endif %}
+
+                                {% if client.active %}
+                                <span class="badge bg-success bg-opacity-10 text-success">Ativo</span>
+                                {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger">Inativo</span>
+                                {% endif %}
+                            </div>
                         </td>
                         <td class="text-end pe-4">
                             <div class="dropdown">

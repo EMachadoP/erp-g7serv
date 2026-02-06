@@ -160,11 +160,12 @@ from django.db.models import Q
 def client_list(request):
     search_query = request.GET.get('search', '')
     
-    clients = Person.objects.filter(is_client=True).order_by('name')
+    clients = Person.objects.all().order_by('name')
     
     if search_query:
         clients = clients.filter(
             Q(name__icontains=search_query) | 
+            Q(fantasy_name__icontains=search_query) |
             Q(document__icontains=search_query) |
             Q(email__icontains=search_query)
         )
