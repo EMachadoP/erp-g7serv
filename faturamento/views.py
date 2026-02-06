@@ -456,7 +456,7 @@ def invoice_cancel(request, pk):
     except Exception as e:
         messages.error(request, f'Erro ao cancelar fatura: {str(e)}')
         
-    return redirect('faturamento:list')
+    return redirect('faturamento:contract_billing')
     
     # Update batch with final stats
     batch.finished_at = timezone.now()
