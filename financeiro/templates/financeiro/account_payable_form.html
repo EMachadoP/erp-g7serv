@@ -90,6 +90,34 @@
 
         <div class="card mb-4">
             <div class="card-header bg-light">
+                Parcelamento e Recorrência
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.total_installments.id_for_label }}" class="form-label">Número de
+                            Parcelas</label>
+                        {{ form.total_installments }}
+                        <div class="form-text">Gera lançamentos mensais automáticos.</div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center">
+                        <div class="form-check mt-3">
+                            {{ form.is_recurring }}
+                            <label class="form-check-label" for="{{ form.is_recurring.id_for_label }}">
+                                É Despesa Fixa Recorrente?
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.recurrence_period.id_for_label }}" class="form-label">Periodicidade</label>
+                        {{ form.recurrence_period }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-light">
                 Dados do Centro de Resultado
             </div>
             <div class="card-body">

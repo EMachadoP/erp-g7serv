@@ -87,6 +87,12 @@ class CostCenter(BaseModel):
         verbose_name_plural = "Centros de Resultado"
 
 class AccountPayable(BaseModel):
+    RECURRENCE_CHOICES = (
+        ('MONTHLY', 'Mensal'),
+        ('WEEKLY', 'Semanal'),
+        ('YEARLY', 'Anual'),
+    )
+
     STATUS_CHOICES = (
         ('PENDING', 'Pendente'),
         ('PAID', 'Pago'),
@@ -117,9 +123,12 @@ class AccountPayable(BaseModel):
     account = models.ForeignKey(CashAccount, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Conta Caixa")
     cost_center = models.ForeignKey(CostCenter, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Centro de Resultado")
     
-    # Detalhes de Parcelamento
+    # Detalhes de Parcelamento e Recorrência
     current_installment = models.IntegerField(default=1, verbose_name="Parcela Atual")
     total_installments = models.IntegerField(default=1, verbose_name="Total de Parcelas")
+    
+    is_recurring = models.BooleanField(default=False, verbose_name="É Recorrente?")
+    recurrence_period = models.CharField(max_length=10, choices=RECURRENCE_CHOICES, blank=True, null=True, verbose_name="Período de Recorrência")
     
     notes = models.TextField(blank=True, null=True, verbose_name="Observações")
 

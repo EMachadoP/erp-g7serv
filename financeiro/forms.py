@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from .models import AccountPayable, AccountReceivable, CashAccount, CostCenter, FinancialCategory, Receipt
 from core.models import Person
 
@@ -24,7 +25,8 @@ class AccountPayableForm(forms.ModelForm):
         fields = [
             'description', 'supplier', 'category', 'amount', 'due_date', 
             'occurrence_date', 'document_number', 'account', 'cost_center', 
-            'payment_method', 'notes', 'status', 'current_installment', 'total_installments'
+            'payment_method', 'notes', 'status', 'current_installment', 'total_installments',
+            'is_recurring', 'recurrence_period'
         ]
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -42,11 +44,13 @@ class AccountPayableForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
             'current_installment': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'total_installments': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'is_recurring': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'recurrence_period': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['supplier'].queryset = Person.objects.filter(is_supplier=True)
+        self.fields['supplier'].queryset = Person.objects.filter(Q(is_supplier=True) | Q(is_collaborator=True))
         self.fields['category'].queryset = FinancialCategory.objects.filter(type='EXPENSE')
 
 class AccountReceivableForm(forms.ModelForm):

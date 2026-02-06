@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 from django.db import models, transaction
 from decimal import Decimal
 
@@ -56,9 +57,39 @@ def account_payable_create(request):
     if request.method == 'POST':
         form = AccountPayableForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Conta a pagar criada com sucesso.')
-            return redirect('financeiro:account_payable_list')
+            payable = form.save(commit=False)
+            total_installments = form.cleaned_data.get('total_installments', 1)
+            is_recurring = form.cleaned_data.get('is_recurring', False)
+            
+            # Se for recorrente sem parcelas explícitas, geramos para os próximos 12 meses
+            num_instances = total_installments
+            if is_recurring and total_installments == 1:
+                num_instances = 12
+            
+            try:
+                with transaction.atomic():
+                    original_due_date = payable.due_date
+                    for i in range(1, num_instances + 1):
+                        # Na primeira iteração usamos o objeto do form, nas demais criamos cópias
+                        if i == 1:
+                            new_payable = payable
+                        else:
+                            new_payable = AccountPayable()
+                            # Copia todos os campos relevantes
+                            for field in form.fields:
+                                if hasattr(payable, field):
+                                    setattr(new_payable, field, getattr(payable, field))
+                        
+                        new_payable.current_installment = i
+                        new_payable.total_installments = num_instances
+                        # Incrementa o mês para as parcelas subsequentes
+                        new_payable.due_date = original_due_date + relativedelta(months=i-1)
+                        new_payable.save()
+                
+                messages.success(request, f'Conta a pagar e {num_instances} lançamentos criados com sucesso.')
+                return redirect('financeiro:account_payable_list')
+            except Exception as e:
+                messages.error(request, f'Erro ao gerar parcelas: {str(e)}')
     else:
         form = AccountPayableForm()
     

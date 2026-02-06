@@ -388,17 +388,20 @@ def process_contract_billing(request):
                     "post_notifications": False # Tenta silenciar e-mail automático da Cora
                 }
                 
+                cora_id = None
                 try:
                     cora_response = cora.gerar_fatura(fatura_data)
-                    if "payment_url" in cora_response:
-                        invoice.boleto_url = cora_response["payment_url"]
-                        invoice.save()
-                    elif "id" in cora_response:
-                        invoice.boleto_url = cora_response.get("url") or cora_response.get("payment_url")
-                        invoice.save()
+                    if isinstance(cora_response, dict):
+                        cora_id = cora_response.get("id")
+                        if "payment_url" in cora_response:
+                            invoice.boleto_url = cora_response["payment_url"]
+                            invoice.save()
+                        elif "id" in cora_response:
+                            invoice.boleto_url = cora_response.get("url") or cora_response.get("payment_url")
+                            invoice.save()
                 except Exception:
                     pass  # Continue even if Cora fails
-
+                
                 # 3. Create Account Receivable
                 AccountReceivable.objects.create(
                     description=f"Fatura Contrato #{contract.id} - {month}/{year}",
@@ -408,7 +411,8 @@ def process_contract_billing(request):
                     due_date=due_date,
                     status='PENDING',
                     document_number=invoice.number,
-                    invoice=invoice # Link important for cancellation
+                    invoice=invoice, # Link important for cancellation
+                    cora_id=cora_id # Store Cora ID for future reconciliation
                 )
                 
                 # 3.1 Gerar PDF da Fatura (Demonstrativo)

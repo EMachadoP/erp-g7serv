@@ -7,12 +7,13 @@ from integracao_cora.models import CoraConfig
 from integracao_cora.services.auth import CoraAuth
 from integracao_cora.services.base import mTLS_cert_paths
 import logging
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
 class CoraStatementService:
-    URL_PRODUCAO = "https://matls-clients.api.cora.com.br/v2/statements"
-    URL_HOMOLOGACAO = "https://matls-clients.api.stage.cora.com.br/v2/statements"
+    URL_PRODUCAO = "https://matls-clients.api.cora.com.br/bank-statement/statement"
+    URL_HOMOLOGACAO = "https://matls-clients.api.stage.cora.com.br/bank-statement/statement"
 
     def sync_statement(self, account, start_date=None, end_date=None):
         """
@@ -32,8 +33,8 @@ class CoraStatementService:
             end_date = timezone.now().strftime('%Y-%m-%d')
             
         params = {
-            'start_date': start_date,
-            'end_date': end_date
+            'start': start_date,
+            'end': end_date
         }
         
         headers = {
@@ -57,7 +58,7 @@ class CoraStatementService:
         # 3. Processamento dos Lançamentos
         for item in transactions_data:
             cora_id = item.get('id')
-            amount = float(item.get('amount', 0)) / 100.0  # Cora envia em centavos
+            amount = Decimal(str(item.get('amount', 0))) / Decimal('100.00')  # Cora envia em centavos
             entry_type = item.get('type') # 'CREDIT' or 'DEBIT'
             description = item.get('description', 'Transação Cora')
             transaction_date = item.get('created_at', '').split('T')[0]
@@ -85,21 +86,26 @@ class CoraStatementService:
                     # Tenta encontrar um Contas a Receber correspondente
                     # Geralmente via transaction_id ou referência no description
                     # No caso de boletos Cora, o transaction pode ter o invoice_id
-                    invoice_id = item.get('details', {}).get('invoice_id')
-                    receivable = None
-                    
                     if invoice_id:
                         receivable = AccountReceivable.objects.filter(cora_id=invoice_id, status='PENDING').first()
                     
                     if not receivable:
-                        # Fallback por valor e data aproximada (Cuidado aqui)
-                        # receivable = AccountReceivable.objects.filter(amount=abs(amount), status='PENDING').first()
-                        pass
-                        
+                        # Fallback: Search for a BoletoCora with the invoice_id from details
+                        from integracao_cora.models import BoletoCora
+                        target_id = invoice_id or cora_id # Usually invoice_id in details
+                        boleto = BoletoCora.objects.filter(cora_id=target_id).first()
+                        if boleto:
+                            if boleto.fatura:
+                                receivable = AccountReceivable.objects.filter(invoice=boleto.fatura, status='PENDING').first()
+                            elif boleto.nfse:
+                                receivable = AccountReceivable.objects.filter(description__icontains=f"#{boleto.nfse.id}", status='PENDING').first()
+                                if not receivable and boleto.nfse.fatura:
+                                    receivable = AccountReceivable.objects.filter(invoice=boleto.nfse.fatura, status='PENDING').first()
+                    
                     if receivable:
                         receivable.status = 'RECEIVED'
                         receivable.receipt_date = transaction_date
-                        receivable.payment_method = 'Cora (Auto)'
+                        receivable.payment_method = 'Boleto/PIX Cora (Sinc)'
                         receivable.save()
                         
                         tx.related_receivable = receivable

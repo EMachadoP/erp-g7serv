@@ -34,3 +34,8 @@ openpyxl==3.1.5
 chardet==5.2.0
 pydantic==2.10.6
 djangorestframework==3.15.2
+
+# Backup e Google Drive
+google-api-python-client==2.159.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
