@@ -36,6 +36,7 @@
         </div>
 
         <!-- Card 2: Faturamento -->
+        {% if faturamento_mes is not None %}
         <div class="col-12 col-sm-6 col-xl-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -51,6 +52,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <!-- Card 3: OS Pendentes -->
         <div class="col-12 col-sm-6 col-xl-4">
@@ -70,6 +72,7 @@
         </div>
 
         <!-- Card 4: Contas a Vencer -->
+        {% if contas_vencer is not None %}
         <div class="col-12 col-sm-6 col-xl-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -85,6 +88,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <!-- Card 5: AI Hoje -->
         <div class="col-12 col-sm-6 col-xl-4">

@@ -65,21 +65,24 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         context['total_clientes'] = Person.objects.filter(is_client=True).count()
         
-        faturamento = Contract.objects.filter(
-            created_at__month=mes_atual, 
-            created_at__year=ano_atual,
-            status='Ativo'
-        ).aggregate(total=Sum('value'))['total'] or 0
-        context['faturamento_mes'] = faturamento
+        # Financial metrics restricted to Admins/Superusers
+        is_admin = self.request.user.is_superuser or self.request.user.groups.filter(name='Administrativo').exists() or self.request.user.has_perm('auth.view_user')
+        
+        if is_admin:
+            faturamento = Contract.objects.filter(
+                created_at__month=mes_atual, 
+                created_at__year=ano_atual,
+                status='Ativo'
+            ).aggregate(total=Sum('value'))['total'] or 0
+            context['faturamento_mes'] = faturamento
 
-        context['os_pendentes'] = ServiceOrder.objects.filter(status='PENDING').count()
-        context['os_andamento'] = ServiceOrder.objects.filter(status='IN_PROGRESS').count()
-        context['os_concluida'] = ServiceOrder.objects.filter(status='COMPLETED').count()
-
-        context['contas_vencer'] = AccountPayable.objects.filter(
-            status='PENDING', 
-            due_date__gte=hoje
-        ).count()
+            context['contas_vencer'] = AccountPayable.objects.filter(
+                status='PENDING', 
+                due_date__gte=hoje
+            ).count()
+        else:
+            context['faturamento_mes'] = None
+            context['contas_vencer'] = None
 
         context['atendimentos_hoje'] = AtendimentoAI.objects.filter(
             timestamp__date=hoje
