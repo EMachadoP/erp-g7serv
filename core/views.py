@@ -103,6 +103,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             categoria_detectada='outro'
         ).count()
         
+        context['os_pendentes'] = ServiceOrder.objects.filter(status='PENDING').count()
+        context['os_andamento'] = ServiceOrder.objects.filter(status='IN_PROGRESS').count()
+        context['os_concluida'] = ServiceOrder.objects.filter(status='COMPLETED').count()
         context['os_pendente'] = context['os_pendentes']
 
         return context
