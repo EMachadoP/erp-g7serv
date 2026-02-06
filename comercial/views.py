@@ -178,7 +178,7 @@ def client_list(request):
 
 @login_required
 def client_detail(request, pk):
-    client = get_object_or_404(Person, pk=pk, is_client=True)
+    client = get_object_or_404(Person, pk=pk)
     return render(request, 'comercial/client_detail.html', {'client': client})
 
 def get_client_form_context(request, client=None):
