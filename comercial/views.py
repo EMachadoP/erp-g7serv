@@ -625,7 +625,7 @@ def budget_create(request):
         messages.success(request, 'Orçamento criado com sucesso.')
         return redirect('comercial:budget_detail', pk=budget.pk)
         
-    clients = Person.objects.filter(is_client=True, active=True)
+    clients = Person.objects.filter(active=True).order_by('name')
     products = Product.objects.filter(active=True)
     services = Service.objects.filter(active=True)
     return render(request, 'comercial/budget_form.html', {
@@ -702,7 +702,7 @@ def budget_update(request, pk):
         messages.success(request, 'Orçamento atualizado com sucesso.')
         return redirect('comercial:budget_detail', pk=budget.pk)
         
-    clients = Person.objects.filter(is_client=True, active=True)
+    clients = Person.objects.filter(active=True).order_by('name')
     products = Product.objects.filter(active=True)
     services = Service.objects.filter(active=True)
     return render(request, 'comercial/budget_form.html', {
