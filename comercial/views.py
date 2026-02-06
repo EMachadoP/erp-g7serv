@@ -189,7 +189,7 @@ def client_create(request):
             is_final_consumer=request.POST.get('is_final_consumer') == 'on',
             name=request.POST.get('name'),
             fantasy_name=request.POST.get('fantasy_name'),
-            person_type=request.POST.get('person_type'),
+            person_type=request.POST.get('person_type', 'PJ') or 'PJ',
             document=request.POST.get('document'),
             state_registration=request.POST.get('state_registration'),
             responsible_name=request.POST.get('responsible_name'),
@@ -225,7 +225,7 @@ def client_update(request, pk):
         client.is_final_consumer = request.POST.get('is_final_consumer') == 'on'
         client.name = request.POST.get('name')
         client.fantasy_name = request.POST.get('fantasy_name')
-        client.person_type = request.POST.get('person_type')
+        client.person_type = request.POST.get('person_type') or client.person_type or 'PJ'
         client.document = request.POST.get('document')
         client.state_registration = request.POST.get('state_registration')
         client.responsible_name = request.POST.get('responsible_name')
