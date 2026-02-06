@@ -331,6 +331,17 @@ def contract_create(request):
 def contract_update(request, pk):
     contract = get_object_or_404(Contract, pk=pk)
     
+    # Create initial item for legacy contracts if none exist
+    if not contract.items.exists() and contract.value > 0:
+        ContractItem.objects.create(
+            contract=contract,
+            category='MANUTENCAO',
+            description=f"Serviço de Manutenção",
+            quantity=1,
+            unit_price=contract.value,
+            total_price=contract.value
+        )
+
     if request.method == 'POST':
         form = ContractForm(request.POST, instance=contract)
         formset = ContractItemFormSet(request.POST, instance=contract)
