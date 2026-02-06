@@ -47,4 +47,13 @@ urlpatterns = [
     # Diagnóstico Cora mTLS
     path('diagnostico/cora/', views.testar_conexao_cora, name='diagnostico_cora'),
     path('diagnostico/email/', views.testar_conexao_email, name='diagnostico_email'),
+
+    # Gestão de Caixa e Contas Bancárias
+    path('contas-bancarias/', views.cash_account_list, name='cash_account_list'),
+    path('contas-bancarias/nova/', views.cash_account_create, name='cash_account_create'),
+    path('contas-bancarias/<int:pk>/editar/', views.cash_account_update, name='cash_account_update'),
+    
+    # Extrato e Conciliação
+    path('extrato/', views.financial_statement, name='financial_statement'),
+    path('extrato/sync-cora/', views.sync_cora_statement, name='sync_cora_statement'),
 ]

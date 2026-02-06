@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'financeiro:cash_account_list' %}">Minhas Contas</a>
+                    </li>
+                    <li class="breadcrumb-item active">{% if account %}Editar{% else %}Nova{% endif %} Conta</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        {% if account %}
+                        <i class="bi bi-pencil-square text-primary me-2"></i> Editar Conta: {{ account.name }}
+                        {% else %}
+                        <i class="bi bi-plus-circle text-primary me-2"></i> Cadastrar Nova Conta Bancária
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-uppercase">Nome de Identificação *</label>
+                                {{ form.name }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Banco</label>
+                                {{ form.bank_name }}
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold small text-uppercase">Agência</label>
+                                {{ form.agency }}
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold small text-uppercase">Conta</label>
+                                {{ form.account_number }}
+                            </div>
+
+                            <div class="col-md-6 mt-4">
+                                <div class="p-3 bg-light rounded border">
+                                    <label class="form-label fw-bold small text-uppercase mb-1">Saldo Inicial
+                                        (R$)</label>
+                                    {{ form.initial_balance }}
+                                    <p class="text-muted small mt-2 mb-0">Valor que a conta já possui hoje.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-top d-flex justify-content-between">
+                            <a href="{% url 'financeiro:cash_account_list' %}" class="btn btn-light px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold">Salvar Conta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4 d-flex align-items-center">
+                <i class="bi bi-info-circle fs-4 me-3"></i>
+                <div>
+                    <strong>Dica Cora:</strong> Se deseja habilitar a sincronização automática, use o nome
+                    <strong>Cora</strong> no campo banco.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

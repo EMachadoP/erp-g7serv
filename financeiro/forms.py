@@ -136,3 +136,15 @@ class PaymentPayableForm(forms.Form):
         if amount <= 0:
             raise forms.ValidationError("O valor deve ser positivo.")
         return amount
+
+class CashAccountForm(forms.ModelForm):
+    class Meta:
+        model = CashAccount
+        fields = ['name', 'bank_name', 'agency', 'account_number', 'initial_balance']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Cora Principal'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Cora'}),
+            'agency': forms.TextInput(attrs={'class': 'form-control'}),
+            'account_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'initial_balance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }

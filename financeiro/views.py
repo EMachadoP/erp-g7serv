@@ -960,3 +960,97 @@ def testar_conexao_email(request):
         },
         'connectivity_tests': results
     })
+
+# --- NOVAS VIEWS PARA GESTÃO DE CAIXA E EXTRATO ---
+
+from .forms import CashAccountForm
+
+def admin_only(view_func):
+    @login_required
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_superuser or request.user.groups.filter(name='Administrativo').exists() or request.user.has_perm('auth.view_user'):
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "Acesso restrito ao Administrativo.")
+        return redirect('financeiro:dashboard')
+    return _wrapped_view
+
+@admin_only
+def cash_account_list(request):
+    accounts = CashAccount.objects.all().order_by('name')
+    return render(request, 'financeiro/cash_account_list.html', {'accounts': accounts})
+
+@admin_only
+def cash_account_create(request):
+    if request.method == 'POST':
+        form = CashAccountForm(request.POST)
+        if form.is_valid():
+            account = form.save(commit=False)
+            account.current_balance = account.initial_balance
+            account.save()
+            messages.success(request, 'Conta bancária criada com sucesso.')
+            return redirect('financeiro:cash_account_list')
+    else:
+        form = CashAccountForm()
+    return render(request, 'financeiro/cash_account_form.html', {'form': form})
+
+@admin_only
+def cash_account_update(request, pk):
+    account = get_object_or_404(CashAccount, pk=pk)
+    if request.method == 'POST':
+        form = CashAccountForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Conta bancária atualizada com sucesso.')
+            return redirect('financeiro:cash_account_list')
+    else:
+        form = CashAccountForm(instance=account)
+    return render(request, 'financeiro/cash_account_form.html', {'form': form, 'account': account})
+
+@admin_only
+def financial_statement(request):
+    account_id = request.GET.get('account')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    accounts = CashAccount.objects.all()
+    transactions = FinancialTransaction.objects.all().order_by('-date', '-created_at')
+    
+    if account_id:
+        transactions = transactions.filter(account_id=account_id)
+    if start_date:
+        transactions = transactions.filter(date__gte=start_date)
+    if end_date:
+        transactions = transactions.filter(date__lte=end_date)
+        
+    selected_account = None
+    if account_id:
+        selected_account = get_object_or_404(CashAccount, pk=account_id)
+        
+    return render(request, 'financeiro/financial_statement.html', {
+        'transactions': transactions,
+        'accounts': accounts,
+        'selected_account': selected_account,
+        'start_date': start_date,
+        'end_date': end_date
+    })
+
+@admin_only
+def sync_cora_statement(request):
+    """
+    Aciona a sincronização do extrato da Cora.
+    """
+    account_id = request.GET.get('account_id')
+    account = get_object_or_404(CashAccount, pk=account_id)
+    
+    if 'cora' not in account.name.lower() and 'cora' not in (account.bank_name or '').lower():
+        messages.warning(request, "Esta conta não parece ser uma conta Cora.")
+    
+    try:
+        from integracao_cora.services.statement import CoraStatementService
+        service = CoraStatementService()
+        count, total = service.sync_statement(account)
+        messages.success(request, f"Sincronização concluída! {count} novos lançamentos importados. Total: R$ {total:.2f}")
+    except Exception as e:
+        messages.error(request, f"Erro ao sincronizar com Cora: {str(e)}")
+        
+    return redirect(f"{redirect('financeiro:financial_statement').url}?account={account_id}")

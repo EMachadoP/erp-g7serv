@@ -49,6 +49,7 @@ class FinancialTransaction(BaseModel):
     # Links optional
     related_payable = models.ForeignKey('AccountPayable', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions', verbose_name="Conta a Pagar Vinculada")
     related_receivable = models.ForeignKey('AccountReceivable', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions', verbose_name="Conta a Receber Vinculada")
+    external_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID Externo")
     
     def save(self, *args, **kwargs):
         is_new = self.pk is None
