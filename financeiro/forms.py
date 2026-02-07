@@ -52,6 +52,10 @@ class AccountPayableForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['supplier'].queryset = Person.objects.all().order_by('name')
         self.fields['category'].queryset = FinancialCategory.objects.filter(type='EXPENSE')
+        
+        # Define a data da ocorrência como hoje por padrão
+        if not self.instance.pk:
+            self.fields['occurrence_date'].initial = timezone.now().date()
 
 class AccountReceivableForm(forms.ModelForm):
     class Meta:
