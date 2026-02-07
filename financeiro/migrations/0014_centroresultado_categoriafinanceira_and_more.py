@@ -4,6 +4,17 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
+def clear_old_references(apps, schema_editor):
+    AccountPayable = apps.get_model('financeiro', 'AccountPayable')
+    AccountReceivable = apps.get_model('financeiro', 'AccountReceivable')
+    BudgetItem = apps.get_model('financeiro', 'BudgetItem')
+    FinancialTransaction = apps.get_model('financeiro', 'FinancialTransaction')
+    
+    AccountPayable.objects.update(category=None, cost_center=None)
+    AccountReceivable.objects.update(category=None, cost_center=None)
+    BudgetItem.objects.update(category=None)
+    FinancialTransaction.objects.update(category=None)
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,6 +22,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(clear_old_references),
         migrations.CreateModel(
             name='CentroResultado',
             fields=[
