@@ -56,4 +56,5 @@ urlpatterns = [
     # Extrato e Conciliação
     path('extrato/', views.financial_statement, name='financial_statement'),
     path('extrato/sync-cora/', views.sync_cora_statement, name='sync_cora_statement'),
+    path('api/suggest-category/', views.api_suggest_category, name='api_suggest_category'),
 ]

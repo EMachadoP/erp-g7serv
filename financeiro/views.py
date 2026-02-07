@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from importador.services.ai_service import suggest_category
 from django.db import models, transaction
 from decimal import Decimal
 
@@ -1085,3 +1086,40 @@ def sync_cora_statement(request):
         messages.error(request, f"Erro ao sincronizar com Cora: {str(e)}")
         
     return redirect(f"{redirect('financeiro:financial_statement').url}?account={account_id}")
+
+@login_required(login_url='/accounts/login/')
+def api_suggest_category(request):
+    """
+    API que sugere uma categoria financeira baseada na descrição.
+    """
+    description = request.GET.get('description', '')
+    transaction_type = request.GET.get('type', 'EXPENSE') # 'EXPENSE' ou 'REVENUE'
+    
+    if not description:
+        return JsonResponse({'success': False, 'error': 'Description is required'}, status=400)
+    
+    # Busca todas as categorias do tipo especificado
+    categories = FinancialCategory.objects.filter(type=transaction_type)
+    category_list = [cat.name for cat in categories]
+    
+    if not category_list:
+        return JsonResponse({'success': False, 'message': 'Nenhuma categoria cadastrada para este tipo'}, status=404)
+        
+    # Usa a lógica de similaridade do serviço de IA do importador
+    suggestion = suggest_category(description, category_list)
+    
+    if suggestion and suggestion.get('category'):
+        try:
+            # Busca o objeto da categoria para retornar o ID
+            cat_obj = FinancialCategory.objects.filter(name=suggestion['category'], type=transaction_type).first()
+            if cat_obj:
+                return JsonResponse({
+                    'success': True,
+                    'category_id': cat_obj.id,
+                    'category_name': cat_obj.name,
+                    'confidence': suggestion.get('confidence', 'low')
+                })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'message': 'Não foi possível encontrar uma sugestão adequada'}, status=404)
