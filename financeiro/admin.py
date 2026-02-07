@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AccountPayable, AccountReceivable, FinancialCategory, BankReconciliation
+from .models import AccountPayable, AccountReceivable, FinancialCategory, BankReconciliation, CostCenter
 
 @admin.register(FinancialCategory)
 class FinancialCategoryAdmin(admin.ModelAdmin):
@@ -34,3 +34,7 @@ class BankReconciliationAdmin(admin.ModelAdmin):
     list_display = ('date', 'description', 'amount', 'transaction_type')
     list_filter = ('transaction_type', 'date')
     search_fields = ('description',)
+@admin.register(CostCenter)
+class CostCenterAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name')
+    search_fields = ('name', 'code')
