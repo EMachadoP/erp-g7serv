@@ -341,12 +341,15 @@
                         Recibos
                     </a>
                     {% endif %}
-                    {% if perms.financeiro.view_budgetplan %}
-                    <a href="{% url 'financeiro:budget_plan_list' %}"
-                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
-                        Planejamento Orçamentário
-                    </a>
                     {% endif %}
+                    <a href="/admin/financeiro/financialcategory/"
+                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
+                        Categorias Financeiras
+                    </a>
+                    <a href="/admin/financeiro/costcenter/"
+                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
+                        Centros de Resultado
+                    </a>
                     <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header text-light">Gestão de Caixa</h6>
                     {% if perms.financeiro.view_cashaccount or user.is_superuser %}

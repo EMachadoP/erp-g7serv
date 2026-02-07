@@ -90,7 +90,7 @@ class AccountReceivableForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['client'].queryset = Person.objects.filter(is_client=True)
+        self.fields['client'].queryset = Person.objects.all().order_by('name')
         self.fields['category'].queryset = FinancialCategory.objects.filter(type='REVENUE')
 
 class PaymentPayableForm(forms.Form):
