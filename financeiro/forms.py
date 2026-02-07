@@ -50,7 +50,7 @@ class AccountPayableForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['supplier'].queryset = Person.objects.filter(Q(is_supplier=True) | Q(is_collaborator=True))
+        self.fields['supplier'].queryset = Person.objects.all().order_by('name')
         self.fields['category'].queryset = FinancialCategory.objects.filter(type='EXPENSE')
 
 class AccountReceivableForm(forms.ModelForm):
