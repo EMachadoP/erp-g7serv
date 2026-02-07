@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AccountPayable, AccountReceivable, FinancialCategory, CashAccount, CostCenter, Receipt, BudgetPlan, BudgetItem, FinancialTransaction
-from .forms import AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm, FinancialCategoryForm, CostCenterForm, CashAccountForm
+from .models import AccountPayable, AccountReceivable, CategoriaFinanceira, CashAccount, CentroResultado, Receipt, BudgetPlan, BudgetItem, FinancialTransaction
+from .forms import AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm, CategoriaFinanceiraForm, CentroResultadoForm, CashAccountForm
 from django.http import JsonResponse, HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from .integrations.cora import CoraService
@@ -1093,14 +1093,18 @@ def api_suggest_category(request):
     API que sugere uma categoria financeira baseada na descrição.
     """
     description = request.GET.get('description', '')
-    transaction_type = request.GET.get('type', 'EXPENSE') # 'EXPENSE' ou 'REVENUE'
+    transaction_type = request.GET.get('type', 'saida') # 'saida' ou 'entrada'
     
+    # Mapeamento para retrocompatibilidade
+    if transaction_type == 'EXPENSE': transaction_type = 'saida'
+    if transaction_type == 'REVENUE': transaction_type = 'entrada'
+
     if not description:
         return JsonResponse({'success': False, 'error': 'Description is required'}, status=400)
     
     # Busca todas as categorias do tipo especificado
-    categories = FinancialCategory.objects.filter(type=transaction_type)
-    category_list = [cat.name for cat in categories]
+    categories = CategoriaFinanceira.objects.filter(tipo=transaction_type)
+    category_list = [cat.nome for cat in categories]
     
     if not category_list:
         return JsonResponse({'success': False, 'message': 'Nenhuma categoria cadastrada para este tipo'}, status=404)
@@ -1111,12 +1115,12 @@ def api_suggest_category(request):
     if suggestion and suggestion.get('category'):
         try:
             # Busca o objeto da categoria para retornar o ID
-            cat_obj = FinancialCategory.objects.filter(name=suggestion['category'], type=transaction_type).first()
+            cat_obj = CategoriaFinanceira.objects.filter(nome=suggestion['category'], tipo=transaction_type).first()
             if cat_obj:
                 return JsonResponse({
                     'success': True,
                     'category_id': cat_obj.id,
-                    'category_name': cat_obj.name,
+                    'category_name': cat_obj.nome,
                     'confidence': suggestion.get('confidence', 'low')
                 })
         except Exception as e:
@@ -1127,61 +1131,61 @@ def api_suggest_category(request):
 # Categorias Financeiras
 @login_required(login_url='/accounts/login/')
 def financial_category_list(request):
-    categories = FinancialCategory.objects.all().order_by('type', 'name')
+    categories = CategoriaFinanceira.objects.all().order_by('tipo', 'nome')
     return render(request, 'financeiro/financial_category_list.html', {'categories': categories})
 
 @login_required(login_url='/accounts/login/')
 def financial_category_create(request):
     if request.method == 'POST':
-        form = FinancialCategoryForm(request.POST)
+        form = CategoriaFinanceiraForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Categoria criada com sucesso.')
             return redirect('financeiro:financial_category_list')
     else:
-        form = FinancialCategoryForm()
+        form = CategoriaFinanceiraForm()
     return render(request, 'financeiro/financial_category_form.html', {'form': form, 'title': 'Nova Categoria'})
 
 @login_required(login_url='/accounts/login/')
 def financial_category_update(request, pk):
-    category = get_object_or_404(FinancialCategory, pk=pk)
+    category = get_object_or_404(CategoriaFinanceira, pk=pk)
     if request.method == 'POST':
-        form = FinancialCategoryForm(request.POST, instance=category)
+        form = CategoriaFinanceiraForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
             messages.success(request, 'Categoria atualizada com sucesso.')
             return redirect('financeiro:financial_category_list')
     else:
-        form = FinancialCategoryForm(instance=category)
+        form = CategoriaFinanceiraForm(instance=category)
     return render(request, 'financeiro/financial_category_form.html', {'form': form, 'title': 'Editar Categoria'})
 
 # Centros de Resultado
 @login_required(login_url='/accounts/login/')
 def cost_center_list(request):
-    centers = CostCenter.objects.all().order_by('name')
+    centers = CentroResultado.objects.all().order_by('nome')
     return render(request, 'financeiro/cost_center_list.html', {'centers': centers})
 
 @login_required(login_url='/accounts/login/')
 def cost_center_create(request):
     if request.method == 'POST':
-        form = CostCenterForm(request.POST)
+        form = CentroResultadoForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Centro de Resultado criado com sucesso.')
             return redirect('financeiro:cost_center_list')
     else:
-        form = CostCenterForm()
+        form = CentroResultadoForm()
     return render(request, 'financeiro/cost_center_form.html', {'form': form, 'title': 'Novo Centro de Resultado'})
 
 @login_required(login_url='/accounts/login/')
 def cost_center_update(request, pk):
-    center = get_object_or_404(CostCenter, pk=pk)
+    center = get_object_or_404(CentroResultado, pk=pk)
     if request.method == 'POST':
-        form = CostCenterForm(request.POST, instance=center)
+        form = CentroResultadoForm(request.POST, instance=center)
         if form.is_valid():
             form.save()
             messages.success(request, 'Centro de Resultado atualizado com sucesso.')
             return redirect('financeiro:cost_center_list')
     else:
-        form = CostCenterForm(instance=center)
+        form = CentroResultadoForm(instance=center)
     return render(request, 'financeiro/cost_center_form.html', {'form': form, 'title': 'Editar Centro de Resultado'})

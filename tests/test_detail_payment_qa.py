@@ -1,9 +1,8 @@
-
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from core.models import Person
-from financeiro.models import AccountPayable, FinancialCategory, CashAccount
+from financeiro.models import AccountPayable, CategoriaFinanceira, CashAccount
 from datetime import date
 from decimal import Decimal
 
@@ -14,7 +13,7 @@ class AccountPayableDetailQATest(TestCase):
         self.client.login(username='testuser', password='password')
         
         self.supplier = Person.objects.create(name='Test Supplier', is_supplier=True)
-        self.category = FinancialCategory.objects.create(name='Test Category', type='EXPENSE')
+        self.category = CategoriaFinanceira.objects.create(nome='Test Category', tipo='saida')
         self.account = CashAccount.objects.create(name='Test Account', initial_balance=1000)
         
         self.payable = AccountPayable.objects.create(

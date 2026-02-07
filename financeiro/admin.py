@@ -1,11 +1,17 @@
 from django.contrib import admin
-from .models import AccountPayable, AccountReceivable, FinancialCategory, BankReconciliation, CostCenter
+from .models import AccountPayable, AccountReceivable, CategoriaFinanceira, BankReconciliation, CentroResultado, CashAccount, Receipt, BudgetPlan, BudgetItem
 
-@admin.register(FinancialCategory)
-class FinancialCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type')
-    list_filter = ('type',)
-    search_fields = ('name',)
+@admin.register(CategoriaFinanceira)
+class CategoriaFinanceiraAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'tipo', 'grupo_dre', 'ordem_exibicao')
+    list_filter = ('tipo', 'grupo_dre')
+    search_fields = ('nome', 'grupo_dre')
+
+@admin.register(CentroResultado)
+class CentroResultadoAdmin(admin.ModelAdmin):
+    list_display = ('code', 'nome', 'ativo')
+    search_fields = ('nome', 'code')
+    list_filter = ('ativo',)
 
 @admin.register(AccountPayable)
 class AccountPayableAdmin(admin.ModelAdmin):
@@ -34,7 +40,17 @@ class BankReconciliationAdmin(admin.ModelAdmin):
     list_display = ('date', 'description', 'amount', 'transaction_type')
     list_filter = ('transaction_type', 'date')
     search_fields = ('description',)
-@admin.register(CostCenter)
-class CostCenterAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name')
-    search_fields = ('name', 'code')
+
+@admin.register(CashAccount)
+class CashAccountAdmin(admin.ModelAdmin):
+    list_display = ('name', 'bank_name', 'current_balance')
+    search_fields = ('name', 'bank_name')
+
+@admin.register(Receipt)
+class ReceiptAdmin(admin.ModelAdmin):
+    list_display = ('id', 'person', 'amount', 'issue_date', 'type')
+    list_filter = ('type', 'issue_date')
+    search_fields = ('description', 'person__name')
+
+admin.site.register(BudgetPlan)
+admin.site.register(BudgetItem)

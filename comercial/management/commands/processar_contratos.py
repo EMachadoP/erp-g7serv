@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from comercial.models import Contract
-from financeiro.models import AccountReceivable, FinancialCategory
+from financeiro.models import AccountReceivable, CategoriaFinanceira
 from faturamento.models import Invoice
 from django.db import transaction
 
@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 try:
                     with transaction.atomic():
                         # Create AccountReceivable
-                        category = FinancialCategory.objects.filter(type='REVENUE').first()
+                        category = CategoriaFinanceira.objects.filter(tipo='entrada').first()
                         
                         receivable = AccountReceivable.objects.create(
                             description=description_pattern,
@@ -47,9 +47,7 @@ class Command(BaseCommand):
                             client=contract.client,
                             contract=contract,
                             billing_group=contract.billing_group,
-                            status='PD', # 'PENDING' in model choices is 'PD'? Model says 'PD', 'PG', 'CN'. Code used 'PENDING'.
-                            # Wait, previous code used 'PENDING'. Model choices are: ('PD', 'Pendente').
-                            # So 'PENDING' is invalid. Must use 'PD'.
+                            status='PD', 
                             issue_date=today,
                             due_date=today.replace(day=contract.due_day),
                             amount=contract.value,

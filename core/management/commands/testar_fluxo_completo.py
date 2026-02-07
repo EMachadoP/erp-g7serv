@@ -10,7 +10,7 @@ from django.db import transaction
 from core.models import Person
 from estoque.models import Product
 from comercial.models import Contract, ContractTemplate, BillingGroup
-from financeiro.models import AccountReceivable, FinancialCategory
+from financeiro.models import AccountReceivable, CategoriaFinanceira
 from operacional.models import ServiceOrder, ServiceOrderItem
 from integracao_cora.models import CoraConfig
 from integracao_cora.services.boleto import CoraBoleto
@@ -53,9 +53,9 @@ class Command(BaseCommand):
         self.stdout.write('Setting up test environment...')
         
         # 1. Financial Categories
-        self.cat_revenue, _ = FinancialCategory.objects.get_or_create(
-            name='Receita Teste', 
-            defaults={'type': 'REVENUE'}
+        self.cat_revenue, _ = CategoriaFinanceira.objects.get_or_create(
+            nome='Receita Teste', 
+            defaults={'tipo': 'entrada', 'grupo_dre': '1. Receita Bruta'}
         )
         
         # 2. Client
@@ -120,7 +120,7 @@ class Command(BaseCommand):
         if fatura:
             self.stdout.write(self.style.SUCCESS('[OK] Contrato gerou financeiro.'))
         else:
-            cats = FinancialCategory.objects.filter(type='REVENUE').values_list('name', flat=True)
+            cats = CategoriaFinanceira.objects.filter(tipo='entrada').values_list('nome', flat=True)
             recs = AccountReceivable.objects.filter(client=self.client).values('description', 'amount')
             debug_extra = f"Cats: {list(cats)}. Recs found: {list(recs)}. \nCMD OUTPUT: {full_output}"
             raise Exception(f'Contrato NÃO gerou ContaReceber. Extra: {debug_extra}')

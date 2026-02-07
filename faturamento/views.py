@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Invoice, NotaEntrada, NotaEntradaItem, NotaEntradaParcela, BillingBatch, InvoiceItem
 from .forms import InvoiceForm, NotaEntradaItemForm, NotaEntradaParcelaForm, InvoiceItemFormSet
 from .services.nfe_import import processar_xml_nfe
-from financeiro.models import AccountPayable, FinancialCategory, CostCenter
+from financeiro.models import AccountPayable, CategoriaFinanceira, CentroResultado
 from estoque.models import StockMovement, Product
 from comercial.models import BillingGroup
 from django.contrib.auth.decorators import login_required
@@ -213,7 +213,7 @@ def create_invoice_from_contract(request, contract_id):
 # Contract Billing Views
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from financeiro.models import AccountReceivable, FinancialCategory
+from financeiro.models import AccountReceivable, CategoriaFinanceira
 from financeiro.services.email_service import BillingEmailService
 from financeiro.integrations.cora import CoraService
 from faturamento.services.invoice_service import generate_invoice_pdf_file
@@ -297,9 +297,9 @@ def process_contract_billing(request):
     total_invoiced = Decimal('0.00')
     
     # Get or create default category for contracts
-    category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Contratos",
-        defaults={'type': 'REVENUE'}
+    category, _ = CategoriaFinanceira.objects.get_or_create(
+        nome="Receita de Contratos",
+        defaults={'tipo': 'entrada', 'grupo_dre': '1. Receita Bruta', 'ordem_exibicao': 1}
     )
     
     cora = CoraService()
@@ -908,9 +908,9 @@ def nota_entrada_review(request, pk):
             # 2. Save Parcelas and Create Financial
             parcelas = parcela_formset.save()
             
-            category, _ = FinancialCategory.objects.get_or_create(
-                name="Compra de Mercadoria",
-                defaults={'type': 'EXPENSE'}
+            category, _ = CategoriaFinanceira.objects.get_or_create(
+                nome="Compra de Mercadoria",
+                defaults={'tipo': 'saida', 'grupo_dre': '4. Despesas Fixas (OPEX)', 'ordem_exibicao': 8}
             )
             
             total_parcelas = len(parcelas)

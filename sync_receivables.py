@@ -8,20 +8,20 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erp.settings')
 django.setup()
 
 from faturamento.models import Invoice
-from financeiro.models import AccountReceivable, FinancialCategory
+from financeiro.models import AccountReceivable, CategoriaFinanceira
 
 def sync_receivables():
     print("Starting sync...")
     invoices = Invoice.objects.all()
     created_count = 0
     
-    category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Faturas",
-        defaults={'type': 'REVENUE'}
+    category, _ = CategoriaFinanceira.objects.get_or_create(
+        nome="Receita de Faturas",
+        defaults={'tipo': 'entrada', 'grupo_dre': '1. Receita Bruta', 'ordem_exibicao': 1}
     )
     
     for inv in invoices:
-        if not AccountReceivable.objects.filter(invoice=inv).exists():
+        if not AccountReceivable.objects.get_queryset().filter(invoice=inv).exists():
             print(f"Fixing Invoice: {inv.number} - {inv.client.name if inv.client else 'No Client'}")
             description = f"Fatura #{inv.number}"
             if inv.client:

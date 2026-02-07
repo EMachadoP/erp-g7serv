@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import Invoice, InvoiceItem
-from financeiro.models import AccountReceivable, FinancialCategory
+from financeiro.models import AccountReceivable, CategoriaFinanceira
 from django.db.models import Sum
 from decimal import Decimal
 
@@ -11,9 +11,9 @@ def sync_account_receivable(sender, instance, created, **kwargs):
     Sincroniza o Contas a Receber sempre que a Fatura for salva.
     Cria se não existir, atualiza se já existir.
     """
-    category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Faturas",
-        defaults={'type': 'REVENUE'}
+    category, _ = CategoriaFinanceira.objects.get_or_create(
+        nome="Venda de Serviços",
+        defaults={'tipo': 'entrada', 'grupo_dre': '1. Receita Bruta', 'ordem_exibicao': 1}
     )
     
     receivable = AccountReceivable.objects.filter(invoice=instance).first()

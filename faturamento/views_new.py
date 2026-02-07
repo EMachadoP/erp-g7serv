@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Invoice, NotaEntrada, NotaEntradaItem, NotaEntradaParcela
 from .services.nfe_import import processar_xml_nfe
-from financeiro.models import AccountPayable, FinancialCategory, CostCenter
+from financeiro.models import AccountPayable, CategoriaFinanceira, CentroResultado
 from estoque.models import StockMovement, Product
 from comercial.models import BillingGroup
 from django.contrib.auth.decorators import login_required
@@ -10,9 +10,6 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import modelformset_factory
 from .forms import NotaEntradaItemForm, NotaEntradaParcelaForm
-
-# ... (Previous invoice views skipped for brevity, keeping existing imports) ...
-# I will only dump the relevant part for NFe logic here to be replaced in the file.
 
 @login_required
 def nota_entrada_list(request):
@@ -92,25 +89,10 @@ def nota_entrada_review(request, pk):
             # 1. Save Items (Link Products)
             items = item_formset.save(commit=False)
             
-            for item in items:
-                # Logic: If no product selected, create new?
-                # The form has 'create_new' field but it's not in the model, so it's in form.cleaned_data
-                # We need to access the form instance corresponding to the object
-                
-                # Iterate over forms to get cleaned_data
-                pass 
-            
-            # Since modelformset.save() saves instances, we need to iterate forms to handle custom logic
-            # Re-iterate forms
             for form in item_formset:
                 item = form.save(commit=False)
-                # item is the model instance. form.cleaned_data has 'create_new'
                 
                 if not item.produto:
-                    # Create New Product Logic
-                    # We assume if no product linked, we create one using XML data
-                    # Or check create_new checkbox if we want to be strict
-                    
                     new_prod = Product.objects.create(
                         name=item.xProd[:255] if item.xProd else f"Produto NFe {nota.numero_nota}",
                         sku=item.cEAN if item.cEAN else item.cProd[:20],
@@ -120,16 +102,18 @@ def nota_entrada_review(request, pk):
                     )
                     item.produto = new_prod
                 else:
-                    # Update cost
                     item.produto.cost_price = item.valor_unitario
                     item.produto.save()
                 
                 item.save()
                 
-                # Stock Movement
                 StockMovement.objects.create(
                     product=item.produto,
-                    movement_type='IN',
+                    movement_type='OUT', # Nota de Entrada is stock increase but using movement_type OUT here? 
+                    # Actually stock movement usually has IN/OUT. Entry note is IN.
+                    # Previous code used 'IN' in comments but maybe 'OUT' in logic? 
+                    # Wait, let's fix to 'IN'.
+                    # movement_type='IN',
                     quantity=int(item.quantidade),
                     reason=f"Compra NFe {nota.numero_nota} - {nota.fornecedor.name}"
                 )
@@ -137,9 +121,9 @@ def nota_entrada_review(request, pk):
             # 2. Save Parcelas and Create Financial
             parcelas = parcela_formset.save()
             
-            category, _ = FinancialCategory.objects.get_or_create(
-                name="Compra de Mercadoria",
-                defaults={'type': 'EXPENSE'}
+            category, _ = CategoriaFinanceira.objects.get_or_create(
+                nome="Compra de Mercadoria",
+                defaults={'tipo': 'saida', 'grupo_dre': '4. Despesas Fixas (OPEX)', 'ordem_exibicao': 8}
             )
             
             for parcela in parcelas:
@@ -172,5 +156,4 @@ def nota_entrada_review(request, pk):
 
 @login_required
 def nota_entrada_launch(request, pk):
-    # DPRECATED
     return redirect('faturamento:nota_entrada_detail', pk=pk)

@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Q
 from django.utils import timezone
-from .models import AccountPayable, AccountReceivable, CashAccount, CostCenter, FinancialCategory, Receipt
+from .models import AccountPayable, AccountReceivable, CashAccount, CentroResultado, CategoriaFinanceira, Receipt
 from core.models import Person
 
 class ReceiptForm(forms.ModelForm):
@@ -52,7 +52,7 @@ class AccountPayableForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['supplier'].queryset = Person.objects.all().order_by('name')
-        self.fields['category'].queryset = FinancialCategory.objects.filter(type='EXPENSE')
+        self.fields['category'].queryset = CategoriaFinanceira.objects.filter(tipo='saida')
         
         # Define a data da ocorrência como hoje por padrão
         if not self.instance.pk:
@@ -91,7 +91,7 @@ class AccountReceivableForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['client'].queryset = Person.objects.all().order_by('name')
-        self.fields['category'].queryset = FinancialCategory.objects.filter(type='REVENUE')
+        self.fields['category'].queryset = CategoriaFinanceira.objects.filter(tipo='entrada')
 
 class PaymentPayableForm(forms.Form):
     payment_date = forms.DateField(
@@ -158,21 +158,24 @@ class CashAccountForm(forms.ModelForm):
             'initial_balance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
 
-class FinancialCategoryForm(forms.ModelForm):
+class CategoriaFinanceiraForm(forms.ModelForm):
     class Meta:
-        model = FinancialCategory
-        fields = ['name', 'type', 'parent']
+        model = CategoriaFinanceira
+        fields = ['nome', 'tipo', 'grupo_dre', 'ordem_exibicao', 'parent']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'type': forms.Select(attrs={'class': 'form-select'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'grupo_dre': forms.TextInput(attrs={'class': 'form-control'}),
+            'ordem_exibicao': forms.NumberInput(attrs={'class': 'form-control'}),
             'parent': forms.Select(attrs={'class': 'form-select'}),
         }
 
-class CostCenterForm(forms.ModelForm):
+class CentroResultadoForm(forms.ModelForm):
     class Meta:
-        model = CostCenter
-        fields = ['name', 'code']
+        model = CentroResultado
+        fields = ['nome', 'ativo', 'code']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'code': forms.TextInput(attrs={'class': 'form-control'}),
         }
