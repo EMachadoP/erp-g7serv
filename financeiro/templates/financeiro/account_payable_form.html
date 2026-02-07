@@ -24,15 +24,24 @@
                     <div class="col-md-6">
                         <label for="{{ form.supplier.id_for_label }}" class="form-label">Pessoa *</label>
                         {{ form.supplier }}
+                        {% if form.supplier.errors %}
+                        <div class="invalid-feedback d-block">{{ form.supplier.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="col-md-3">
                         <label for="{{ form.document_number.id_for_label }}" class="form-label">Nº do documento</label>
                         {{ form.document_number }}
+                        {% if form.document_number.errors %}
+                        <div class="invalid-feedback d-block">{{ form.document_number.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="col-md-3">
                         <label for="{{ form.occurrence_date.id_for_label }}" class="form-label">Data de ocorrência
                             *</label>
                         {{ form.occurrence_date }}
+                        {% if form.occurrence_date.errors %}
+                        <div class="invalid-feedback d-block">{{ form.occurrence_date.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -40,16 +49,25 @@
                     <div class="col-md-8">
                         <label for="{{ form.description.id_for_label }}" class="form-label">Descrição *</label>
                         {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">{{ form.description.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="col-md-4">
                         <label for="{{ form.category.id_for_label }}" class="form-label">Categoria da despesa *</label>
                         {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="invalid-feedback d-block">{{ form.category.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="{{ form.notes.id_for_label }}" class="form-label">Observações</label>
                     {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">{{ form.notes.errors|join:", " }}</div>
+                    {% endif %}
                     <div class="form-text text-end">Observação será adicionada às parcelas geradas.</div>
                 </div>
             </div>
@@ -67,10 +85,16 @@
                             <span class="input-group-text">R$</span>
                             {{ form.amount }}
                         </div>
+                        {% if form.amount.errors %}
+                        <div class="invalid-feedback d-block">{{ form.amount.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="col-md-6">
                         <label for="{{ form.account.id_for_label }}" class="form-label">Conta caixa *</label>
                         {{ form.account }}
+                        {% if form.account.errors %}
+                        <div class="invalid-feedback d-block">{{ form.account.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -79,10 +103,16 @@
                         <label for="{{ form.payment_method.id_for_label }}" class="form-label">Formas de pagamento
                             *</label>
                         {{ form.payment_method }}
+                        {% if form.payment_method.errors %}
+                        <div class="invalid-feedback d-block">{{ form.payment_method.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div class="col-md-6">
                         <label for="{{ form.due_date.id_for_label }}" class="form-label">Vencimento *</label>
                         {{ form.due_date }}
+                        {% if form.due_date.errors %}
+                        <div class="invalid-feedback d-block">{{ form.due_date.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -98,6 +128,9 @@
                         <label for="{{ form.total_installments.id_for_label }}" class="form-label">Número de
                             Parcelas</label>
                         {{ form.total_installments }}
+                        {% if form.total_installments.errors %}
+                        <div class="invalid-feedback d-block">{{ form.total_installments.errors|join:", " }}</div>
+                        {% endif %}
                         <div class="form-text">Gera lançamentos mensais automáticos.</div>
                     </div>
                     <div class="col-md-4 d-flex align-items-center">
@@ -106,11 +139,17 @@
                             <label class="form-check-label" for="{{ form.is_recurring.id_for_label }}">
                                 É Despesa Fixa Recorrente?
                             </label>
+                            {% if form.is_recurring.errors %}
+                            <div class="invalid-feedback d-block">{{ form.is_recurring.errors|join:", " }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <label for="{{ form.recurrence_period.id_for_label }}" class="form-label">Periodicidade</label>
                         {{ form.recurrence_period }}
+                        {% if form.recurrence_period.errors %}
+                        <div class="invalid-feedback d-block">{{ form.recurrence_period.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -125,6 +164,9 @@
                     <div class="col-md-12">
                         <label for="{{ form.cost_center.id_for_label }}" class="form-label">Centro de Resultado</label>
                         {{ form.cost_center }}
+                        {% if form.cost_center.errors %}
+                        <div class="invalid-feedback d-block">{{ form.cost_center.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
