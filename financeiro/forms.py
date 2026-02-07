@@ -157,3 +157,22 @@ class CashAccountForm(forms.ModelForm):
             'account_number': forms.TextInput(attrs={'class': 'form-control'}),
             'initial_balance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
+
+class FinancialCategoryForm(forms.ModelForm):
+    class Meta:
+        model = FinancialCategory
+        fields = ['name', 'type', 'parent']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'type': forms.Select(attrs={'class': 'form-select'}),
+            'parent': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+class CostCenterForm(forms.ModelForm):
+    class Meta:
+        model = CostCenter
+        fields = ['name', 'code']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
+        }

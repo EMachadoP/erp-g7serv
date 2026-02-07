@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import AccountPayable, AccountReceivable, FinancialCategory, CashAccount, CostCenter, Receipt, BudgetPlan, BudgetItem, FinancialTransaction
-from .forms import AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm
+from .forms import AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm, FinancialCategoryForm, CostCenterForm, CashAccountForm
 from django.http import JsonResponse, HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from .integrations.cora import CoraService
@@ -1123,3 +1123,65 @@ def api_suggest_category(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
             
     return JsonResponse({'success': False, 'message': 'Não foi possível encontrar uma sugestão adequada'}, status=404)
+
+# Categorias Financeiras
+@login_required(login_url='/accounts/login/')
+def financial_category_list(request):
+    categories = FinancialCategory.objects.all().order_by('type', 'name')
+    return render(request, 'financeiro/financial_category_list.html', {'categories': categories})
+
+@login_required(login_url='/accounts/login/')
+def financial_category_create(request):
+    if request.method == 'POST':
+        form = FinancialCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoria criada com sucesso.')
+            return redirect('financeiro:financial_category_list')
+    else:
+        form = FinancialCategoryForm()
+    return render(request, 'financeiro/financial_category_form.html', {'form': form, 'title': 'Nova Categoria'})
+
+@login_required(login_url='/accounts/login/')
+def financial_category_update(request, pk):
+    category = get_object_or_404(FinancialCategory, pk=pk)
+    if request.method == 'POST':
+        form = FinancialCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoria atualizada com sucesso.')
+            return redirect('financeiro:financial_category_list')
+    else:
+        form = FinancialCategoryForm(instance=category)
+    return render(request, 'financeiro/financial_category_form.html', {'form': form, 'title': 'Editar Categoria'})
+
+# Centros de Resultado
+@login_required(login_url='/accounts/login/')
+def cost_center_list(request):
+    centers = CostCenter.objects.all().order_by('name')
+    return render(request, 'financeiro/cost_center_list.html', {'centers': centers})
+
+@login_required(login_url='/accounts/login/')
+def cost_center_create(request):
+    if request.method == 'POST':
+        form = CostCenterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Centro de Resultado criado com sucesso.')
+            return redirect('financeiro:cost_center_list')
+    else:
+        form = CostCenterForm()
+    return render(request, 'financeiro/cost_center_form.html', {'form': form, 'title': 'Novo Centro de Resultado'})
+
+@login_required(login_url='/accounts/login/')
+def cost_center_update(request, pk):
+    center = get_object_or_404(CostCenter, pk=pk)
+    if request.method == 'POST':
+        form = CostCenterForm(request.POST, instance=center)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Centro de Resultado atualizado com sucesso.')
+            return redirect('financeiro:cost_center_list')
+    else:
+        form = CostCenterForm(instance=center)
+    return render(request, 'financeiro/cost_center_form.html', {'form': form, 'title': 'Editar Centro de Resultado'})

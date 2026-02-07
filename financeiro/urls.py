@@ -57,4 +57,14 @@ urlpatterns = [
     path('extrato/', views.financial_statement, name='financial_statement'),
     path('extrato/sync-cora/', views.sync_cora_statement, name='sync_cora_statement'),
     path('api/suggest-category/', views.api_suggest_category, name='api_suggest_category'),
+
+    # Categorias Financeiras
+    path('categorias/', views.financial_category_list, name='financial_category_list'),
+    path('categorias/nova/', views.financial_category_create, name='financial_category_create'),
+    path('categorias/<int:pk>/editar/', views.financial_category_update, name='financial_category_update'),
+
+    # Centros de Resultado
+    path('centros-resultado/', views.cost_center_list, name='cost_center_list'),
+    path('centros-resultado/novo/', views.cost_center_create, name='cost_center_create'),
+    path('centros-resultado/<int:pk>/editar/', views.cost_center_update, name='cost_center_update'),
 ]

@@ -341,11 +341,11 @@
                         Recibos
                     </a>
                     {% endif %}
-                    <a href="/admin/financeiro/financialcategory/"
+                    <a href="{% url 'financeiro:financial_category_list' %}"
                         class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
                         Categorias Financeiras
                     </a>
-                    <a href="/admin/financeiro/costcenter/"
+                    <a href="{% url 'financeiro:cost_center_list' %}"
                         class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
                         Centros de Resultado
                     </a>
