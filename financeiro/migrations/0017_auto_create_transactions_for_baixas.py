@@ -15,7 +15,7 @@ def create_missing_transactions(apps, schema_editor):
     receivables = AccountReceivable.objects.filter(status='RECEIVED')
     for rec in receivables:
         # Verifica se já existe transação
-        exists = FinancialTransaction.objects.filter(receivable=rec).exists()
+        exists = FinancialTransaction.objects.filter(related_receivable=rec).exists()
         if not exists:
             # Cria transação faltante
             FinancialTransaction.objects.create(
@@ -25,7 +25,7 @@ def create_missing_transactions(apps, schema_editor):
                 date=rec.receipt_date or timezone.now().date(),
                 account=rec.account or default_account,
                 category=rec.category,
-                receivable=rec
+                related_receivable=rec
             )
 
     # 2. Pagáveis (Saídas)

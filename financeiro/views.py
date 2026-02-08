@@ -395,7 +395,7 @@ def sync_receables_view(request):
                 from .models import CashAccount, FinancialTransaction
                 account = CashAccount.objects.first()
                 FinancialTransaction.objects.get_or_create(
-                    receivable=receivable,
+                    related_receivable=receivable,
                     defaults={
                         'description': f"Recebimento {description}",
                         'amount': receivable.amount,
@@ -427,7 +427,7 @@ def sync_receables_view(request):
                 from .models import CashAccount, FinancialTransaction
                 account = CashAccount.objects.first()
                 FinancialTransaction.objects.get_or_create(
-                    receivable=receivable,
+                    related_receivable=receivable,
                     defaults={
                         'description': f"Recebimento {receivable.description}",
                         'amount': receivable.amount,
@@ -589,7 +589,7 @@ def account_receivable_receive(request, pk):
             
             # Cria a transação financeira para aparecer na DRE
             FinancialTransaction.objects.get_or_create(
-                receivable=receivable,
+                related_receivable=receivable,
                 defaults={
                     'description': f"Recebimento {receivable.description}",
                     'amount': receivable.amount,
