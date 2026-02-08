@@ -1209,24 +1209,37 @@ def dre_report(request):
         end_date = today.strftime('%Y-%m-%d')
 
     # Query para Receitas (Entradas)
-    receitas_query = FinancialTransaction.objects.filter(
+    receitas_raw = FinancialTransaction.objects.filter(
         transaction_type='IN',
         date__range=[start_date, end_date]
     ).values('category__grupo_dre').annotate(total=Sum('amount')).order_by('category__ordem_exibicao')
 
     # Query para Despesas (Saídas)
-    despesas_query = FinancialTransaction.objects.filter(
+    despesas_raw = FinancialTransaction.objects.filter(
         transaction_type='OUT',
         date__range=[start_date, end_date]
     ).values('category__grupo_dre').annotate(total=Sum('amount')).order_by('category__ordem_exibicao')
 
-    total_receitas = sum(r['total'] for r in receitas_query)
-    total_despesas = sum(d['total'] for d in despesas_query)
+    # Tratar categorias nulas para não sumirem do relatório
+    receitas = []
+    for r in receitas_raw:
+        if not r['category__grupo_dre']:
+            r['category__grupo_dre'] = 'Diversos / Não Categorizados'
+        receitas.append(r)
+
+    despesas = []
+    for d in despesas_raw:
+        if not d['category__grupo_dre']:
+            d['category__grupo_dre'] = 'Diversos / Não Categorizados'
+        despesas.append(d)
+
+    total_receitas = sum(r['total'] for r in receitas)
+    total_despesas = sum(d['total'] for d in despesas)
     resultado_liquido = total_receitas - total_despesas
 
     return render(request, 'financeiro/dre_report.html', {
-        'receitas': receitas_query,
-        'despesas': despesas_query,
+        'receitas': receitas,
+        'despesas': despesas,
         'total_receitas': total_receitas,
         'total_despesas': total_despesas,
         'resultado_liquido': resultado_liquido,
