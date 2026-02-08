@@ -28,9 +28,10 @@ class InvoiceForm(forms.ModelForm):
 class InvoiceItemForm(forms.ModelForm):
     class Meta:
         model = InvoiceItem
-        fields = ['item_type', 'description', 'quantity', 'unit_price', 'notes']
+        fields = ['item_type', 'financial_category', 'description', 'quantity', 'unit_price', 'notes']
         widgets = {
             'item_type': forms.Select(attrs={'class': 'form-select item-type'}),
+            'financial_category': forms.Select(attrs={'class': 'form-select'}),
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descrição do serviço ou produto'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control quantity', 'step': '0.01'}),
             'unit_price': forms.NumberInput(attrs={'class': 'form-control unit-price', 'step': '0.01'}),

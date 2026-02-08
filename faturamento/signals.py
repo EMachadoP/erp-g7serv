@@ -11,10 +11,15 @@ def sync_account_receivable(sender, instance, created, **kwargs):
     Sincroniza o Contas a Receber sempre que a Fatura for salva.
     Cria se não existir, atualiza se já existir.
     """
-    category, _ = CategoriaFinanceira.objects.get_or_create(
-        nome="Venda de Serviços",
-        defaults={'tipo': 'entrada', 'grupo_dre': '1. Receita Bruta', 'ordem_exibicao': 1}
-    )
+    # Try to get category from invoice items first
+    first_item = instance.items.first()
+    if first_item and first_item.financial_category:
+        category = first_item.financial_category
+    else:
+        category, _ = CategoriaFinanceira.objects.get_or_create(
+            nome="Prestação de Serviços", # Changed from "Venda de Serviços" to match seed
+            defaults={'tipo': 'entrada', 'grupo_dre': '1. Receita Bruta', 'ordem_exibicao': 1}
+        )
     
     receivable = AccountReceivable.objects.filter(invoice=instance).first()
     

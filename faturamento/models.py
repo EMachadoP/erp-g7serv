@@ -123,6 +123,7 @@ class InvoiceItem(models.Model):
     ]
     
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items', verbose_name="Fatura")
+    financial_category = models.ForeignKey('financeiro.CategoriaFinanceira', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Categoria Financeira (DRE)")
     description = models.CharField(max_length=255, verbose_name="Descrição/Produto/Serviço")
     item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES, default='SERVICE', verbose_name="Tipo")
     

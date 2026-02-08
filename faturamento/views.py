@@ -351,6 +351,7 @@ def process_contract_billing(request):
                             quantity=item.quantity,
                             unit_price=item.unit_price,
                             total_price=item.total_price,
+                            financial_category=item.financial_category,
                             notes=f"Categoria: {item.get_category_display()}"
                         )
                 else:

@@ -171,6 +171,7 @@ class ContractItem(BaseModel):
 
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='items', verbose_name="Contrato")
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='MANUTENCAO', verbose_name="Categoria")
+    financial_category = models.ForeignKey('financeiro.CategoriaFinanceira', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Categoria Financeira (DRE)")
     description = models.CharField(max_length=255, verbose_name="Descrição")
     quantity = models.IntegerField(default=1, verbose_name="Quantidade")
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Unitário")

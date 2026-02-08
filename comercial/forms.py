@@ -28,9 +28,10 @@ class ContractForm(forms.ModelForm):
 class ContractItemForm(forms.ModelForm):
     class Meta:
         model = ContractItem
-        fields = ['category', 'description', 'quantity', 'unit_price']
+        fields = ['category', 'financial_category', 'description', 'quantity', 'unit_price']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-select'}),
+            'financial_category': forms.Select(attrs={'class': 'form-select'}),
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descrição do serviço'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'step': '1'}),
             'unit_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
