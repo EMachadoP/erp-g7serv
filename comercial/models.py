@@ -2,6 +2,7 @@ from django.db import models
 from ckeditor.fields import RichTextField
 from core.models import Person
 from django.contrib.auth.models import User
+from django.utils import timezone
 import uuid
 
 class BaseModel(models.Model):
@@ -184,6 +185,37 @@ class ContractItem(BaseModel):
     def __str__(self):
         return f"{self.get_category_display()} - {self.description}"
 
+
+class ContractReadjustment(BaseModel):
+    STATUS_CHOICES = (
+        ('APPLIED', 'Aplicado'),
+        ('CANCELLED', 'Cancelado'),
+    )
+    
+    date = models.DateTimeField(default=timezone.now, verbose_name="Data do Reajuste")
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Percentual (%)")
+    applied_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Aplicado por")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='APPLIED', verbose_name="Status")
+    observation = models.TextField(blank=True, null=True, verbose_name="Observações")
+
+    def __str__(self):
+        return f"Reajuste {self.id} - {self.percentage}% em {self.date.strftime('%d/%m/%Y')}"
+
     class Meta:
-        verbose_name = "Item de Contrato"
-        verbose_name_plural = "Itens de Contrato"
+        verbose_name = "Reajuste de Contrato"
+        verbose_name_plural = "Reajustes de Contrato"
+
+class ContractReadjustmentLog(models.Model):
+    readjustment = models.ForeignKey(ContractReadjustment, on_delete=models.CASCADE, related_name='logs')
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE)
+    
+    # Snapshots
+    old_value = models.DecimalField(max_digits=10, decimal_places=2)
+    new_value = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Store items snapshot as JSON or similar if needed, but for now we focus on values
+    # We'll save the old item prices to allow rollback
+    items_snapshot = models.JSONField(verbose_name="Snapshot dos Itens", help_text="Armazena IDs e valores unitários antigos")
+
+    def __str__(self):
+        return f"Log Reajuste {self.readjustment.id} - Contrato {self.contract.id}"

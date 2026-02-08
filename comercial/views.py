@@ -977,3 +977,126 @@ def get_contract_template_details(request, pk):
 
 
 
+
+@login_required
+def contract_readjustment_list(request):
+    readjustments = ContractReadjustment.objects.all().order_by('-date')
+    return render(request, 'comercial/readjustment_list.html', {'readjustments': readjustments})
+
+from decimal import Decimal
+
+@login_required
+def contract_readjustment_create(request):
+    if request.method == 'POST':
+        percentage = Decimal(request.POST.get('percentage', '0'))
+        contract_ids = request.POST.getlist('contracts')
+        observation = request.POST.get('observation', '')
+        
+        if not percentage or not contract_ids:
+            messages.error(request, "Informe o percentual e selecione ao menos um contrato.")
+            return redirect('comercial:contract_readjustment_create')
+            
+        try:
+            with transaction.atomic():
+                readjustment = ContractReadjustment.objects.create(
+                    percentage=percentage,
+                    applied_by=request.user,
+                    observation=observation
+                )
+                
+                multiplier = 1 + (percentage / 100)
+                
+                contracts_to_update = Contract.objects.filter(id__in=contract_ids)
+                for contract in contracts_to_update:
+                    # Snapshot items
+                    items_snapshot = []
+                    for item in contract.items.all():
+                        items_snapshot.append({
+                            'id': item.id,
+                            'unit_price': str(item.unit_price) # Decimal to string for JSON
+                        })
+                        
+                        # Apply readjustment to item
+                        item.unit_price = (item.unit_price * multiplier).quantize(Decimal('0.01'))
+                        item.save()
+                    
+                    old_value = contract.value
+                    new_value = sum(item.total_price for item in contract.items.all())
+                    
+                    # Update contract total
+                    contract.value = new_value
+                    contract.save()
+                    
+                    # Create Log
+                    ContractReadjustmentLog.objects.create(
+                        readjustment=readjustment,
+                        contract=contract,
+                        old_value=old_value,
+                        new_value=new_value,
+                        items_snapshot=items_snapshot
+                    )
+                
+                messages.success(request, f"Reajuste de {percentage}% aplicado com sucesso em {len(contracts_to_update)} contratos.")
+                return redirect('comercial:contract_readjustment_list')
+                
+        except Exception as e:
+            messages.error(request, f"Erro ao aplicar reajuste: {str(e)}")
+            return redirect('comercial:contract_readjustment_create')
+
+    # GET: Form with filters
+    contracts = Contract.objects.filter(status='Ativo').order_by('client__name')
+    
+    # Simple filters for the form
+    search = request.GET.get('search', '')
+    billing_group = request.GET.get('billing_group', '')
+    
+    if search:
+        contracts = contracts.filter(client__name__icontains=search)
+    if billing_group:
+        contracts = contracts.filter(billing_group_id=billing_group)
+        
+    billing_groups = BillingGroup.objects.all().order_by('name')
+    
+    return render(request, 'comercial/readjustment_form.html', {
+        'contracts': contracts,
+        'billing_groups': billing_groups,
+        'search': search,
+        'billing_group_id': int(billing_group) if billing_group else None
+    })
+
+@login_required
+def contract_readjustment_undo(request, pk):
+    readjustment = get_object_or_404(ContractReadjustment, pk=pk)
+    
+    if readjustment.status == 'CANCELLED':
+        messages.warning(request, "Este reajuste já foi cancelado.")
+        return redirect('comercial:contract_readjustment_list')
+        
+    try:
+        with transaction.atomic():
+            for log in readjustment.logs.all():
+                contract = log.contract
+                
+                # Restore items from snapshot
+                for item_snap in log.items_snapshot:
+                    item_id = item_snap['id']
+                    old_unit_price = Decimal(item_snap['unit_price'])
+                    
+                    ContractItem.objects.filter(id=item_id).update(unit_price=old_unit_price)
+                    # total_price is updated in save() but filter().update() doesn't call save()
+                    # We need to call save() or update total_price manually
+                    item = ContractItem.objects.get(id=item_id)
+                    item.save() # This updates total_price
+                
+                # Restore contract total
+                contract.value = log.old_value
+                contract.save()
+            
+            readjustment.status = 'CANCELLED'
+            readjustment.save()
+            
+            messages.success(request, "Reajuste desfeito com sucesso!")
+    except Exception as e:
+        messages.error(request, f"Erro ao desfazer reajuste: {str(e)}")
+        
+    return redirect('comercial:contract_readjustment_list')

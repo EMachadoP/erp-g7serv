@@ -53,4 +53,9 @@ urlpatterns = [
     path('grupos-faturamento/novo/', views.billing_group_create, name='billing_group_create'),
     path('grupos-faturamento/<int:pk>/editar/', views.billing_group_update, name='billing_group_update'),
     path('grupos-faturamento/<int:pk>/excluir/', views.billing_group_delete, name='billing_group_delete'),
+    
+    # Contract Readjustments
+    path('reajustes/', views.contract_readjustment_list, name='contract_readjustment_list'),
+    path('reajustes/novo/', views.contract_readjustment_create, name='contract_readjustment_create'),
+    path('reajustes/<int:pk>/desfazer/', views.contract_readjustment_undo, name='contract_readjustment_undo'),
 ]
