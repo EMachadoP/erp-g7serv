@@ -9,7 +9,8 @@
             <p class="text-muted">Movimentações consolidadas de todas as contas</p>
         </div>
         <div>
-            {% if selected_account and 'cora' in selected_account.name.lower or 'cora' in selected_account.bank_name.lower %}
+            {% if selected_account and 'cora' in selected_account.name.lower or 'cora' in
+            selected_account.bank_name.lower %}
             <a href="{% url 'financeiro:sync_cora_statement' %}?account_id={{ selected_account.id }}"
                 class="btn btn-outline-info fw-bold">
                 <i class="bi bi-arrow-repeat me-2"></i> Sincronizar Cora
@@ -27,7 +28,8 @@
                     <select name="account" class="form-select">
                         <option value="">Todas as Contas</option>
                         {% for acc in accounts %}
-                        <option value="{{ acc.id }}" {% if selected_account.id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+                        <option value="{{ acc.id }}" {% if selected_account.id==acc.id %}selected{% endif %}>{{ acc.name
+                            }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -73,7 +75,8 @@
                         <td>
                             <div class="fw-bold">{{ transaction.description }}</div>
                             {% if transaction.external_id %}
-                            <span class="badge bg-light text-dark fw-normal border" style="font-size: 0.7rem;">ID Cora: {{ transaction.external_id|truncatechars:15 }}</span>
+                            <span class="badge bg-light text-dark fw-normal border" style="font-size: 0.7rem;">ID Cora:
+                                {{ transaction.external_id|truncatechars:15 }}</span>
                             {% endif %}
                         </td>
                         <td>
@@ -81,11 +84,15 @@
                         </td>
                         <td>
                             <div class="d-flex flex-column">
-                                <span class="small">{{ transaction.category.name|default:"-" }}</span>
+                                <span class="small">{{ transaction.category.nome|default:"-" }}</span>
                                 {% if transaction.related_receivable %}
-                                <span class="badge bg-info-subtle text-info mt-1 small" style="width: fit-content;">Relacionado: Rec. #{{ transaction.related_receivable.id }}</span>
+                                <span class="badge bg-info-subtle text-info mt-1 small"
+                                    style="width: fit-content;">Relacionado: Rec. #{{ transaction.related_receivable.id
+                                    }}</span>
                                 {% elif transaction.related_payable %}
-                                <span class="badge bg-warning-subtle text-warning mt-1 small" style="width: fit-content;">Relacionado: Pag. #{{ transaction.related_payable.id }}</span>
+                                <span class="badge bg-warning-subtle text-warning mt-1 small"
+                                    style="width: fit-content;">Relacionado: Pag. #{{ transaction.related_payable.id
+                                    }}</span>
                                 {% endif %}
                             </div>
                         </td>
@@ -96,8 +103,10 @@
                             <span class="badge bg-danger-subtle text-danger">Saída</span>
                             {% endif %}
                         </td>
-                        <td class="text-end pe-4 fw-bold text-{% if transaction.transaction_type == 'IN' %}success{% else %}danger{% endif %}">
-                            {% if transaction.transaction_type == 'IN' %}+{% else %}-{% endif %} R$ {{ transaction.amount }}
+                        <td
+                            class="text-end pe-4 fw-bold text-{% if transaction.transaction_type == 'IN' %}success{% else %}danger{% endif %}">
+                            {% if transaction.transaction_type == 'IN' %}+{% else %}-{% endif %} R$ {{
+                            transaction.amount }}
                         </td>
                     </tr>
                     {% empty %}

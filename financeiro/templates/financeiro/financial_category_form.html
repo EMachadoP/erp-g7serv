@@ -18,16 +18,27 @@
                 {% csrf_token %}
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label for="{{ form.name.id_for_label }}" class="form-label">Nome *</label>
-                        {{ form.name }}
+                        <label for="{{ form.nome.id_for_label }}" class="form-label">Nome *</label>
+                        {{ form.nome }}
                     </div>
                     <div class="col-md-3">
-                        <label for="{{ form.type.id_for_label }}" class="form-label">Tipo *</label>
-                        {{ form.type }}
+                        <label for="{{ form.tipo.id_for_label }}" class="form-label">Tipo *</label>
+                        {{ form.tipo }}
                     </div>
                     <div class="col-md-3">
                         <label for="{{ form.parent.id_for_label }}" class="form-label">Categoria Pai</label>
                         {{ form.parent }}
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label for="{{ form.grupo_dre.id_for_label }}" class="form-label">Agrupador DRE</label>
+                        {{ form.grupo_dre }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="{{ form.ordem_exibicao.id_for_label }}" class="form-label">Ordem de Exibição</label>
+                        {{ form.ordem_exibicao }}
                     </div>
                 </div>
 

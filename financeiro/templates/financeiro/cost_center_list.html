@@ -24,7 +24,7 @@
                         {% for center in centers %}
                         <tr>
                             <td>{{ center.code|default:"-" }}</td>
-                            <td>{{ center.name }}</td>
+                            <td>{{ center.nome }}</td>
                             <td class="text-end">
                                 <a href="{% url 'financeiro:cost_center_update' center.pk %}"
                                     class="btn btn-sm btn-outline-secondary">

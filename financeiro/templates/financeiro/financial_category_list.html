@@ -26,19 +26,19 @@
                         <tr>
                             <td>
                                 {% if category.parent %}
-                                <span class="text-muted ms-3">—</span> {{ category.name }}
+                                <span class="text-muted ms-3">—</span> {{ category.nome }}
                                 {% else %}
-                                <strong>{{ category.name }}</strong>
+                                <strong>{{ category.nome }}</strong>
                                 {% endif %}
                             </td>
                             <td>
-                                {% if category.type == 'EXPENSE' %}
+                                {% if category.tipo == 'saida' %}
                                 <span class="badge bg-danger">Despesa</span>
                                 {% else %}
                                 <span class="badge bg-success">Receita</span>
                                 {% endif %}
                             </td>
-                            <td>{{ category.parent.name|default:"-" }}</td>
+                            <td>{{ category.parent.nome|default:"-" }}</td>
                             <td class="text-end">
                                 <a href="{% url 'financeiro:financial_category_update' category.pk %}"
                                     class="btn btn-sm btn-outline-secondary">
