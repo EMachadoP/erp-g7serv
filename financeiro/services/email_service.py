@@ -278,8 +278,12 @@ class BillingEmailService:
         
         # Anexar PDF da Fatura se existir
         if pdf_content:
+            filename = f"Demonstrativo_Fatura_{invoice.number}.pdf"
+            # Remover caracteres não-ascii do nome do arquivo para evitar erros de SMTP
+            filename = "".join(c for c in filename if ord(c) < 128)
+            
             email.attach(
-                f"Demonstrativo_Fatura_{invoice.number}.pdf",
+                filename,
                 pdf_content,
                 "application/pdf"
             )
