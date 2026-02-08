@@ -323,7 +323,7 @@ def sync_receables_view(request):
         return redirect('financeiro:account_receivable_list')
         
     from faturamento.models import Invoice
-    from .models import AccountReceivable, FinancialCategory
+    from .models import AccountReceivable, CategoriaFinanceira
     
     # Busca todas as faturas, forçando active=True para garantir visibilidade
     invoices = Invoice.objects.all()
@@ -331,9 +331,9 @@ def sync_receables_view(request):
     skipped_count = 0
     
     # Categoria padrão usada no Faturamento de Contratos
-    category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Contratos",
-        defaults={'type': 'REVENUE'}
+    category, _ = CategoriaFinanceira.objects.get_or_create(
+        nome="Receita de Contratos",
+        defaults={'tipo': 'entrada'}
     )
     
     from integracao_cora.models import BoletoCora
@@ -345,13 +345,13 @@ def sync_receables_view(request):
         eldon_inv.save()
 
     # Categorias
-    fatura_category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Faturas",
-        defaults={'type': 'REVENUE'}
+    fatura_category, _ = CategoriaFinanceira.objects.get_or_create(
+        nome="Receita de Faturas",
+        defaults={'tipo': 'entrada'}
     )
-    contrato_category, _ = FinancialCategory.objects.get_or_create(
-        name="Receita de Contratos",
-        defaults={'type': 'REVENUE'}
+    contrato_category, _ = CategoriaFinanceira.objects.get_or_create(
+        nome="Receita de Contratos",
+        defaults={'tipo': 'entrada'}
     )
     
     for inv in invoices:
@@ -1189,3 +1189,47 @@ def cost_center_update(request, pk):
     else:
         form = CentroResultadoForm(instance=center)
     return render(request, 'financeiro/cost_center_form.html', {'form': form, 'title': 'Editar Centro de Resultado'})
+
+@login_required(login_url='/accounts/login/')
+def dre_report(request):
+    """
+    Demonstrativo de Resultados do Exercício (DRE).
+    """
+    from django.db.models import Sum
+    from datetime import datetime
+    
+    # Filtros de data
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    if not start_date or not end_date:
+        # Default para o mês atual
+        today = datetime.now()
+        start_date = today.replace(day=1).strftime('%Y-%m-%d')
+        end_date = today.strftime('%Y-%m-%d')
+
+    # Query para Receitas (Entradas)
+    receitas_query = FinancialTransaction.objects.filter(
+        transaction_type='IN',
+        date__range=[start_date, end_date]
+    ).values('category__grupo_dre').annotate(total=Sum('amount')).order_by('category__ordem_exibicao')
+
+    # Query para Despesas (Saídas)
+    despesas_query = FinancialTransaction.objects.filter(
+        transaction_type='OUT',
+        date__range=[start_date, end_date]
+    ).values('category__grupo_dre').annotate(total=Sum('amount')).order_by('category__ordem_exibicao')
+
+    total_receitas = sum(r['total'] for r in receitas_query)
+    total_despesas = sum(d['total'] for d in despesas_query)
+    resultado_liquido = total_receitas - total_despesas
+
+    return render(request, 'financeiro/dre_report.html', {
+        'receitas': receitas_query,
+        'despesas': despesas_query,
+        'total_receitas': total_receitas,
+        'total_despesas': total_despesas,
+        'resultado_liquido': resultado_liquido,
+        'start_date': start_date,
+        'end_date': end_date
+    })

@@ -349,6 +349,10 @@
                         class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
                         Centros de Resultado
                     </a>
+                    <a href="{% url 'financeiro:dre_report' %}"
+                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small text-warning fw-bold">
+                        <i class="bi bi-file-earmark-bar-graph me-1"></i> Painel DRE
+                    </a>
                     <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header text-light">Gestão de Caixa</h6>
                     {% if perms.financeiro.view_cashaccount or user.is_superuser %}

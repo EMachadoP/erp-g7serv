@@ -67,4 +67,7 @@ urlpatterns = [
     path('centros-resultado/', views.cost_center_list, name='cost_center_list'),
     path('centros-resultado/novo/', views.cost_center_create, name='cost_center_create'),
     path('centros-resultado/<int:pk>/editar/', views.cost_center_update, name='cost_center_update'),
+    
+    # DRE
+    path('dre/', views.dre_report, name='dre_report'),
 ]
