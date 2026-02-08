@@ -377,7 +377,7 @@ def sync_receables_view(request):
             if inv.client:
                 description += f" - {inv.client.name}"
             
-            AccountReceivable.objects.create(
+            receivable = AccountReceivable.objects.create(
                 description=description,
                 client=inv.client,
                 category=target_category,
@@ -389,6 +389,22 @@ def sync_receables_view(request):
                 active=True,
                 receipt_date=timezone.now().date() if target_status == 'RECEIVED' else None
             )
+            
+            # SE RECEBIDO, CRIA A TRANSAÇÃO (DRE)
+            if target_status == 'RECEIVED':
+                from .models import CashAccount, FinancialTransaction
+                account = CashAccount.objects.first()
+                FinancialTransaction.objects.get_or_create(
+                    receivable=receivable,
+                    defaults={
+                        'description': f"Recebimento {description}",
+                        'amount': receivable.amount,
+                        'transaction_type': 'IN',
+                        'date': receivable.receipt_date or timezone.now().date(),
+                        'account': account,
+                        'category': receivable.category,
+                    }
+                )
             created_count += 1
         else:
             # Sync status and category if different
@@ -405,6 +421,22 @@ def sync_receables_view(request):
                 
             if changed:
                 receivable.save()
+            
+            # SE RECEBIDO, CRIA A TRANSAÇÃO SE NÃO EXISTIR (DRE)
+            if receivable.status == 'RECEIVED':
+                from .models import CashAccount, FinancialTransaction
+                account = CashAccount.objects.first()
+                FinancialTransaction.objects.get_or_create(
+                    receivable=receivable,
+                    defaults={
+                        'description': f"Recebimento {receivable.description}",
+                        'amount': receivable.amount,
+                        'transaction_type': 'IN',
+                        'date': receivable.receipt_date or timezone.now().date(),
+                        'account': account,
+                        'category': receivable.category,
+                    }
+                )
             skipped_count += 1
             
     messages.success(request, f"Sincronização concluída! Criados: {created_count}, Atualizados/Existentes: {skipped_count}.")
@@ -547,9 +579,27 @@ def account_receivable_detail(request, pk):
 def account_receivable_receive(request, pk):
     receivable = get_object_or_404(AccountReceivable, pk=pk)
     if request.method == 'POST':
-        receivable.status = 'RECEIVED'
-        receivable.receipt_date = timezone.now().date()
-        receivable.save()
+        with transaction.atomic():
+            receivable.status = 'RECEIVED'
+            receivable.receipt_date = timezone.now().date()
+            if not receivable.account:
+                from .models import CashAccount
+                receivable.account = CashAccount.objects.first()
+            receivable.save()
+            
+            # Cria a transação financeira para aparecer na DRE
+            FinancialTransaction.objects.get_or_create(
+                receivable=receivable,
+                defaults={
+                    'description': f"Recebimento {receivable.description}",
+                    'amount': receivable.amount,
+                    'transaction_type': 'IN',
+                    'date': receivable.receipt_date,
+                    'account': receivable.account,
+                    'category': receivable.category,
+                }
+            )
+            
         messages.success(request, 'Recebimento registrado com sucesso.')
         return redirect('financeiro:account_receivable_detail', pk=pk)
     return redirect('financeiro:account_receivable_detail', pk=pk)
