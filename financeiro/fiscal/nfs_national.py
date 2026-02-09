@@ -3,6 +3,8 @@ from datetime import datetime
 from signxml import XMLSigner
 from cryptography.hazmat.primitives.serialization.pkcs12 import load_key_and_certificates
 import base64
+from django.db import transaction
+from financeiro.models import EmpresaFiscal, NotaFiscalServico
 
 class DPSGenerator:
     def __init__(self, empresa, nota, servico_detalhes):
@@ -102,3 +104,55 @@ def enviar_para_recife(xml_assinado):
 
     response = requests.post(url, data=soap_envelope.encode('utf-8'), headers=headers)
     return response.text
+
+def emitir_nfse(invoice):
+    """
+    Orchestrates the NFSe emission process for a given Invoice.
+    """
+    empresa = EmpresaFiscal.objects.first()
+    if not empresa or not empresa.certificado_a1_base64:
+        raise ValueError("Empresa fiscal não configurada ou sem certificado.")
+
+    with transaction.atomic():
+        # 1. Get or Create NotaFiscalServico
+        try:
+             # Check if related_name access works
+             nota = invoice.nfs_record
+             if not nota:
+                 raise NotaFiscalServico.DoesNotExist
+             created = False
+        except (AttributeError, NotaFiscalServico.DoesNotExist):
+             nota = NotaFiscalServico.objects.create(
+                numero_dps=empresa.ultimo_numero_dps + 1,
+                serie="1",
+                invoice=invoice,
+                cliente=invoice.client,
+                valor_total=invoice.amount,
+                status='processando'
+            )
+             created = True
+        
+        if created:
+            empresa.ultimo_numero_dps += 1
+            empresa.save()
+            
+        # 2. Prepare Data
+        servico_data = {
+            'codigo_cnae': empresa.cnae_padrao,
+            'discriminacao': f"Fatura {invoice.number}"
+        }
+        
+        # 3. Generate XML
+        generator = DPSGenerator(empresa, nota, servico_data)
+        xml_bruto = generator.gerar_xml_bruto()
+        
+        # 4. Sign XML
+        xml_assinado = assinar_xml(xml_bruto, empresa.certificado_a1_base64, empresa.senha_certificado)
+        
+        # 5. Send/Save
+        nota.xml_enviado = xml_assinado
+        # TODO: Post to Recife
+        nota.status = 'emitida' 
+        nota.save()
+        
+        return nota

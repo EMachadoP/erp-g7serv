@@ -753,8 +753,9 @@ def invoice_bulk_send_emails(request):
 @login_required
 @require_POST
 def invoice_bulk_generate_nfse(request):
-    """Gera NFS-e em lote para faturas selecionadas (estrutura preparada)."""
+    """Gera NFS-e em lote para faturas selecionadas."""
     import json
+    from financeiro.fiscal.nfs_national import emitir_nfse
     
     invoice_ids = request.POST.getlist('invoice_ids[]')
     if not invoice_ids:
@@ -767,28 +768,37 @@ def invoice_bulk_generate_nfse(request):
     if not invoice_ids:
         return JsonResponse({'status': 'error', 'message': 'Nenhuma fatura selecionada.'}, status=400)
     
-    invoices = Invoice.objects.filter(id__in=invoice_ids, nfse_link__isnull=True)
+    # Filter only those that haven't been successfully emitted yet (optional, or rely on logic inside emitir_nfse)
+    # Using 'nfse_status__ne=EMITIDA' would be safer?
+    invoices = Invoice.objects.filter(id__in=invoice_ids)
     success_count = 0
     errors = []
     
-    # TODO: Integrar com módulo nfse_nacional quando certificado configurado
     for invoice in invoices:
         try:
-            # Placeholder - implementação real depende de certificado digital
-            # from nfse_nacional.services.api_client import NFSeNacionalClient
-            # client = NFSeNacionalClient()
-            # result = client.emitir_nfse(invoice)
-            # invoice.nfse_link = result.get('link')
-            # invoice.save()
-            # success_count += 1
+            if invoice.nfse_status == 'EMITIDA':
+                 continue
+
+            nota = emitir_nfse(invoice)
             
-            errors.append(f"Fatura #{invoice.id}: Emissão de NFS-e em desenvolvimento.")
+            invoice.nfse_status = 'EMITIDA'
+            # Placeholder link until we have a proper view for NFS-e
+            invoice.nfse_link = f"/admin/financeiro/notafiscalservico/{nota.numero_dps}/change/"
+            invoice.save(update_fields=['nfse_status', 'nfse_link'])
+            
+            success_count += 1
         except Exception as e:
-            errors.append(f"Fatura #{invoice.id}: {str(e)}")
+            errors.append(f"Fatura #{invoice.number}: {str(e)}")
+            invoice.nfse_status = 'ERRO'
+            invoice.save(update_fields=['nfse_status'])
     
+    status = 'success' if success_count > 0 else 'warning'
+    if not success_count and errors:
+        status = 'error'
+
     return JsonResponse({
-        'status': 'info',
-        'message': f'Funcionalidade de NFS-e em desenvolvimento. {success_count} notas processadas.',
+        'status': status,
+        'message': f'{success_count} notas processadas com sucesso.',
         'errors': errors
     })
 

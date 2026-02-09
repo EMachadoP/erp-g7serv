@@ -286,6 +286,7 @@ class NotaFiscalServico(models.Model):
     xml_enviado = models.TextField(blank=True, null=True, verbose_name="XML Enviado")
     xml_retorno = models.TextField(blank=True, null=True, verbose_name="XML Retorno")
     protocolo = models.CharField(max_length=50, blank=True, null=True, verbose_name="Protocolo")
+    invoice = models.OneToOneField('faturamento.Invoice', on_delete=models.SET_NULL, null=True, blank=True, related_name='nfs_record', verbose_name="Fatura Vinculada")
     status = models.CharField(max_length=20, choices=status_choices, default='rascunho', verbose_name="Status")
 
     class Meta:
