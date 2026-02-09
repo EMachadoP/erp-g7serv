@@ -256,6 +256,14 @@ class EmpresaFiscal(models.Model):
     codigo_municipio_ibge = models.CharField(max_length=7, default="2611606", verbose_name="Código Município IBGE") # Recife
     regime_tributario = models.IntegerField(default=1, verbose_name="Regime Tributário") # 1 - Simples Nacional
     
+    # Numeração
+    ultimo_numero_dps = models.IntegerField(default=0, verbose_name="Último Nº DPS Emitido")
+    ultimo_numero_nfse = models.IntegerField(default=0, verbose_name="Último Nº NFS-e Emitida")
+    
+    # Códigos de Serviço Padrão
+    cnae_padrao = models.CharField(max_length=20, blank=True, null=True, verbose_name="CNAE Padrão")
+    codigo_servico_lc116_padrao = models.CharField(max_length=20, blank=True, null=True, verbose_name="Item LC 116 Padrão")
+    
     # Certificado A1 (Armazenado em Base64 para o Railway)
     certificado_a1_base64 = models.TextField(blank=True, null=True, verbose_name="Certificado A1 (Base64)")
     senha_certificado = models.CharField(max_length=100, blank=True, null=True, verbose_name="Senha do Certificado")
@@ -271,7 +279,8 @@ class NotaFiscalServico(models.Model):
         ('emitida', 'Emitida'),
         ('erro', 'Erro')
     ]
-    numero_dps = models.AutoField(primary_key=True, verbose_name="Nº DPS")
+    id = models.AutoField(primary_key=True)
+    numero_dps = models.IntegerField(verbose_name="Nº DPS", unique=True)
     serie = models.CharField(max_length=5, default="1", verbose_name="Série")
     cliente = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Cliente")
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Total")

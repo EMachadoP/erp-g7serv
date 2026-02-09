@@ -42,18 +42,17 @@ class DPSGenerator:
         
         # Bloco do Tomador (Cliente)
         tom = etree.SubElement(inf_dps, "tom")
-        # Note: Person model has 'document', but XML requires CNPJ or CPF
-        # We'll assume the client document is cleaned (numbers only)
         doc_type = "CNPJ" if len(self.nota.cliente.document) > 11 else "CPF"
         etree.SubElement(tom, doc_type).text = self.nota.cliente.document
         
         # Bloco de Serviço (Resumo)
         serv = etree.SubElement(inf_dps, "serv")
-        etree.SubElement(serv, "cServ").text = self.servico['codigo_cnae']
+        # Usa o CNAE do serviço ou o padrão da empresa
+        cnae = self.servico.get('codigo_cnae') or self.empresa.cnae_padrao
+        etree.SubElement(serv, "cServ").text = cnae
         
         # Valores
         vals = etree.SubElement(inf_dps, "vals")
-        # Requirement: Decimal values often need to be formatted as string with dots
         etree.SubElement(vals, "vServPrest").text = "{:.2f}".format(self.nota.valor_total)
         
         return etree.tostring(dps, encoding='unicode')

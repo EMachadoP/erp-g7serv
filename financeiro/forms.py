@@ -9,12 +9,21 @@ from .models import (
 class EmpresaFiscalForm(forms.ModelForm):
     class Meta:
         model = EmpresaFiscal
-        fields = ['cnpj', 'inscricao_municipal', 'codigo_municipio_ibge', 'regime_tributario', 'certificado_a1_base64', 'senha_certificado']
+        fields = [
+            'cnpj', 'inscricao_municipal', 'codigo_municipio_ibge', 
+            'regime_tributario', 'ultimo_numero_dps', 'ultimo_numero_nfse',
+            'cnae_padrao', 'codigo_servico_lc116_padrao',
+            'certificado_a1_base64', 'senha_certificado'
+        ]
         widgets = {
             'cnpj': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apenas números'}),
             'inscricao_municipal': forms.TextInput(attrs={'class': 'form-control'}),
             'codigo_municipio_ibge': forms.TextInput(attrs={'class': 'form-control'}),
             'regime_tributario': forms.Select(choices=[(1, 'Simples Nacional'), (2, 'Regime Normal')], attrs={'class': 'form-select'}),
+            'ultimo_numero_dps': forms.NumberInput(attrs={'class': 'form-control'}),
+            'ultimo_numero_nfse': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cnae_padrao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 6202300'}),
+            'codigo_servico_lc116_padrao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 1.05'}),
             'certificado_a1_base64': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Cole aqui a string Base64 do certificado'}),
             'senha_certificado': forms.PasswordInput(render_value=True, attrs={'class': 'form-control'}),
         }

@@ -59,6 +59,33 @@
                             </div>
                         </div>
 
+                        <h6 class="text-primary mt-3 mb-3 border-bottom pb-2">
+                            <i class="bi bi-hash me-2"></i>Controle de Numeração
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.ultimo_numero_nfse|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.ultimo_numero_dps|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary mt-3 mb-3 border-bottom pb-2">
+                            <i class="bi bi-code-square me-2"></i>Códigos de Serviço Padrão
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.cnae_padrao|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.codigo_servico_lc116_padrao|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary mt-3 mb-3 border-bottom pb-2">
+                            <i class="bi bi-shield-lock me-2"></i>Certificado Digital
+                        </h6>
                         <div class="mb-3">
                             {{ form.certificado_a1_base64|as_crispy_field }}
                             <small class="text-muted">
