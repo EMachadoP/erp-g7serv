@@ -33,12 +33,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='notafiscalservico',
             name='numero_dps',
-            field=models.IntegerField(unique=True, verbose_name='Nº DPS'),
-        ),
-        migrations.AddField(
-            model_name='notafiscalservico',
-            name='id',
-            field=models.AutoField(default=1, primary_key=True, serialize=False),
-            preserve_default=False,
+            field=models.IntegerField(primary_key=True, serialize=False, verbose_name='Nº DPS'),
         ),
     ]

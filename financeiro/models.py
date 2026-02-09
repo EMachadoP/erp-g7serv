@@ -279,8 +279,7 @@ class NotaFiscalServico(models.Model):
         ('emitida', 'Emitida'),
         ('erro', 'Erro')
     ]
-    id = models.AutoField(primary_key=True)
-    numero_dps = models.IntegerField(verbose_name="Nº DPS", unique=True)
+    numero_dps = models.IntegerField(primary_key=True, verbose_name="Nº DPS")
     serie = models.CharField(max_length=5, default="1", verbose_name="Série")
     cliente = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Cliente")
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Total")
