@@ -70,4 +70,7 @@ urlpatterns = [
     
     # DRE
     path('dre/', views.dre_report, name='dre_report'),
+
+    # Configurações Fiscais
+    path('configuracoes/fiscal/', views.fiscal_settings, name='fiscal_settings'),
 ]

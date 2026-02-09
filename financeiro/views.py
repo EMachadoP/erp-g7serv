@@ -1,6 +1,31 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AccountPayable, AccountReceivable, CategoriaFinanceira, CashAccount, CentroResultado, Receipt, BudgetPlan, BudgetItem, FinancialTransaction
-from .forms import AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm, CategoriaFinanceiraForm, CentroResultadoForm, CashAccountForm
+from .forms import (
+    AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm, 
+    CategoriaFinanceiraForm, CentroResultadoForm, CashAccountForm, EmpresaFiscalForm
+)
+from .models import (
+    AccountPayable, AccountReceivable, CategoriaFinanceira, CashAccount, 
+    CentroResultado, Receipt, BudgetPlan, BudgetItem, FinancialTransaction, 
+    EmpresaFiscal, NotaFiscalServico
+)
+
+@staff_member_required
+def fiscal_settings(request):
+    config = EmpresaFiscal.objects.first()
+    if request.method == 'POST':
+        form = EmpresaFiscalForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Configurações fiscais atualizadas com sucesso.")
+            return redirect('financeiro:fiscal_settings')
+    else:
+        form = EmpresaFiscalForm(instance=config)
+    
+    return render(request, 'financeiro/fiscal_settings.html', {
+        'form': form, 
+        'config': config,
+        'title': 'Configurações Fiscais'
+    })
 from django.http import JsonResponse, HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from .integrations.cora import CoraService

@@ -1,7 +1,23 @@
 from django import forms
 from django.db.models import Q
 from django.utils import timezone
-from .models import AccountPayable, AccountReceivable, CashAccount, CentroResultado, CategoriaFinanceira, Receipt
+from .models import (
+    AccountPayable, AccountReceivable, CashAccount, CentroResultado, 
+    CategoriaFinanceira, Receipt, EmpresaFiscal
+)
+
+class EmpresaFiscalForm(forms.ModelForm):
+    class Meta:
+        model = EmpresaFiscal
+        fields = ['cnpj', 'inscricao_municipal', 'codigo_municipio_ibge', 'regime_tributario', 'certificado_a1_base64', 'senha_certificado']
+        widgets = {
+            'cnpj': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apenas números'}),
+            'inscricao_municipal': forms.TextInput(attrs={'class': 'form-control'}),
+            'codigo_municipio_ibge': forms.TextInput(attrs={'class': 'form-control'}),
+            'regime_tributario': forms.Select(choices=[(1, 'Simples Nacional'), (2, 'Regime Normal')], attrs={'class': 'form-select'}),
+            'certificado_a1_base64': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Cole aqui a string Base64 do certificado'}),
+            'senha_certificado': forms.PasswordInput(render_value=True, attrs={'class': 'form-control'}),
+        }
 from core.models import Person
 
 class ReceiptForm(forms.ModelForm):
