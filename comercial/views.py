@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import IntegrityError, transaction
 from django.views import View
@@ -986,51 +987,72 @@ def contract_readjustment_list(request):
     readjustments = ContractReadjustment.objects.all().order_by('-date')
     return render(request, 'comercial/readjustment_list.html', {'readjustments': readjustments})
 
-from decimal import Decimal
-
 @login_required
 def contract_readjustment_create(request):
     if request.method == 'POST':
         percentage = Decimal(request.POST.get('percentage', '0'))
         contract_ids = request.POST.getlist('contracts')
         observation = request.POST.get('observation', '')
+        readjustment_type = request.POST.get('readjustment_type', 'READJUSTMENT')
         
-        if not percentage or not contract_ids:
-            messages.error(request, "Informe o percentual e selecione ao menos um contrato.")
+        if not contract_ids:
+            messages.error(request, "Selecione ao menos um contrato.")
             return redirect('comercial:contract_readjustment_create')
             
+        if readjustment_type == 'READJUSTMENT' and percentage <= 0:
+            messages.error(request, "Informe um percentual válido para o reajuste.")
+            return redirect('comercial:contract_readjustment_create')
+
         try:
             with transaction.atomic():
                 readjustment = ContractReadjustment.objects.create(
-                    percentage=percentage,
+                    percentage=percentage if readjustment_type == 'READJUSTMENT' else 0,
                     applied_by=request.user,
-                    observation=observation
+                    observation=observation,
+                    readjustment_type=readjustment_type,
+                    status='APPLIED' if readjustment_type == 'READJUSTMENT' else 'DEFERRED'
                 )
                 
                 multiplier = 1 + (percentage / 100)
-                
                 contracts_to_update = Contract.objects.filter(id__in=contract_ids)
+                
                 for contract in contracts_to_update:
-                    # Snapshot items
                     items_snapshot = []
-                    for item in contract.items.all():
-                        items_snapshot.append({
-                            'id': item.id,
-                            'unit_price': str(item.unit_price) # Decimal to string for JSON
-                        })
-                        
-                        # Apply readjustment to item
-                        item.unit_price = (item.unit_price * multiplier).quantize(Decimal('0.01'))
-                        item.save()
-                    
                     old_value = contract.value
-                    new_value = sum(item.total_price for item in contract.items.all())
                     
-                    # Update contract total
-                    contract.value = new_value
+                    if readjustment_type == 'READJUSTMENT':
+                        for item in contract.items.all():
+                            items_snapshot.append({
+                                'id': item.id,
+                                'unit_price': str(item.unit_price)
+                            })
+                            item.unit_price = (item.unit_price * multiplier).quantize(Decimal('0.01'))
+                            item.save()
+                        
+                        new_value = sum(item.total_price for item in contract.items.all())
+                        contract.value = new_value
+                    else:
+                        new_value = old_value
+                        # For deferral, we just log the current state
+                        for item in contract.items.all():
+                            items_snapshot.append({
+                                'id': item.id,
+                                'unit_price': str(item.unit_price)
+                            })
+
+                    # Calculate next readjustment date: 1 year from current next_readjustment_date or start_date
+                    base_date = contract.next_readjustment_date or contract.start_date
+                    # Ensure next anniversary is in the future
+                    next_date = base_date
+                    while next_date <= timezone.now().date():
+                        try:
+                            next_date = next_date.replace(year=next_date.year + 1)
+                        except ValueError: # February 29th
+                            next_date = next_date + timedelta(days=365)
+                    
+                    contract.next_readjustment_date = next_date
                     contract.save()
                     
-                    # Create Log
                     ContractReadjustmentLog.objects.create(
                         readjustment=readjustment,
                         contract=contract,
@@ -1039,11 +1061,12 @@ def contract_readjustment_create(request):
                         items_snapshot=items_snapshot
                     )
                 
-                messages.success(request, f"Reajuste de {percentage}% aplicado com sucesso em {len(contracts_to_update)} contratos.")
+                msg = f"Reajuste de {percentage}% aplicado" if readjustment_type == 'READJUSTMENT' else "Reajuste adiado"
+                messages.success(request, f"{msg} com sucesso em {len(contracts_to_update)} contratos.")
                 return redirect('comercial:contract_readjustment_list')
                 
         except Exception as e:
-            messages.error(request, f"Erro ao aplicar reajuste: {str(e)}")
+            messages.error(request, f"Erro ao processar: {str(e)}")
             return redirect('comercial:contract_readjustment_create')
 
     # GET: Form with filters
@@ -1058,6 +1081,32 @@ def contract_readjustment_create(request):
     if billing_group:
         contracts = contracts.filter(billing_group_id=billing_group)
         
+    # Calculate status for each contract
+    today = timezone.now().date()
+    for contract in contracts:
+        # If next_readjustment_date is null, use start_date + 1 year
+        if not contract.next_readjustment_date:
+            try:
+                contract.next_readjustment_date = contract.start_date.replace(year=contract.start_date.year + 1)
+            except ValueError:
+                contract.next_readjustment_date = contract.start_date + timedelta(days=365)
+        
+        diff = contract.next_readjustment_date - today
+        days = diff.days
+        
+        if days < 0:
+            contract.anniversary_status = 'vencido'
+            contract.anniversary_label = f"Atrasado ({abs(days)}d)"
+            contract.anniversary_class = 'danger'
+        elif days <= 30:
+            contract.anniversary_status = 'no_prazo'
+            contract.anniversary_label = f"No Prazo ({days}d)"
+            contract.anniversary_class = 'warning text-dark'
+        else:
+            contract.anniversary_status = 'em_dia'
+            contract.anniversary_label = f"Em dia"
+            contract.anniversary_class = 'success'
+
     billing_groups = BillingGroup.objects.all().order_by('name')
     
     return render(request, 'comercial/readjustment_form.html', {

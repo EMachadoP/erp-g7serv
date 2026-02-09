@@ -67,6 +67,7 @@ class Contract(BaseModel):
     
     start_date = models.DateField(verbose_name="Data de Início")
     end_date = models.DateField(null=True, blank=True, verbose_name="Data de Término")
+    next_readjustment_date = models.DateField(null=True, blank=True, verbose_name="Próximo Reajuste")
 
     # Digital Signature
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -190,11 +191,18 @@ class ContractReadjustment(BaseModel):
     STATUS_CHOICES = (
         ('APPLIED', 'Aplicado'),
         ('CANCELLED', 'Cancelado'),
+        ('DEFERRED', 'Adiado'),
+    )
+    
+    TYPE_CHOICES = (
+        ('READJUSTMENT', 'Reajuste'),
+        ('DEFERRAL', 'Adiamento'),
     )
     
     date = models.DateTimeField(default=timezone.now, verbose_name="Data do Reajuste")
-    percentage = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Percentual (%)")
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Percentual (%)")
     applied_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Aplicado por")
+    readjustment_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='READJUSTMENT', verbose_name="Tipo")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='APPLIED', verbose_name="Status")
     observation = models.TextField(blank=True, null=True, verbose_name="Observações")
 

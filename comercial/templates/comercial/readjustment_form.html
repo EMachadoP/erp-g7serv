@@ -27,28 +27,44 @@
                     <h5 class="mb-0">Configurações</h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Percentual de Reajuste (%)</label>
-                        <div class="input-group">
-                            <input type="number" name="percentage" step="0.01" class="form-control"
-                                placeholder="ex: 10.5" required>
-                            <span class="input-group-text">%</span>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Tipo de Operação</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="readjustment_type" id="type_readjust"
+                                value="READJUSTMENT" checked>
+                            <label class="btn btn-outline-primary" for="type_readjust">Reajuste</label>
+
+                            <input type="radio" class="btn-check" name="readjustment_type" id="type_defer"
+                                value="DEFERRAL">
+                            <label class="btn btn-outline-secondary" for="type_defer">Adiamento</label>
                         </div>
-                        <div class="form-text">O valor será aplicado sobre o valor unitário de cada item do contrato.
+                    </div>
+
+                    <div id="readjustment_fields">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Percentual de Reajuste (%)</label>
+                            <div class="input-group">
+                                <input type="number" name="percentage" step="0.01" class="form-control"
+                                    placeholder="ex: 10.5" id="percentageInput">
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <div class="form-text">O valor será aplicado sobre o valor unitário de cada item do
+                                contrato.</div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Observações</label>
-                        <textarea name="observation" class="form-control" rows="3"
-                            placeholder="Motivo do reajuste..."></textarea>
+                        <label class="form-label fw-bold">Observações / Justificativa</label>
+                        <textarea name="observation" class="form-control" rows="3" placeholder="Motivo da operação..."
+                            required></textarea>
+                        <div class="form-text" id="obs_help">Obrigatório para documentar o histórico.</div>
                     </div>
 
                     <hr>
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
-                            <i class="bi bi-check-circle me-2"></i>Aplicar Reajuste
+                            <i class="bi bi-check-circle me-2"></i><span id="btnText">Aplicar Reajuste</span>
                         </button>
                         <a href="{% url 'comercial:contract_readjustment_list' %}" class="btn btn-light">Cancelar</a>
                     </div>
@@ -89,6 +105,7 @@
                                     <input type="checkbox" class="form-check-input" id="selectAll">
                                 </th>
                                 <th>Cliente</th>
+                                <th>Aniversário</th>
                                 <th>Grupo</th>
                                 <th class="text-end pe-4">Valor Atual</th>
                             </tr>
@@ -103,6 +120,13 @@
                                 <td>
                                     <div class="fw-bold">{{ c.client.name }}</div>
                                     <div class="text-muted small">Contrato #{{ c.id }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ c.anniversary_class }} px-2 py-1 rounded-pill small">
+                                        {{ c.anniversary_label }}
+                                    </span>
+                                    <div class="text-muted extra-small">Prox: {{ c.next_readjustment_date|date:"d/m/y"
+                                        }}</div>
                                 </td>
                                 <td>{{ c.billing_group.name|default:"-" }}</td>
                                 <td class="text-end pe-4 fw-bold text-dark">
@@ -131,6 +155,32 @@
         const selectedCountDisplay = document.getElementById('selectedCount');
         const searchInput = document.getElementById('contractSearch');
         const rows = document.querySelectorAll('.contract-row');
+
+        // Mode toggle
+        const typeReadjust = document.getElementById('type_readjust');
+        const typeDefer = document.getElementById('type_defer');
+        const readjustFields = document.getElementById('readjustment_fields');
+        const btnText = document.getElementById('btnText');
+        const percentageInput = document.getElementById('percentageInput');
+
+        function toggleMode() {
+            if (typeReadjust.checked) {
+                readjustFields.style.display = 'block';
+                btnText.textContent = 'Aplicar Reajuste';
+                percentageInput.required = true;
+                submitBtn.className = 'btn btn-primary btn-lg';
+            } else {
+                readjustFields.style.display = 'none';
+                btnText.textContent = 'Confirmar Adiamento';
+                percentageInput.required = false;
+                submitBtn.className = 'btn btn-secondary btn-lg';
+            }
+        }
+
+        typeReadjust.addEventListener('change', toggleMode);
+        typeDefer.addEventListener('change', toggleMode);
+        toggleMode();
+
 
         function updateSelectedCount() {
             const count = document.querySelectorAll('.contract-checkbox:checked').length;
@@ -163,10 +213,18 @@
 
         // Confirmation before submit
         document.getElementById('readjustmentForm').addEventListener('submit', function (e) {
-            const percentage = document.querySelector('input[name="percentage"]').value;
+            const type = document.querySelector('input[name="readjustment_type"]:checked').value;
             const count = document.querySelectorAll('.contract-checkbox:checked').length;
+            const percentage = document.querySelector('input[name="percentage"]').value;
 
-            if (!confirm(`Você está prestes a aplicar um reajuste de ${percentage}% em ${count} contratos. Esta ação modificará os valores unitários dos itens e o valor total dos contratos.\n\nDeseja continuar?`)) {
+            let msg = '';
+            if (type === 'READJUSTMENT') {
+                msg = `Você está prestes a aplicar um reajuste de ${percentage}% em ${count} contratos. Esta ação modificará os valores unitários dos itens e o valor total dos contratos.`;
+            } else {
+                msg = `Você está prestes a adiar o reajuste de ${count} contratos por mais um ano.`;
+            }
+
+            if (!confirm(`${msg}\n\nDeseja continuar?`)) {
                 e.preventDefault();
             }
         });
@@ -189,6 +247,10 @@
         letter-spacing: 0.025em;
         color: #64748b;
         border-bottom: 2px solid #f1f5f9;
+    }
+
+    .extra-small {
+        font-size: 0.7rem;
     }
 </style>
 {% endblock %}

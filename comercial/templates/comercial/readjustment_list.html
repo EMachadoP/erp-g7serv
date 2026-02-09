@@ -17,6 +17,7 @@
                 <thead class="bg-light">
                     <tr>
                         <th class="ps-4">Data/Hora</th>
+                        <th>Tipo</th>
                         <th>Percentual</th>
                         <th>Aplicado por</th>
                         <th>Contratos</th>
@@ -29,6 +30,15 @@
                     <tr>
                         <td class="ps-4 fw-bold text-primary">
                             {{ r.date|date:"d/m/Y H:i" }}
+                        </td>
+                        <td>
+                            {% if r.readjustment_type == 'READJUSTMENT' %}
+                            <span
+                                class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">Reajuste</span>
+                            {% else %}
+                            <span
+                                class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">Adiamento</span>
+                            {% endif %}
                         </td>
                         <td>
                             <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">
