@@ -32,15 +32,29 @@ class NFSeNacionalClient:
             nfse_obj.xml_envio = xml_content
             nfse_obj.save()
             
-            # 2. Assinar XML
-            # Precisamos do caminho do certificado e senha
-            cert_path = nfse_obj.empresa.certificado_a1.path
+            # 2. Ler Certificado (Bytes)
+            # Evita usar .path que pode não existir em ambientes de nuvem (Railway/Heroku/AWS)
+            try:
+                if nfse_obj.empresa.certificado_a1:
+                    with nfse_obj.empresa.certificado_a1.open("rb") as f:
+                        cert_bytes = f.read()
+                else:
+                     raise ValueError("Arquivo de certificado não encontrado.")
+            except Exception as e:
+                # Fallback to path if open fails (unlikely if field exists)
+                if hasattr(nfse_obj.empresa.certificado_a1, 'path'):
+                     with open(nfse_obj.empresa.certificado_a1.path, 'rb') as f:
+                        cert_bytes = f.read()
+                else:
+                    raise e
+
             cert_password = nfse_obj.empresa.senha_certificado
             
-            signed_xml = assinar_xml(xml_content, cert_path, cert_password)
+            # 3. Assinar XML
+            signed_xml = assinar_xml(xml_content, cert_bytes, cert_password)
             
-            # 3. Preparar mTLS (Certificado e Chave para a requisição)
-            private_key, certificate = carregar_certificado(cert_path, cert_password)
+            # 4. Preparar mTLS (Certificado e Chave para a requisição)
+            private_key, certificate = carregar_certificado(cert_bytes, cert_password)
             
             # Escrever chave e certificado em arquivos temporários para o requests
             with tempfile.NamedTemporaryFile(delete=False) as key_file, \

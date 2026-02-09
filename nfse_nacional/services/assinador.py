@@ -4,12 +4,16 @@ from signxml import XMLSigner, XMLVerifier, methods
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives import serialization
 
-def carregar_certificado(caminho_pfx, senha):
+def carregar_certificado(caminho_ou_bytes, senha):
     """
     Carrega o arquivo .pfx e retorna a chave privada e o certificado.
+    Aceita caminho do arquivo (str) ou o conteúdo em bytes.
     """
-    with open(caminho_pfx, 'rb') as f:
-        pfx_data = f.read()
+    if isinstance(caminho_ou_bytes, str):
+        with open(caminho_ou_bytes, 'rb') as f:
+            pfx_data = f.read()
+    else:
+        pfx_data = caminho_ou_bytes
 
     # Load PFX
     # Note: senha must be bytes
@@ -23,12 +27,13 @@ def carregar_certificado(caminho_pfx, senha):
 
     return private_key, certificate
 
-def assinar_xml(xml_string, caminho_pfx, senha):
+def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha):
     """
     Assina o XML da DPS usando o certificado A1 (.pfx).
+    Aceita caminho (str) ou bytes do PFX.
     """
     # Load Key and Cert
-    private_key, certificate = carregar_certificado(caminho_pfx, senha)
+    private_key, certificate = carregar_certificado(caminho_ou_bytes_pfx, senha)
 
     # Parse XML
     root = etree.fromstring(xml_string.encode('utf-8'))
