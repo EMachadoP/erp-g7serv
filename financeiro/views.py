@@ -1338,9 +1338,61 @@ def diagnostico_nfse_nacional(request):
     
     output = io.StringIO()
     
+    # Se for POST, testar arquivo enviado
+    if request.method == 'POST':
+        try:
+            uploaded_pfx = request.FILES.get('pfx_file')
+            password_input = request.POST.get('password_input')
+            
+            with redirect_stdout(output):
+                print("--- DIAGNOSTICO INTERATIVO (UPLOAD) ---")
+                if not uploaded_pfx or not password_input:
+                     print("ERRO: Arquivo PFX ou Senha não fornecidos.")
+                else:
+                     pfx_bytes = uploaded_pfx.read()
+                     print(f"Arquivo recebido: {uploaded_pfx.name} (len={len(pfx_bytes)})")
+                     print(f"Senha fornecida: {repr(password_input)}")
+                     
+                     # Diagnostico OpenSSL
+                     print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
+                     diag_root = diagnosticar_pfx_com_openssl(pfx_bytes, password_input)
+                     
+                     print(f"SHA256 do Arquivo Enviado: {diag_root.get('file_sha256')}")
+                     print("\n[OpenSSL Providers Loaded]:")
+                     print(diag_root.get('openssl_providers', '').strip())
+                     print("-" * 30)
+                     
+                     tried = diag_root.get('tried_encodings', [])
+                     results = diag_root.get('last_result', {})
+                     
+                     encryption_ok = False
+                     for enc in tried:
+                        res = results.get(enc, {})
+                        norm_ok = res.get('openssl_normal_ok', False)
+                        legacy_ok = res.get('openssl_legacy_ok', False)
+                        print(f"[{enc}] Normal OK? {norm_ok} | Legacy OK? {legacy_ok}")
+                        if norm_ok or legacy_ok:
+                            encryption_ok = True
+                            if legacy_ok: print(f">>> SUCESSO com {enc} (Legacy) <<<")
+                            else: print(f">>> SUCESSO com {enc} (Moderno) <<<")
+                        else:
+                            err = res.get('legacy_err', '') or res.get('normal_err', '')
+                            print(f"    Erro ({enc}): {err.splitlines()[0] if err else ''}")
+                     
+                     if not encryption_ok:
+                         print("\n>>> FALHA: O arquivo enviado também foi rejeitado com esta senha.")
+                     else:
+                         print("\n>>> SUCESSO: O arquivo enviado E a senha estão CORRETOS!")
+                         print("Isso indica que o arquivo no BANCO DE DADOS estava corrompido ou a senha salva estava errada.")
+                         
+        except Exception as e:
+             output.write(f"\nERRO NO PROCESSAMENTO DO UPLOAD: {e}\n")
+             traceback.print_exc(file=output)
+
     try:
         with redirect_stdout(output):
-            print("--- INICIANDO DIAGNOSTICO DE CONEXAO (VIA BROWSER) ---")
+            if request.method == 'GET':
+                print("--- DIAGNOSTICO DE CONEXAO (DB ATUAL) ---")
             
             # Checar Variável de Ambiente
             openssl_conf = os.environ.get('OPENSSL_CONF')

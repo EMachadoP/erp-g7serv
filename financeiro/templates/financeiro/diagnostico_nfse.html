@@ -14,6 +14,36 @@
                 Este diagnóstico testa a leitura do certificado, a conexão com a API Nacional e assina um XML de teste.
             </div>
 
+            <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Teste Interativo (Tira-Teima)</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">Use este formulário para testar um arquivo local diretamente no
+                        servidor, isolando problemas de banco de dados.</p>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-5 mb-3">
+                                <label for="pfx_file" class="form-label">Arquivo PFX</label>
+                                <input type="file" class="form-control" name="pfx_file" id="pfx_file" accept=".pfx"
+                                    required>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label for="password_input" class="form-label">Senha do Certificado</label>
+                                <input type="text" class="form-control" name="password_input" id="password_input"
+                                    placeholder="Digite a senha exata" required>
+                            </div>
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-warning w-100">
+                                    <i class="bi bi-check-circle"></i> Testar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <h5 class="mt-4">Resultado do Teste:</h5>
             <div class="bg-dark text-light p-3 rounded" style="max-height: 500px; overflow-y: auto;">
                 <pre class="mb-0" style="white-space: pre-wrap;">{{ output }}</pre>
