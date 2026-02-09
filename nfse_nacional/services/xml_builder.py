@@ -38,11 +38,14 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     def format_decimal(value):
         return f"{value:.2f}"
 
-    v_serv = format_decimal(nfse_obj.servico.sale_price)
+    # Updated to use override fields
+    sale_price = nfse_obj.valor_servico if nfse_obj.valor_servico else nfse_obj.servico.sale_price
+    
+    v_serv = format_decimal(sale_price)
     p_iss = format_decimal(nfse_obj.servico.aliquota_iss)
     
     # Calculate vISS
-    v_iss_val = (nfse_obj.servico.sale_price * nfse_obj.servico.aliquota_iss) / 100
+    v_iss_val = (sale_price * nfse_obj.servico.aliquota_iss) / 100
     v_iss = format_decimal(v_iss_val)
     
     # Calculate vLiq (Net Value) - Assuming no discounts for now

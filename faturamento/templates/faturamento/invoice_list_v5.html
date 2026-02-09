@@ -454,11 +454,18 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success' || (data.status === 'warning' && data.success_count > 0)) {
-                        // Show a nice success toast if we had one, but alert works for now
-                        alert(data.message || 'Operação realizada com sucesso!');
+                        let msg = data.message || 'Operação realizada com sucesso!';
+                        if (data.errors && data.errors.length > 0) {
+                            msg += '\n\nErros:\n' + data.errors.join('\n');
+                        }
+                        alert(msg);
                         location.reload();
                     } else {
-                        alert(data.message || 'Erro ao processar solicitação.');
+                        let msg = data.message || 'Erro ao processar solicitação.';
+                        if (data.errors && data.errors.length > 0) {
+                            msg += '\n\nDetalhes:\n' + data.errors.join('\n');
+                        }
+                        alert(msg);
                         btn.disabled = false;
                         btn.innerHTML = originalText;
                     }
