@@ -73,4 +73,7 @@ urlpatterns = [
 
     # Configurações Fiscais
     path('configuracoes/fiscal/', views.fiscal_settings, name='fiscal_settings'),
+    
+    # Diagnóstico NFSe (Temporário)
+    path('diagnostico/nfse/', views.diagnostico_nfse_nacional, name='diagnostico_nfse_nacional'),
 ]
