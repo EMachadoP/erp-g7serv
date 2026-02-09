@@ -85,7 +85,7 @@
                                 <label for="order_type" class="form-label">Tipo *</label>
                                 <select name="order_type" id="order_type" class="form-select" required>
                                     {% for value, label in type_choices %}
-                                    <option value="{{ value }}" {% if order.order_type==value %}selected{% endif %}>
+                                    <option value="{{ value }}" {% if order.order_type == value %}selected{% endif %}>
                                         {{ label }}
                                     </option>
                                     {% endfor %}
@@ -97,7 +97,7 @@
                                 <select name="reason" id="reason" class="form-select" required>
                                     <option value="">Selecione..</option>
                                     {% for value, label in reason_choices %}
-                                    <option value="{{ value }}" {% if order.reason==value %}selected{% endif %}>
+                                    <option value="{{ value }}" {% if order.reason == value %}selected{% endif %}>
                                         {{ label }}
                                     </option>
                                     {% endfor %}
