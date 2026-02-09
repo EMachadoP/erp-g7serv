@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.admin.views.decorators import staff_member_required
 from .forms import (
     AccountPayableForm, AccountReceivableForm, ReceiptForm, PaymentPayableForm, 
     CategoriaFinanceiraForm, CentroResultadoForm, CashAccountForm, EmpresaFiscalForm
@@ -27,7 +28,6 @@ def fiscal_settings(request):
         'title': 'Configurações Fiscais'
     })
 from django.http import JsonResponse, HttpResponse
-from django.contrib.admin.views.decorators import staff_member_required
 from .integrations.cora import CoraService
 from django.views.decorators.http import require_POST
 import json
