@@ -31,7 +31,7 @@ def emitir_nfse(invoice):
             base_cost=0,
             sale_price=0,
             codigo_tributacao_nacional=service_code,
-            codigo_municipio_ibge=empresa.codigo_mun_ibge, 
+            # codigo_municipio_ibge removed as it is not in Service model
             description="Serviços de suporte técnico e manutenção."
         )
 
