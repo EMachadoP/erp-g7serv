@@ -1443,4 +1443,5 @@ def diagnostico_nfse_nacional(request):
                     except Exception as e:
                         print(f"ERRO NA ASSINATURA: {e}")
 
-    return HttpResponse(output.getvalue(), content_type="text/plain")
+    # return HttpResponse(output.getvalue(), content_type="text/plain")
+    return render(request, 'financeiro/diagnostico_nfse.html', {'output': output.getvalue()})
