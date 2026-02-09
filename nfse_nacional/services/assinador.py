@@ -16,16 +16,30 @@ def carregar_certificado(caminho_ou_bytes, senha):
         pfx_data = caminho_ou_bytes
 
     # Load PFX
-    # Note: senha must be bytes
-    if isinstance(senha, str):
-        senha = senha.encode('utf-8')
+    # Ensure raw bytes are present
+    if not pfx_data:
+        raise ValueError("Dados do certificado PFX nulos ou vazios.")
 
-    private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
-        pfx_data,
-        senha
-    )
+    # Try different password encodings
+    encodings = ['utf-8', 'latin-1']
+    last_error = None
 
-    return private_key, certificate
+    for encoding in encodings:
+        try:
+             bytes_senha = senha
+             if isinstance(senha, str):
+                 bytes_senha = senha.encode(encoding)
+             
+             private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
+                pfx_data,
+                bytes_senha
+             )
+             return private_key, certificate
+        except Exception as e:
+            last_error = e
+    
+    # If we get here, all attempts failed
+    raise ValueError(f"Falha ao carregar certificado (Tamanho: {len(pfx_data)} bytes). Erro: {last_error}")
 
 def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha):
     """
