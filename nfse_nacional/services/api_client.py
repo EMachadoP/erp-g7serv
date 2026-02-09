@@ -33,15 +33,18 @@ class NFSeNacionalClient:
             nfse_obj.save()
             
             # 2. Ler Certificado (Bytes)
-            # Evita usar .path que pode não existir em ambientes de nuvem (Railway/Heroku/AWS)
             try:
-                if nfse_obj.empresa.certificado_a1:
+                if nfse_obj.empresa.certificado_base64:
+                    import base64
+                    cert_bytes = base64.b64decode(nfse_obj.empresa.certificado_base64)
+                elif nfse_obj.empresa.certificado_a1:
+                     # Fallback to file opening (might fail on Railway if file is gone)
                     with nfse_obj.empresa.certificado_a1.open("rb") as f:
                         cert_bytes = f.read()
                 else:
-                     raise ValueError("Arquivo de certificado não encontrado.")
+                     raise ValueError("Certificado não configurado.")
             except Exception as e:
-                # Fallback to path if open fails (unlikely if field exists)
+                 # Last resort path attempt
                 if hasattr(nfse_obj.empresa.certificado_a1, 'path'):
                      with open(nfse_obj.empresa.certificado_a1.path, 'rb') as f:
                         cert_bytes = f.read()

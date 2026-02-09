@@ -14,8 +14,27 @@ class Empresa(models.Model):
     inscricao_municipal = models.CharField(max_length=20, verbose_name="Inscrição Municipal")
     codigo_mun_ibge = models.CharField(max_length=7, verbose_name="Código Município IBGE", default="2611606", help_text="Ex: 2611606 (Recife)")
     certificado_a1 = models.FileField(upload_to='certificados/', verbose_name="Certificado Digital A1 (.pfx)")
+    certificado_base64 = models.TextField(blank=True, null=True, verbose_name="Conteúdo do Certificado (Base64)")
     senha_certificado = models.CharField(max_length=100, verbose_name="Senha do Certificado")
     ambiente = models.IntegerField(choices=AMBIENTE_CHOICES, default=2, verbose_name="Ambiente")
+
+    def save(self, *args, **kwargs):
+        # Auto-convert uploaded file to base64 for persistence
+        if self.certificado_a1 and not self.certificado_base64:
+             try:
+                 import base64
+                 # Check if it's a new upload (InMemoryUploadedFile) or existing file
+                 if hasattr(self.certificado_a1, 'read'):
+                     self.certificado_a1.seek(0)
+                     file_content = self.certificado_a1.read()
+                     self.certificado_base64 = base64.b64encode(file_content).decode('utf-8')
+                     # Reset cursor just in case
+                     if hasattr(self.certificado_a1, 'seek'):
+                         self.certificado_a1.seek(0)
+             except Exception as e:
+                 print(f"Erro ao converter certificado para base64: {e}")
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.razao_social
