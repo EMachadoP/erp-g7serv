@@ -30,15 +30,15 @@ class Migration(migrations.Migration):
             name='ultimo_numero_nfse',
             field=models.IntegerField(default=0, verbose_name='Último Nº NFS-e Emitida'),
         ),
+        migrations.AlterField(
+            model_name='notafiscalservico',
+            name='numero_dps',
+            field=models.IntegerField(unique=True, verbose_name='Nº DPS'),
+        ),
         migrations.AddField(
             model_name='notafiscalservico',
             name='id',
             field=models.AutoField(default=1, primary_key=True, serialize=False),
             preserve_default=False,
-        ),
-        migrations.AlterField(
-            model_name='notafiscalservico',
-            name='numero_dps',
-            field=models.IntegerField(unique=True, verbose_name='Nº DPS'),
         ),
     ]
