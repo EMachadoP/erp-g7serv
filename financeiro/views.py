@@ -1375,18 +1375,37 @@ def diagnostico_nfse_nacional(request):
                     cert_bytes = None
 
                 if cert_bytes:
-                    # DIAGNOSTICO OPENSSL (Tira teima)
+                    # DIAGNOSTICO OPENSSL (Tira teima - Brute Force Encoding)
                     print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
-                    diag_res = diagnosticar_pfx_com_openssl(cert_bytes, empresa.senha_certificado)
-                    print(f"Normal OK? {diag_res['openssl_normal_ok']}")
-                    print(f"Legacy OK? {diag_res['openssl_legacy_ok']}")
-                    if not diag_res['openssl_normal_ok'] and diag_res['openssl_legacy_ok']:
-                         print(">>> DETECTADO: Certificado requer Legacy Provider! <<<")
-                         print("Configure OPENSSL_CONF='/app/openssl.cnf'")
-                    elif not diag_res['openssl_normal_ok'] and not diag_res['openssl_legacy_ok']:
-                         print(">>> ERRO: Senha incorreta ou arquivo corrompido (falhou em ambos).")
-                         print(f"Erro Normal: {diag_res['normal_err']}")
-                         print(f"Erro Legacy: {diag_res['legacy_err']}")
+                    diag_root = diagnosticar_pfx_com_openssl(cert_bytes, empresa.senha_certificado)
+                    
+                    tried = diag_root.get('tried_encodings', [])
+                    results = diag_root.get('last_result', {})
+                    
+                    encryption_ok = False
+                    
+                    for enc in tried:
+                        res = results.get(enc, {})
+                        norm_ok = res.get('openssl_normal_ok', False)
+                        legacy_ok = res.get('openssl_legacy_ok', False)
+                        
+                        print(f"[{enc}] Normal OK? {norm_ok} | Legacy OK? {legacy_ok}")
+                        
+                        if norm_ok or legacy_ok:
+                            encryption_ok = True
+                            if legacy_ok and not norm_ok:
+                                print(f">>> SUCESSO com {enc} (Requer Legacy Provider) <<<")
+                            elif norm_ok:
+                                print(f">>> SUCESSO com {enc} (Moderno) <<<")
+                        else:
+                            # Se falhou, mostrar erro resumido
+                            err = res.get('legacy_err', '') or res.get('normal_err', '')
+                            clean_err = err.split('\n')[0] if err else 'Sem erro capturado'
+                            print(f"    Erro ({enc}): {clean_err}")
+
+                    if not encryption_ok:
+                         print("\n>>> ERRO FATAL: Nenhuma combinação de senha/encoding funcionou.")
+                         print("Verifique se a senha contém caracteres especiais ou se o arquivo está corrompido.")
                     
                     # 2. Testar Carregamento do PFX (Robustez)
                     private_key = None

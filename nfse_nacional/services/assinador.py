@@ -64,23 +64,45 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
             except FileNotFoundError:
                 return -2, "OpenSSL não encontrado", ""
 
-        # teste normal
-        norm_pwd = senha
-        if isinstance(senha, bytes):
-            norm_pwd = senha.decode('utf-8', errors='ignore')
+        # Tentar varias codificacoes de senha
+        encodings_to_try = []
+        
+        # 1. String original (UTF-8 no Linux)
+        encodings_to_try.append(("UTF-8", senha))
+        
+        # 2. Latin-1 / CP1252 (Comum no Windows)
+        try:
+            if isinstance(senha, str):
+                latin_pwd = senha.encode('latin-1').decode('latin-1') # Ensure it is valid latin-1
+                if latin_pwd != senha: # Only add if different (has special chars) or just add anyway
+                     pass
+                encodings_to_try.append(("Latin-1", senha.encode('latin-1').decode('latin-1')))
+        except:
+            pass # Senha tem chars que nao existem em latin-1
             
-        code1, out1, err1 = run(["openssl", "pkcs12", "-info", "-in", str(p), "-noout", "-passin", f"pass:{norm_pwd}"])
-
-        # teste legacy
-        code2, out2, err2 = run(["openssl", "pkcs12", "-legacy", "-info", "-in", str(p), "-noout", "-passin", f"pass:{norm_pwd}"])
-
+        final_results = {}
+        
+        for name, pwd_candidate in encodings_to_try:
+            # teste normal
+            code1, out1, err1 = run(["openssl", "pkcs12", "-info", "-in", str(p), "-noout", "-passin", f"pass:{pwd_candidate}"])
+            # teste legacy
+            code2, out2, err2 = run(["openssl", "pkcs12", "-legacy", "-info", "-in", str(p), "-noout", "-passin", f"pass:{pwd_candidate}"])
+            
+            final_results[name] = {
+                "openssl_normal_ok": code1 == 0,
+                "openssl_legacy_ok": code2 == 0,
+                "normal_err": err1,
+                "legacy_err": err2
+            }
+            
+            # Se funcionou, paramos
+            if code1 == 0 or code2 == 0:
+                break
+        
+        # Retorna o ultimo ou o que funcionou
         return {
-            "openssl_normal_ok": code1 == 0,
-            "openssl_legacy_ok": code2 == 0,
-            "normal_code": code1,
-            "legacy_code": code2,
-            "normal_err": err1,
-            "legacy_err": err2,
+             "tried_encodings": [x[0] for x in encodings_to_try],
+             "last_result": final_results
         }
 
 def carregar_certificado(caminho_ou_bytes, senha):
