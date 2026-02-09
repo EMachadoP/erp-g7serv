@@ -1322,7 +1322,7 @@ def dre_report(request):
         'end_date': end_date
     })
 
-@admin_only
+@login_required
 def diagnostico_nfse_nacional(request):
     import io
     import sys
@@ -1401,28 +1401,47 @@ def diagnostico_nfse_nacional(request):
                             cert_path = cert_file.name
                             
                             # 4. Testar Conexão (Ping na API)
-                            URL_PROD = "https://sefin.nfse.gov.br/sefinnacional/nfse"
-                            URL_HOMOL = "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse"
+                            # URLs Atuais (Suspeitas)
+                            URL_PROD_OLD = "https://sefin.nfse.gov.br/sefinnacional/nfse"
+                            URL_HOMOL_OLD = "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse"
                             
-                            url = URL_PROD if empresa.ambiente == 1 else URL_HOMOL
-                            print(f"Testando conexão com: {url}")
+                            # URLs Novas (Prováveis) - ADN
+                            URL_PROD_ADN = "https://adn.nfse.gov.br/nfse"
+                            URL_HOMOL_ADN = "https://adn.producaorestrita.nfse.gov.br/nfse"
                             
-                            try:
-                                t0 = time.time()
-                                print("Enviando request (timeout=10s)...")
-                                response = requests.get(url, cert=(cert_path, key_path), timeout=10)
-                                dt = time.time() - t0
-                                print(f"RESPOSTA RECEBIDA em {dt:.2f}s")
-                                print(f"Status Code: {response.status_code}")
-                                print(f"Content (inicio): {response.text[:200]}")
-                            except requests.exceptions.SSLError as e:
-                                print(f"ERRO SSL (Handshake/Certificado): {e}")
-                            except requests.exceptions.ConnectTimeout:
-                                print("ERRO: TIMEOUT de conexão (Wall/Firewall).")
-                            except requests.exceptions.ReadTimeout:
-                                print("ERRO: TIMEOUT de leitura (Servidor aceitou mas demorou).")
-                            except Exception as e:
-                                print(f"ERRO DE REQUISICAO: {e}")
+                            urls_to_test = []
+                            if empresa.ambiente == 1:
+                                urls_to_test = [
+                                    ("ATUAL (Sefin)", URL_PROD_OLD),
+                                    ("NOVA (ADN)", URL_PROD_ADN)
+                                ]
+                            else:
+                                urls_to_test = [
+                                    ("ATUAL (Sefin)", URL_HOMOL_OLD),
+                                    ("NOVA (ADN)", URL_HOMOL_ADN)
+                                ]
+                            
+                            for label, url in urls_to_test:
+                                print(f"\n--- Testando con: {label} ---")
+                                print(f"URL: {url}")
+                                
+                                try:
+                                    t0 = time.time()
+                                    # Timeout curto para detectar hang
+                                    # POST vazio ou GET para ver resposta
+                                    response = requests.get(url, cert=(cert_path, key_path), timeout=10) 
+                                    dt = time.time() - t0
+                                    print(f"RESPOSTA RECEBIDA em {dt:.2f}s")
+                                    print(f"Status Code: {response.status_code}")
+                                    print(f"Content (inicio): {response.text[:200]}")
+                                except requests.exceptions.SSLError as e:
+                                    print(f"ERRO SSL (Handshake/Certificado): {e}")
+                                except requests.exceptions.ConnectTimeout:
+                                    print("ERRO: TIMEOUT de conexão (Wall/Firewall).")
+                                except requests.exceptions.ReadTimeout:
+                                    print("ERRO: TIMEOUT de leitura (Servidor aceitou mas demorou).")
+                                except Exception as e:
+                                    print(f"ERRO DE REQUISICAO: {e}")
 
                     except Exception as e:
                         print(f"ERRO ao criar arquivos temp ou conectar: {e}")
