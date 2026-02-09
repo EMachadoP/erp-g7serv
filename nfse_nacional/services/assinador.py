@@ -96,19 +96,24 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
         # Prepare byte candidates
         byte_candidates = []
         
+        # Helper to add permutations
+        def add_permutations(label, b_pwd):
+            byte_candidates.append((label, b_pwd))
+            byte_candidates.append((label + " + \\n", b_pwd + b"\n"))
+        
         # 1. UTF-8 (Standard Linux)
         try:
              if isinstance(senha, str):
-                 byte_candidates.append(("UTF-8", senha.encode('utf-8')))
+                 add_permutations("UTF-8", senha.encode('utf-8'))
              else:
-                 byte_candidates.append(("UTF-8 (Bytes)", senha))
+                 add_permutations("UTF-8 (Bytes)", senha)
         except Exception as e:
              byte_candidates.append(("UTF-8 Error", b""))
 
         # 2. Latin-1 (Standard Windows) 
         try:
             if isinstance(senha, str):
-                byte_candidates.append(("Latin-1", senha.encode('latin-1')))
+                add_permutations("Latin-1", senha.encode('latin-1'))
         except Exception as e:
             pass # Caracter não mapeável em Latin-1
 
