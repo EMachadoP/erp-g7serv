@@ -93,21 +93,40 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
 
         final_results = {}
         
-        for name, pwd_candidate in encodings_to_try:
-            # Prepare password input for stdin
-            pwd_input = pwd_candidate.encode('utf-8') if isinstance(pwd_candidate, str) else pwd_candidate
-            
+        # Prepare byte candidates
+        byte_candidates = []
+        
+        # 1. UTF-8 (Standard Linux)
+        try:
+             if isinstance(senha, str):
+                 byte_candidates.append(("UTF-8", senha.encode('utf-8')))
+             else:
+                 byte_candidates.append(("UTF-8 (Bytes)", senha))
+        except Exception as e:
+             byte_candidates.append(("UTF-8 Error", b""))
+
+        # 2. Latin-1 (Standard Windows) 
+        try:
+            if isinstance(senha, str):
+                byte_candidates.append(("Latin-1", senha.encode('latin-1')))
+        except Exception as e:
+            pass # Caracter não mapeável em Latin-1
+
+        for name, pwd_bytes in byte_candidates:
             # teste normal
             try:
-                # -passin stdin
+                # -passin stdin, text=False para enviar bytes crus
                 r1 = subprocess.run(
                     ["openssl", "pkcs12", "-info", "-in", str(p), "-noout", "-passin", "stdin"],
-                    input=pwd_input,
+                    input=pwd_bytes,
                     capture_output=True, 
-                    text=True, 
+                    text=False, 
                     timeout=5
                 )
-                code1, out1, err1 = r1.returncode, r1.stdout, r1.stderr
+                # Decode output manually for display
+                out1 = r1.stdout.decode('utf-8', errors='replace')
+                err1 = r1.stderr.decode('utf-8', errors='replace')
+                code1 = r1.returncode
             except Exception as e:
                 code1, out1, err1 = -1, "", str(e)
 
@@ -115,12 +134,14 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
             try:
                 r2 = subprocess.run(
                     ["openssl", "pkcs12", "-legacy", "-info", "-in", str(p), "-noout", "-passin", "stdin"],
-                    input=pwd_input,
+                    input=pwd_bytes,
                     capture_output=True, 
-                    text=True, 
+                    text=False, 
                     timeout=5
                 )
-                code2, out2, err2 = r2.returncode, r2.stdout, r2.stderr
+                out2 = r2.stdout.decode('utf-8', errors='replace')
+                err2 = r2.stderr.decode('utf-8', errors='replace')
+                code2 = r2.returncode
             except Exception as e:
                 code2, out2, err2 = -1, "", str(e)
             
@@ -139,7 +160,7 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
         return {
              "file_sha256": file_hash,
              "openssl_providers": providers_output,
-             "tried_encodings": [x[0] for x in encodings_to_try],
+             "tried_encodings": [x[0] for x in byte_candidates],
              "last_result": final_results
         }
 
