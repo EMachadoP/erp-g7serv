@@ -80,13 +80,49 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
         except:
             pass # Senha tem chars que nao existem em latin-1
             
+        # 0. Verificar Providers Carregados e integridade do arquivo
+        import hashlib
+        file_hash = hashlib.sha256(pfx_bytes).hexdigest()
+        
+        # Check providers
+        try:
+            r_prov = subprocess.run(["openssl", "list", "-providers"], capture_output=True, text=True, timeout=5)
+            providers_output = r_prov.stdout
+        except Exception as e:
+            providers_output = f"Erro ao listar providers: {e}"
+
         final_results = {}
         
         for name, pwd_candidate in encodings_to_try:
+            # Prepare password input for stdin
+            pwd_input = pwd_candidate.encode('utf-8') if isinstance(pwd_candidate, str) else pwd_candidate
+            
             # teste normal
-            code1, out1, err1 = run(["openssl", "pkcs12", "-info", "-in", str(p), "-noout", "-passin", f"pass:{pwd_candidate}"])
+            try:
+                # -passin stdin
+                r1 = subprocess.run(
+                    ["openssl", "pkcs12", "-info", "-in", str(p), "-noout", "-passin", "stdin"],
+                    input=pwd_input,
+                    capture_output=True, 
+                    text=True, 
+                    timeout=5
+                )
+                code1, out1, err1 = r1.returncode, r1.stdout, r1.stderr
+            except Exception as e:
+                code1, out1, err1 = -1, "", str(e)
+
             # teste legacy
-            code2, out2, err2 = run(["openssl", "pkcs12", "-legacy", "-info", "-in", str(p), "-noout", "-passin", f"pass:{pwd_candidate}"])
+            try:
+                r2 = subprocess.run(
+                    ["openssl", "pkcs12", "-legacy", "-info", "-in", str(p), "-noout", "-passin", "stdin"],
+                    input=pwd_input,
+                    capture_output=True, 
+                    text=True, 
+                    timeout=5
+                )
+                code2, out2, err2 = r2.returncode, r2.stdout, r2.stderr
+            except Exception as e:
+                code2, out2, err2 = -1, "", str(e)
             
             final_results[name] = {
                 "openssl_normal_ok": code1 == 0,
@@ -101,6 +137,8 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
         
         # Retorna o ultimo ou o que funcionou
         return {
+             "file_sha256": file_hash,
+             "openssl_providers": providers_output,
              "tried_encodings": [x[0] for x in encodings_to_try],
              "last_result": final_results
         }

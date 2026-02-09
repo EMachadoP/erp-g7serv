@@ -1380,7 +1380,7 @@ def diagnostico_nfse_nacional(request):
                     print("\n--- INSPEÇÃO DE SENHA ---")
                     if pwd:
                         print(f"Senha (Len): {len(pwd)}")
-                        print(f"Senha (Repr): {repr(pwd)}") # Mostra chars ocultos como \r \n
+                        print(f"Senha (Repr): {repr(pwd)}") 
                         masked = pwd[:2] + "*" * (len(pwd)-4) + pwd[-2:] if len(pwd) > 4 else "****"
                         print(f"Senha (Mask): {masked}")
                     else:
@@ -1389,6 +1389,13 @@ def diagnostico_nfse_nacional(request):
                     # DIAGNOSTICO OPENSSL (Tira teima - Brute Force Encoding)
                     print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
                     diag_root = diagnosticar_pfx_com_openssl(cert_bytes, empresa.senha_certificado)
+                    
+                    print(f"SHA256 do PFX (Check Integridade): {diag_root.get('file_sha256')}")
+                    print("\n[OpenSSL Providers Loaded]:")
+                    print(diag_root.get('openssl_providers', '').strip())
+                    print("-" * 30)
+                    
+                    tried = diag_root.get('tried_encodings', [])
                     
                     tried = diag_root.get('tried_encodings', [])
                     results = diag_root.get('last_result', {})
