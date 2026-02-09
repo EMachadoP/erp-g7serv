@@ -23,6 +23,10 @@ def carregar_certificado(caminho_ou_bytes, senha):
     # Try different password encodings
     encodings = ['utf-8', 'latin-1']
     last_error = None
+    
+    # Strip whitespace from password if it's a string
+    if isinstance(senha, str):
+        senha = senha.strip()
 
     for encoding in encodings:
         try:
@@ -39,7 +43,9 @@ def carregar_certificado(caminho_ou_bytes, senha):
             last_error = e
     
     # If we get here, all attempts failed
-    raise ValueError(f"Falha ao carregar certificado (Tamanho: {len(pfx_data)} bytes). Erro: {last_error}")
+    # Get first 4 bytes in hex to verify it's a PFX (should be roughly 30 82 ...)
+    header_hex = pfx_data[:4].hex() if pfx_data else "EMPTY"
+    raise ValueError(f"Falha ao carregar certificado (Tamanho: {len(pfx_data)} bytes, Header: {header_hex}). Erro: {last_error}")
 
 def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha):
     """
