@@ -37,7 +37,8 @@ class ServiceOrderForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Querysets are already handled in field definition, no need for extra logic here
+        from core.models import Person
+        self.fields['client'].queryset = Person.objects.filter(is_client=True, is_supplier=False)
 
 
 class ServiceOrderItemForm(forms.ModelForm):

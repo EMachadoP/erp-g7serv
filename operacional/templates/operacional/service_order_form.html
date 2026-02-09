@@ -85,7 +85,7 @@
                                 <label for="order_type" class="form-label">Tipo *</label>
                                 <select name="order_type" id="order_type" class="form-select" required>
                                     {% for value, label in type_choices %}
-                                    <option value="{{ value }}" {% if order.order_type == value %}selected{% endif %}>
+                                    <option value="{{ value }}" {% if order.order_type==value %}selected{% endif %}>
                                         {{ label }}
                                     </option>
                                     {% endfor %}
@@ -97,7 +97,7 @@
                                 <select name="reason" id="reason" class="form-select" required>
                                     <option value="">Selecione..</option>
                                     {% for value, label in reason_choices %}
-                                    <option value="{{ value }}" {% if order.reason == value %}selected{% endif %}>
+                                    <option value="{{ value }}" {% if order.reason==value %}selected{% endif %}>
                                         {{ label }}
                                     </option>
                                     {% endfor %}
@@ -220,10 +220,27 @@
 </div>
 
 <script>
-    // Simple script to populate address/contact when client changes (if we had an API)
-    // For now, it just clears them if client changes to prompt manual entry or could be enhanced later
-    document.getElementById('id_client').addEventListener('change', function () {
-        // Future: Fetch client details via AJAX
+    $(document).ready(function () {
+        // Initialize Select2 for Client
+        $('#id_client').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Selecione um cliente...',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Optional: Initialize for Technician and Seller as well for better UX
+        $('#id_technician, #id_seller').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Selecione...',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Simple script to populate address/contact when client changes (if we had an API)
+        $('#id_client').on('change', function () {
+            // Future: Fetch client details via AJAX
+        });
     });
 </script>
 {% endblock %}

@@ -139,7 +139,7 @@ def service_order_create(request):
         form = ServiceOrderForm()
         formset = ServiceOrderItemFormSet()
 
-    clients = Person.objects.filter(is_client=True)
+    clients = Person.objects.filter(is_client=True, is_supplier=False)
     
     return render(request, 'operacional/service_order_form.html', {
         'form': form,
@@ -188,7 +188,7 @@ def service_order_update(request, pk):
         form = ServiceOrderForm(instance=order)
         formset = ServiceOrderItemFormSet(instance=order)
 
-    clients = Person.objects.filter(is_client=True)
+    clients = Person.objects.filter(is_client=True, is_supplier=False)
     
     return render(request, 'operacional/service_order_form.html', {
         'form': form,
