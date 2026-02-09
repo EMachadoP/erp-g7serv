@@ -1334,13 +1334,17 @@ def diagnostico_nfse_nacional(request):
     from contextlib import redirect_stdout
     from cryptography.hazmat.primitives import serialization
     from nfse_nacional.models import Empresa
-    from nfse_nacional.services.assinador import carregar_certificado, assinar_xml
+    from nfse_nacional.services.assinador import carregar_certificado, assinar_xml, decode_pfx_base64, diagnosticar_pfx_com_openssl
     
     output = io.StringIO()
     
     try:
         with redirect_stdout(output):
             print("--- INICIANDO DIAGNOSTICO DE CONEXAO (VIA BROWSER) ---")
+            
+            # Checar Variável de Ambiente
+            openssl_conf = os.environ.get('OPENSSL_CONF')
+            print(f"ENV OPENSSL_CONF: {openssl_conf}")
             
             # 1. Carregar Empresa e Certificado
             empresa = Empresa.objects.first()
@@ -1353,32 +1357,45 @@ def diagnostico_nfse_nacional(request):
                 cert_bytes = None
                 try:
                     if empresa.certificado_base64:
-                        import base64
-                        cert_bytes = base64.b64decode(empresa.certificado_base64)
-                        print("Certificado carregado do Base64.")
+                        # USAR DECODE ROBUSTO
+                        cert_bytes = decode_pfx_base64(empresa.certificado_base64)
+                        print(f"Certificado carregado do Base64 (len={len(cert_bytes)}).")
                     elif empresa.certificado_a1:
                         try:
                             with empresa.certificado_a1.open("rb") as f:
                                 cert_bytes = f.read()
-                            print("Certificado carregado do Arquivo.")
+                            print(f"Certificado carregado do Arquivo (len={len(cert_bytes)}).")
                         except:
                             if hasattr(empresa.certificado_a1, 'path'):
                                  with open(empresa.certificado_a1.path, 'rb') as f:
                                     cert_bytes = f.read()
-                                 print("Certificado carregado do Path (Fallback).")
+                                 print(f"Certificado carregado do Path (Fallback) (len={len(cert_bytes)}).")
                 except Exception as e:
                     print(f"ERRO ao ler bytes do certificado: {e}")
                     cert_bytes = None
 
                 if cert_bytes:
+                    # DIAGNOSTICO OPENSSL (Tira teima)
+                    print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
+                    diag_res = diagnosticar_pfx_com_openssl(cert_bytes, empresa.senha_certificado)
+                    print(f"Normal OK? {diag_res['openssl_normal_ok']}")
+                    print(f"Legacy OK? {diag_res['openssl_legacy_ok']}")
+                    if not diag_res['openssl_normal_ok'] and diag_res['openssl_legacy_ok']:
+                         print(">>> DETECTADO: Certificado requer Legacy Provider! <<<")
+                         print("Configure OPENSSL_CONF='/app/openssl.cnf'")
+                    elif not diag_res['openssl_normal_ok'] and not diag_res['openssl_legacy_ok']:
+                         print(">>> ERRO: Senha incorreta ou arquivo corrompido (falhou em ambos).")
+                         print(f"Erro Normal: {diag_res['normal_err']}")
+                         print(f"Erro Legacy: {diag_res['legacy_err']}")
+                    
                     # 2. Testar Carregamento do PFX (Robustez)
                     private_key = None
                     certificate = None
                     try:
                         private_key, certificate = carregar_certificado(cert_bytes, empresa.senha_certificado)
-                        print("SUCESSO: Certificado PFX carregado e senha aceita.")
+                        print("SUCESSO: Certificado PFX carregado e senha aceita (Python).")
                     except Exception as e:
-                        print(f"ERRO GERAL ao carregar PFX: {e}")
+                        print(f"ERRO GERAL ao carregar PFX (Python): {e}")
 
                     if private_key and certificate:
                         # 3. Preparar mTLS
