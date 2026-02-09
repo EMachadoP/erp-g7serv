@@ -115,7 +115,22 @@ def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
             if isinstance(senha, str):
                 add_permutations("Latin-1", senha.encode('latin-1'))
         except Exception as e:
-            pass # Caracter não mapeável em Latin-1
+            pass 
+
+        # 3. UTF-16LE (Windows Internal) - TENTATIVA FINAL
+        try:
+            if isinstance(senha, str):
+                # UTF-16 adds BOM or null bytes, common in Windows crypto APIs
+                add_permutations("UTF-16LE", senha.encode('utf-16le'))
+        except:
+             pass
+
+        # 4. CP850 (DOS/Legacy PT-BR)
+        try:
+            if isinstance(senha, str):
+                add_permutations("CP850", senha.encode('cp850'))
+        except:
+             pass
 
         for name, pwd_bytes in byte_candidates:
             # teste normal
