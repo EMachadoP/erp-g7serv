@@ -1,51 +1,107 @@
 import os
+import re
+import base64
+import binascii
 from lxml import etree
 from signxml import XMLSigner, XMLVerifier, methods
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import UnsupportedAlgorithm
 
 def carregar_certificado(caminho_ou_bytes, senha):
-    """
-    Carrega o arquivo .pfx e retorna a chave privada e o certificado.
-    Aceita caminho do arquivo (str) ou o conteúdo em bytes.
-    """
+    # 1) Ler bytes
     if isinstance(caminho_ou_bytes, str):
-        with open(caminho_ou_bytes, 'rb') as f:
+        with open(caminho_ou_bytes, "rb") as f:
             pfx_data = f.read()
     else:
-        pfx_data = caminho_ou_bytes
+        pfx_data = caminho_ou_bytes or b""
 
-    # Load PFX
-    # Ensure raw bytes are present
+
     if not pfx_data:
         raise ValueError("Dados do certificado PFX nulos ou vazios.")
 
-    # Try different password encodings
-    encodings = ['utf-8', 'latin-1']
-    last_error = None
-    
-    # Strip whitespace from password if it's a string
-    if isinstance(senha, str):
-        senha = senha.strip()
 
-    for encoding in encodings:
+    # 2) Se vier base64 por engano, tenta decodificar (sem quebrar se não for)
+    #    - PFX em base64 costuma começar com "MII..."
+    if pfx_data[:2] in (b"MI", b"LS") and not (len(pfx_data) >= 2 and pfx_data[0] == 0x30):
         try:
-             bytes_senha = senha
-             if isinstance(senha, str):
-                 bytes_senha = senha.encode(encoding)
-             
-             private_key, certificate, additional_certificates = pkcs12.load_key_and_certificates(
-                pfx_data,
-                bytes_senha
-             )
-             return private_key, certificate
-        except Exception as e:
-            last_error = e
-    
-    # If we get here, all attempts failed
-    # Get first 4 bytes in hex to verify it's a PFX (should be roughly 30 82 ...)
-    header_hex = pfx_data[:4].hex() if pfx_data else "EMPTY"
-    raise ValueError(f"Falha ao carregar certificado (Tamanho: {len(pfx_data)} bytes, Header: {header_hex}). Erro: {last_error}")
+            clean = re.sub(br"\s+", b"", pfx_data)
+            # se for PEM, extrai o miolo
+            m = re.search(br"-----BEGIN[^-]+-----(.+?)-----END[^-]+-----", pfx_data, re.S)
+            if m:
+                clean = re.sub(br"\s+", b"", m.group(1))
+            pfx_data = base64.b64decode(clean, validate=True)
+        except binascii.Error:
+            pass  # não era base64 válido, segue como está
+
+
+    header_hex = pfx_data[:4].hex()
+
+
+    # 3) Normalizar senha (muito comum vir com aspas ou newline do ENV/Secrets)
+    if senha is None:
+        senha_str = ""
+    elif isinstance(senha, (bytes, bytearray)):
+        senha_str = None
+        senha_bytes_direct = bytes(senha)
+    else:
+        senha_str = str(senha).strip()
+        senha_str = senha_str.strip('"').strip("'")  # remove aspas
+        senha_bytes_direct = None
+
+
+    # 4) Montar candidatos de senha
+    candidatos = []
+    if senha_bytes_direct is not None:
+        candidatos.append(senha_bytes_direct)
+    else:
+        if senha_str == "":
+            candidatos.append(None)   # sem senha
+            candidatos.append(b"")    # senha vazia
+        else:
+            candidatos.extend([
+                senha_str.encode("utf-8"),
+                senha_str.encode("latin-1"),
+                senha_str.encode("utf-16le"),
+            ])
+
+
+    last_err = None
+
+
+    for pw in candidatos:
+        try:
+            private_key, certificate, additional = pkcs12.load_key_and_certificates(pfx_data, pw)
+
+
+            if private_key is None or certificate is None:
+                raise ValueError(
+                    "PFX carregou, mas não contém chave privada e/ou certificado. "
+                    "Reexporte marcando 'incluir chave privada'."
+                )
+
+
+            return private_key, certificate
+
+
+        except UnsupportedAlgorithm as e:
+            # Caso típico: OpenSSL 3 bloqueando RC2/3DES etc.
+            raise ValueError(
+                "O PFX parece usar criptografia legada (ex.: RC2/3DES) que o OpenSSL 3 do Linux/Railway pode bloquear. "
+                "Solução: reexportar/converter o PFX para AES (comandos abaixo)."
+                f" (len={len(pfx_data)}, header={header_hex})"
+            ) from e
+
+
+        except ValueError as e:
+            last_err = e
+
+
+    raise ValueError(
+        f"Falha ao carregar certificado (len={len(pfx_data)} bytes, header={header_hex}). "
+        f"Causa provável: senha incorreta, senha chegando alterada (aspas/newline) ou PFX legado/incompatível. "
+        f"Erro final: {last_err}"
+    )
 
 def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha):
     """
@@ -60,8 +116,8 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha):
 
     # Sign XML
     # method=methods.enveloped is default
-    # signature_algorithm='rsa-sha1' is standard for NFSe
-    # digest_algorithm='sha1' is standard for NFSe
+    # signature_algorithm='rsa-sha256' is standard for NFSe
+    # digest_algorithm='sha256' is standard for NFSe
     # c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315' (C14N)
     
     signer = XMLSigner(
