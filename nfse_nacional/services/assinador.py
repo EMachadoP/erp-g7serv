@@ -2,11 +2,86 @@ import os
 import re
 import base64
 import binascii
+import subprocess
+import tempfile
+from pathlib import Path
 from lxml import etree
 from signxml import XMLSigner, methods
 from cryptography.hazmat.primitives.serialization import pkcs12, Encoding, PrivateFormat, NoEncryption
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import UnsupportedAlgorithm
+
+def decode_pfx_base64(b64: str) -> bytes:
+    if not b64:
+        return b""
+
+    # remove prefixos tipo data:application/x-pkcs12;base64,
+    b64 = re.sub(r"^data:.*?;base64,", "", b64.strip(), flags=re.IGNORECASE)
+
+    # remove espaços/quebras de linha
+    b64 = re.sub(r"\s+", "", b64)
+
+    # base64 urlsafe -> normal
+    b64 = b64.replace("-", "+").replace("_", "/")
+
+    # padding
+    missing = len(b64) % 4
+    if missing:
+        b64 += "=" * (4 - missing)
+
+    return base64.b64decode(b64)
+
+def normalize_password(senha):
+    if senha is None:
+        return None
+
+    if isinstance(senha, (bytes, bytearray)):
+        return bytes(senha) if len(senha) > 0 else None
+
+    s = str(senha)
+
+    # remove \r\n do fim e aspas acidentais
+    s = s.strip().strip('"').strip("'")
+
+    return s.encode("utf-8") if s != "" else None
+
+def diagnosticar_pfx_com_openssl(pfx_bytes: bytes, senha: str):
+    """
+    Roda openssl pkcs12 via subprocess para diferenciar senha errada de legado.
+    Retorna dict com resultados.
+    """
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "cert.pfx"
+        p.write_bytes(pfx_bytes)
+
+        def run(args):
+            # timeout de 5s para não travar
+            try:
+                r = subprocess.run(args, capture_output=True, text=True, timeout=5)
+                return r.returncode, (r.stdout or "")[-500:], (r.stderr or "")[-500:]
+            except subprocess.TimeoutExpired:
+                return -1, "TIMEOUT", "TIMEOUT"
+            except FileNotFoundError:
+                return -2, "OpenSSL não encontrado", ""
+
+        # teste normal
+        norm_pwd = senha
+        if isinstance(senha, bytes):
+            norm_pwd = senha.decode('utf-8', errors='ignore')
+            
+        code1, out1, err1 = run(["openssl", "pkcs12", "-info", "-in", str(p), "-noout", "-passin", f"pass:{norm_pwd}"])
+
+        # teste legacy
+        code2, out2, err2 = run(["openssl", "pkcs12", "-legacy", "-info", "-in", str(p), "-noout", "-passin", f"pass:{norm_pwd}"])
+
+        return {
+            "openssl_normal_ok": code1 == 0,
+            "openssl_legacy_ok": code2 == 0,
+            "normal_code": code1,
+            "legacy_code": code2,
+            "normal_err": err1,
+            "legacy_err": err2,
+        }
 
 def carregar_certificado(caminho_ou_bytes, senha):
     # 1) Ler bytes
@@ -16,63 +91,52 @@ def carregar_certificado(caminho_ou_bytes, senha):
     else:
         pfx_data = caminho_ou_bytes or b""
 
+    # Tentativa de decode robusto se parecer b64 string
+    if isinstance(pfx_data, str):
+         pfx_data = decode_pfx_base64(pfx_data)
+    
     if not pfx_data:
         raise ValueError("Dados do certificado PFX nulos ou vazios.")
-
-    # 2) Se vier base64 por engano, tenta decodificar
+        
+    # Se ainda vier bytes que parecem b64 (ex: lido de arquivo b64)
     if pfx_data[:2] in (b"MI", b"LS") and not (len(pfx_data) >= 2 and pfx_data[0] == 0x30):
-        try:
-            clean = re.sub(br"\s+", b"", pfx_data)
-            m = re.search(br"-----BEGIN[^-]+-----(.+?)-----END[^-]+-----", pfx_data, re.S)
-            if m:
-                clean = re.sub(br"\s+", b"", m.group(1))
-            pfx_data = base64.b64decode(clean, validate=True)
-        except binascii.Error:
-            pass 
+         try:
+             clean = re.sub(br"\s+", b"", pfx_data)
+             pfx_data = base64.b64decode(clean, validate=True)
+         except:
+             pass
 
     header_hex = pfx_data[:4].hex()
 
     # 3) Normalizar senha
-    if senha is None:
-        senha_bytes = None
-    elif isinstance(senha, (bytes, bytearray)):
-        senha_bytes = bytes(senha) if len(senha) > 0 else None
-    else:
-        senha_str = str(senha)
-        senha_str = senha_str.strip()
-        senha_bytes = senha_str.encode("utf-8") if senha_str != "" else None
+    senha_bytes = normalize_password(senha)
 
     # 4) Tentar carregar
     try:
         private_key, certificate, chain = pkcs12.load_key_and_certificates(pfx_data, senha_bytes)
     except UnsupportedAlgorithm as e:
          raise ValueError(
-            "O PFX parece usar criptografia legada (ex.: RC2/3DES) que o OpenSSL 3 do Linux/Railway bloqueia. "
-            "Solução: Habilitar 'legacy provider' no OpenSSL ou reexportar o certificado como AES."
+            "O PFX usa criptografia legada (ex.: RC2/3DES). O OpenSSL 3 bloqueou. "
+            "Configure OPENSSL_CONF='/app/openssl.cnf' no Railway."
             f" (len={len(pfx_data)}, header={header_hex})"
         ) from e
     except ValueError as e:
-        last_err = e
-        # Tentativa de fallback de encoding de senha se falhar (ex: latin-1)
-        if senha_bytes:
-             try:
-                 senha_latin = str(senha).strip().encode('latin-1')
-                 private_key, certificate, chain = pkcs12.load_key_and_certificates(pfx_data, senha_latin)
-             except:
-                 raise ValueError(
-                    f"Falha ao carregar PFX (len={len(pfx_data)}, header={header_hex}). "
-                    f"Erro: {last_err}"
-                ) from e
-        else:
+        # Se falhou, vamos dar uma dica baseada na exceção
+        msg_original = str(e)
+        if "Invalid password" in msg_original or "mac verify failure" in msg_original:
+             # Pode ser senha errada OU legado disfarçado
              raise ValueError(
-                f"Falha ao carregar PFX (len={len(pfx_data)}, header={header_hex}). "
-                f"Erro: {last_err}"
-            ) from e
+                f"Falha ao carregar PFX: {msg_original}. \n"
+                f"Dica: Se a senha estiver correta, isso é QUASE CERTEZA problema de PFX Legado no Linux. "
+                f"Use a ferramenta de diagnóstico para confirmar 'openssl -legacy'. "
+                f"(Header: {header_hex})"
+             ) from e
+        raise
 
     if private_key is None or certificate is None:
         raise ValueError("PFX carregou, mas não retornou chave privada e/ou certificado (arquivo incompleto?).")
 
-    return private_key, certificate  # Mantendo retorno de 2 valores por compatibilidade com resto do codigo
+    return private_key, certificate  # chain ignorado por compatibilidade
 
 def montar_cadeia_pem(cert, chain):
     pem = cert.public_bytes(serialization.Encoding.PEM)
