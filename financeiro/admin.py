@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import AccountPayable, AccountReceivable, CategoriaFinanceira, BankReconciliation, CentroResultado, CashAccount, Receipt, BudgetPlan, BudgetItem
+from .models import (
+    AccountPayable, AccountReceivable, CategoriaFinanceira, BankReconciliation, 
+    CentroResultado, CashAccount, Receipt, BudgetPlan, BudgetItem, 
+    EmpresaFiscal, NotaFiscalServico
+)
 
 @admin.register(CategoriaFinanceira)
 class CategoriaFinanceiraAdmin(admin.ModelAdmin):
@@ -54,3 +58,13 @@ class ReceiptAdmin(admin.ModelAdmin):
 
 admin.site.register(BudgetPlan)
 admin.site.register(BudgetItem)
+
+@admin.register(EmpresaFiscal)
+class EmpresaFiscalAdmin(admin.ModelAdmin):
+    list_display = ('cnpj', 'inscricao_municipal', 'codigo_municipio_ibge', 'regime_tributario')
+
+@admin.register(NotaFiscalServico)
+class NotaFiscalServicoAdmin(admin.ModelAdmin):
+    list_display = ('numero_dps', 'cliente', 'valor_total', 'status', 'protocolo')
+    list_filter = ('status', 'serie')
+    search_fields = ('cliente__name', 'protocolo')

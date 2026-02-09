@@ -248,3 +248,38 @@ class BudgetItem(BaseModel):
         unique_together = ('plan', 'category', 'month')
         verbose_name = "Item de Orçamento"
         verbose_name_plural = "Itens de Orçamento"
+
+class EmpresaFiscal(models.Model):
+    # Dados de Recife para o Padrão Nacional
+    cnpj = models.CharField(max_length=14, verbose_name="CNPJ")
+    inscricao_municipal = models.CharField(max_length=20, verbose_name="Inscrição Municipal")
+    codigo_municipio_ibge = models.CharField(max_length=7, default="2611606", verbose_name="Código Município IBGE") # Recife
+    regime_tributario = models.IntegerField(default=1, verbose_name="Regime Tributário") # 1 - Simples Nacional
+    
+    # Certificado A1 (Armazenado em Base64 para o Railway)
+    certificado_a1_base64 = models.TextField(blank=True, null=True, verbose_name="Certificado A1 (Base64)")
+    senha_certificado = models.CharField(max_length=100, blank=True, null=True, verbose_name="Senha do Certificado")
+
+    class Meta:
+        verbose_name = "Configuração Fiscal"
+        verbose_name_plural = "Configurações Fiscais"
+
+class NotaFiscalServico(models.Model):
+    status_choices = [
+        ('rascunho', 'Rascunho'),
+        ('processando', 'Processando'),
+        ('emitida', 'Emitida'),
+        ('erro', 'Erro')
+    ]
+    numero_dps = models.AutoField(primary_key=True, verbose_name="Nº DPS")
+    serie = models.CharField(max_length=5, default="1", verbose_name="Série")
+    cliente = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Cliente")
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Total")
+    xml_enviado = models.TextField(blank=True, null=True, verbose_name="XML Enviado")
+    xml_retorno = models.TextField(blank=True, null=True, verbose_name="XML Retorno")
+    protocolo = models.CharField(max_length=50, blank=True, null=True, verbose_name="Protocolo")
+    status = models.CharField(max_length=20, choices=status_choices, default='rascunho', verbose_name="Status")
+
+    class Meta:
+        verbose_name = "NFS-e"
+        verbose_name_plural = "Notas Fiscais de Serviço"
