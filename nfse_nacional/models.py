@@ -20,7 +20,7 @@ class Empresa(models.Model):
 
     def save(self, *args, **kwargs):
         # Auto-convert uploaded file to base64 for persistence
-        if self.certificado_a1 and not self.certificado_base64:
+        if self.certificado_a1:
              try:
                  import base64
                  # Check if it's a new upload (InMemoryUploadedFile) or existing file
