@@ -1452,18 +1452,23 @@ def diagnostico_nfse_nacional(request):
                             if key_path and os.path.exists(key_path): os.unlink(key_path)
                             if cert_path and os.path.exists(cert_path): os.unlink(cert_path)
                         
-                        # 5. Testar Assinatura (Velocidade)
-                        print("\n--- TESTE DE ASSINATURA ---")
-                        dummy_xml = "<InfDPS Id='DPS123'><Test>123</Test></InfDPS>"
-                        try:
-                            t0 = time.time()
-                            print("Assinando XML dummy...")
-                            signed = assinar_xml(dummy_xml, cert_bytes, empresa.senha_certificado)
-                            dt = time.time() - t0
-                            print(f"Assinatura CONCLUIDA em {dt:.2f}s")
-                            print(f"Tamanho assinado: {len(signed)}")
-                        except Exception as e:
-                            print(f"ERRO NA ASSINATURA: {e}")
+                        # 5. Testar Assinatura (Opcional - Pode Causar Crash)
+                        test_sign = request.GET.get('test_sign', '0')
+                        if test_sign == '1':
+                            print("\n--- TESTE DE ASSINATURA (ACIONADO) ---")
+                            dummy_xml = "<InfDPS Id='DPS123'><Test>123</Test></InfDPS>"
+                            try:
+                                t0 = time.time()
+                                print("Assinando XML dummy...")
+                                signed = assinar_xml(dummy_xml, cert_bytes, empresa.senha_certificado)
+                                dt = time.time() - t0
+                                print(f"Assinatura CONCLUIDA em {dt:.2f}s")
+                                print(f"Tamanho assinado: {len(signed)}")
+                            except Exception as e:
+                                print(f"ERRO NA ASSINATURA: {e}")
+                        else:
+                            print("\n--- TESTE DE ASSINATURA PULADO (Crash Risk) ---")
+                            print("Para testar assinatura: ?test_sign=1")
 
     except Exception as e:
         output.write(f"\nCRASH: Ocorreu um erro fatal durante o diagnóstico:\n{str(e)}\n\nTraceback:\n{traceback.format_exc()}")
