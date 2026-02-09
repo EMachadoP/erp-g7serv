@@ -10,8 +10,8 @@ from .assinador import assinar_xml, carregar_certificado
 from nfse_nacional.models import NFSe
 
 class NFSeNacionalClient:
-    URL_PRODUCAO = "https://sefin.nfse.gov.br/sefinnacional/nfse"
-    URL_HOMOLOGACAO = "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse"
+    URL_PRODUCAO = "https://adn.nfse.gov.br/nfse"
+    URL_HOMOLOGACAO = "https://adn.producaorestrita.nfse.gov.br/nfse"
 
     def enviar_dps(self, nfse_obj: NFSe):
         """
