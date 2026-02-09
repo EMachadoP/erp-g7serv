@@ -1330,6 +1330,7 @@ def diagnostico_nfse_nacional(request):
     import time
     import tempfile
     import os
+    import traceback
     from contextlib import redirect_stdout
     from cryptography.hazmat.primitives import serialization
     from nfse_nacional.models import Empresa
@@ -1337,130 +1338,134 @@ def diagnostico_nfse_nacional(request):
     
     output = io.StringIO()
     
-    with redirect_stdout(output):
-        print("--- INICIANDO DIAGNOSTICO DE CONEXAO (VIA BROWSER) ---")
-        
-        # 1. Carregar Empresa e Certificado
-        empresa = Empresa.objects.first()
-        if not empresa:
-            print("ERRO: Nenhuma empresa encontrada.")
-        else:
-            print(f"Empresa: {empresa.razao_social}")
-            print(f"Ambiente configurado: {empresa.ambiente} (1=Prod, 2=Homol)")
+    try:
+        with redirect_stdout(output):
+            print("--- INICIANDO DIAGNOSTICO DE CONEXAO (VIA BROWSER) ---")
             
-            cert_bytes = None
-            try:
-                if empresa.certificado_base64:
-                    import base64
-                    cert_bytes = base64.b64decode(empresa.certificado_base64)
-                    print("Certificado carregado do Base64.")
-                elif empresa.certificado_a1:
-                    try:
-                        with empresa.certificado_a1.open("rb") as f:
-                            cert_bytes = f.read()
-                        print("Certificado carregado do Arquivo.")
-                    except:
-                        if hasattr(empresa.certificado_a1, 'path'):
-                             with open(empresa.certificado_a1.path, 'rb') as f:
-                                cert_bytes = f.read()
-                             print("Certificado carregado do Path (Fallback).")
-            except Exception as e:
-                print(f"ERRO ao ler bytes do certificado: {e}")
+            # 1. Carregar Empresa e Certificado
+            empresa = Empresa.objects.first()
+            if not empresa:
+                print("ERRO: Nenhuma empresa encontrada.")
+            else:
+                print(f"Empresa: {empresa.razao_social}")
+                print(f"Ambiente configurado: {empresa.ambiente} (1=Prod, 2=Homol)")
+                
                 cert_bytes = None
-
-            if cert_bytes:
-                # 2. Testar Carregamento do PFX (Robustez)
-                private_key = None
-                certificate = None
                 try:
-                    private_key, certificate = carregar_certificado(cert_bytes, empresa.senha_certificado)
-                    print("SUCESSO: Certificado PFX carregado e senha aceita.")
+                    if empresa.certificado_base64:
+                        import base64
+                        cert_bytes = base64.b64decode(empresa.certificado_base64)
+                        print("Certificado carregado do Base64.")
+                    elif empresa.certificado_a1:
+                        try:
+                            with empresa.certificado_a1.open("rb") as f:
+                                cert_bytes = f.read()
+                            print("Certificado carregado do Arquivo.")
+                        except:
+                            if hasattr(empresa.certificado_a1, 'path'):
+                                 with open(empresa.certificado_a1.path, 'rb') as f:
+                                    cert_bytes = f.read()
+                                 print("Certificado carregado do Path (Fallback).")
                 except Exception as e:
-                    print(f"ERRO GERAL ao carregar PFX: {e}")
+                    print(f"ERRO ao ler bytes do certificado: {e}")
+                    cert_bytes = None
 
-                if private_key and certificate:
-                    # 3. Preparar mTLS
-                    print("Preparando arquivos temporários para mTLS...")
-                    key_path = None
-                    cert_path = None
+                if cert_bytes:
+                    # 2. Testar Carregamento do PFX (Robustez)
+                    private_key = None
+                    certificate = None
                     try:
-                        with tempfile.NamedTemporaryFile(delete=False) as key_file, \
-                             tempfile.NamedTemporaryFile(delete=False) as cert_file:
-                            
-                            key_file.write(private_key.private_bytes(
-                                encoding=serialization.Encoding.PEM,
-                                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                                encryption_algorithm=serialization.NoEncryption()
-                            ))
-                            key_file.flush()
-                            
-                            cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
-                            cert_file.flush()
-                            
-                            key_path = key_file.name
-                            cert_path = cert_file.name
-                            
-                            # 4. Testar Conexão (Ping na API)
-                            # URLs Atuais (Suspeitas)
-                            URL_PROD_OLD = "https://sefin.nfse.gov.br/sefinnacional/nfse"
-                            URL_HOMOL_OLD = "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse"
-                            
-                            # URLs Novas (Prováveis) - ADN
-                            URL_PROD_ADN = "https://adn.nfse.gov.br/nfse"
-                            URL_HOMOL_ADN = "https://adn.producaorestrita.nfse.gov.br/nfse"
-                            
-                            urls_to_test = []
-                            if empresa.ambiente == 1:
-                                urls_to_test = [
-                                    ("ATUAL (Sefin)", URL_PROD_OLD),
-                                    ("NOVA (ADN)", URL_PROD_ADN)
-                                ]
-                            else:
-                                urls_to_test = [
-                                    ("ATUAL (Sefin)", URL_HOMOL_OLD),
-                                    ("NOVA (ADN)", URL_HOMOL_ADN)
-                                ]
-                            
-                            for label, url in urls_to_test:
-                                print(f"\n--- Testando con: {label} ---")
-                                print(f"URL: {url}")
+                        private_key, certificate = carregar_certificado(cert_bytes, empresa.senha_certificado)
+                        print("SUCESSO: Certificado PFX carregado e senha aceita.")
+                    except Exception as e:
+                        print(f"ERRO GERAL ao carregar PFX: {e}")
+
+                    if private_key and certificate:
+                        # 3. Preparar mTLS
+                        print("Preparando arquivos temporários para mTLS...")
+                        key_path = None
+                        cert_path = None
+                        try:
+                            with tempfile.NamedTemporaryFile(delete=False) as key_file, \
+                                 tempfile.NamedTemporaryFile(delete=False) as cert_file:
                                 
-                                try:
-                                    t0 = time.time()
-                                    # Timeout curto para detectar hang
-                                    # POST vazio ou GET para ver resposta
-                                    response = requests.get(url, cert=(cert_path, key_path), timeout=10) 
-                                    dt = time.time() - t0
-                                    print(f"RESPOSTA RECEBIDA em {dt:.2f}s")
-                                    print(f"Status Code: {response.status_code}")
-                                    print(f"Content (inicio): {response.text[:200]}")
-                                except requests.exceptions.SSLError as e:
-                                    print(f"ERRO SSL (Handshake/Certificado): {e}")
-                                except requests.exceptions.ConnectTimeout:
-                                    print("ERRO: TIMEOUT de conexão (Wall/Firewall).")
-                                except requests.exceptions.ReadTimeout:
-                                    print("ERRO: TIMEOUT de leitura (Servidor aceitou mas demorou).")
-                                except Exception as e:
-                                    print(f"ERRO DE REQUISICAO: {e}")
+                                key_file.write(private_key.private_bytes(
+                                    encoding=serialization.Encoding.PEM,
+                                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                                    encryption_algorithm=serialization.NoEncryption()
+                                ))
+                                key_file.flush()
+                                
+                                cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+                                cert_file.flush()
+                                
+                                key_path = key_file.name
+                                cert_path = cert_file.name
+                                
+                                # 4. Testar Conexão (Ping na API)
+                                # URLs Atuais (Suspeitas)
+                                URL_PROD_OLD = "https://sefin.nfse.gov.br/sefinnacional/nfse"
+                                URL_HOMOL_OLD = "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse"
+                                
+                                # URLs Novas (Prováveis) - ADN
+                                URL_PROD_ADN = "https://adn.nfse.gov.br/nfse"
+                                URL_HOMOL_ADN = "https://adn.producaorestrita.nfse.gov.br/nfse"
+                                
+                                urls_to_test = []
+                                if empresa.ambiente == 1:
+                                    urls_to_test = [
+                                        ("ATUAL (Sefin)", URL_PROD_OLD),
+                                        ("NOVA (ADN)", URL_PROD_ADN)
+                                    ]
+                                else:
+                                    urls_to_test = [
+                                        ("ATUAL (Sefin)", URL_HOMOL_OLD),
+                                        ("NOVA (ADN)", URL_HOMOL_ADN)
+                                    ]
+                                
+                                for label, url in urls_to_test:
+                                    print(f"\n--- Testando con: {label} ---")
+                                    print(f"URL: {url}")
+                                    
+                                    try:
+                                        t0 = time.time()
+                                        # Timeout curto para detectar hang (5s)
+                                        # POST vazio ou GET para ver resposta
+                                        print("Enviando request (timeout=5s)...")
+                                        response = requests.get(url, cert=(cert_path, key_path), timeout=5) 
+                                        dt = time.time() - t0
+                                        print(f"RESPOSTA RECEBIDA em {dt:.2f}s")
+                                        print(f"Status Code: {response.status_code}")
+                                        print(f"Content (inicio): {response.text[:200]}")
+                                    except requests.exceptions.SSLError as e:
+                                        print(f"ERRO SSL (Handshake/Certificado): {e}")
+                                    except requests.exceptions.ConnectTimeout:
+                                        print("ERRO: TIMEOUT de conexão (Wall/Firewall).")
+                                    except requests.exceptions.ReadTimeout:
+                                        print("ERRO: TIMEOUT de leitura (Servidor aceitou mas demorou).")
+                                    except Exception as e:
+                                        print(f"ERRO DE REQUISICAO: {e}")
 
-                    except Exception as e:
-                        print(f"ERRO ao criar arquivos temp ou conectar: {e}")
-                    finally:
-                        if key_path and os.path.exists(key_path): os.unlink(key_path)
-                        if cert_path and os.path.exists(cert_path): os.unlink(cert_path)
-                    
-                    # 5. Testar Assinatura (Velocidade)
-                    print("\n--- TESTE DE ASSINATURA ---")
-                    dummy_xml = "<InfDPS Id='DPS123'><Test>123</Test></InfDPS>"
-                    try:
-                        t0 = time.time()
-                        print("Assinando XML dummy...")
-                        signed = assinar_xml(dummy_xml, cert_bytes, empresa.senha_certificado)
-                        dt = time.time() - t0
-                        print(f"Assinatura CONCLUIDA em {dt:.2f}s")
-                        print(f"Tamanho assinado: {len(signed)}")
-                    except Exception as e:
-                        print(f"ERRO NA ASSINATURA: {e}")
+                        except Exception as e:
+                            print(f"ERRO ao criar arquivos temp ou conectar: {e}")
+                        finally:
+                            if key_path and os.path.exists(key_path): os.unlink(key_path)
+                            if cert_path and os.path.exists(cert_path): os.unlink(cert_path)
+                        
+                        # 5. Testar Assinatura (Velocidade)
+                        print("\n--- TESTE DE ASSINATURA ---")
+                        dummy_xml = "<InfDPS Id='DPS123'><Test>123</Test></InfDPS>"
+                        try:
+                            t0 = time.time()
+                            print("Assinando XML dummy...")
+                            signed = assinar_xml(dummy_xml, cert_bytes, empresa.senha_certificado)
+                            dt = time.time() - t0
+                            print(f"Assinatura CONCLUIDA em {dt:.2f}s")
+                            print(f"Tamanho assinado: {len(signed)}")
+                        except Exception as e:
+                            print(f"ERRO NA ASSINATURA: {e}")
 
-    # return HttpResponse(output.getvalue(), content_type="text/plain")
+    except Exception as e:
+        output.write(f"\nCRASH: Ocorreu um erro fatal durante o diagnóstico:\n{str(e)}\n\nTraceback:\n{traceback.format_exc()}")
+        
     return render(request, 'financeiro/diagnostico_nfse.html', {'output': output.getvalue()})
