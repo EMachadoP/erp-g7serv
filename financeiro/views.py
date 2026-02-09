@@ -1375,6 +1375,17 @@ def diagnostico_nfse_nacional(request):
                     cert_bytes = None
 
                 if cert_bytes:
+                    # INSPEÇÃO DE SENHA (Novo)
+                    pwd = empresa.senha_certificado
+                    print("\n--- INSPEÇÃO DE SENHA ---")
+                    if pwd:
+                        print(f"Senha (Len): {len(pwd)}")
+                        print(f"Senha (Repr): {repr(pwd)}") # Mostra chars ocultos como \r \n
+                        masked = pwd[:2] + "*" * (len(pwd)-4) + pwd[-2:] if len(pwd) > 4 else "****"
+                        print(f"Senha (Mask): {masked}")
+                    else:
+                        print("Senha está VAZIA (None ou String vazia)")
+
                     # DIAGNOSTICO OPENSSL (Tira teima - Brute Force Encoding)
                     print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
                     diag_root = diagnosticar_pfx_com_openssl(cert_bytes, empresa.senha_certificado)
