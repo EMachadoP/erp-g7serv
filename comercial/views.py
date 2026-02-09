@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.views import View
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.template.loader import get_template
@@ -13,7 +13,10 @@ from django.utils.text import slugify
 from django.utils import timezone
 from django.contrib import messages
 import base64
-from .models import Contract, Budget, BudgetProduct, BudgetService, ContractTemplate, BillingGroup, ContractItem
+from .models import (
+    Contract, Budget, BudgetProduct, BudgetService, ContractTemplate, 
+    BillingGroup, ContractItem, ContractReadjustment, ContractReadjustmentLog
+)
 from .forms import BillingGroupForm, ContractForm, ContractItemFormSet
 from core.models import Person, Service
 from estoque.models import Product
