@@ -286,15 +286,6 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     
     c14n_algo = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     
-    # Create Signer
-    # Create Signer
-    signer = XMLSigner(
-        method=methods.enveloped,
-        signature_algorithm=signature_algorithm,
-        digest_algorithm=digest_algorithm,
-        c14n_algorithm=c14n_algo
-    )
-
     # Find inf_dps ID
     inf_dps = root.find('.//{%s}infDPS' % NS_NFSE)
     reference_uri = None
@@ -303,14 +294,40 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         if dps_id:
             reference_uri = f"#{dps_id}"
 
-    # Sign the document
-    # signxml will add the Signature element at the end of the root
-    signed_root = signer.sign(
-        root,
-        key=private_key,
-        cert=certs_pem,
-        reference_uri=reference_uri
-    )
+    # Sign with Try/Except for SHA1 restriction
+    try:
+        print(f"[ASSINADOR] Attempting {signature_algorithm}/{digest_algorithm}...", file=sys.stderr)
+        signer = XMLSigner(
+            method=methods.enveloped,
+            signature_algorithm=signature_algorithm,
+            digest_algorithm=digest_algorithm,
+            c14n_algorithm=c14n_algo
+        )
+        signed_root = signer.sign(
+            root,
+            key=private_key,
+            cert=certs_pem,
+            reference_uri=reference_uri
+        )
+    except Exception as e:
+        if "SHA1-based algorithms are not supported" in str(e):
+            print(f"[ASSINADOR] SHA1 BLOCKED by OS. Falling back to SHA256. Error: {e}", file=sys.stderr)
+            signature_algorithm = 'rsa-sha256'
+            digest_algorithm = 'sha256'
+            signer = XMLSigner(
+                method=methods.enveloped,
+                signature_algorithm=signature_algorithm,
+                digest_algorithm=digest_algorithm,
+                c14n_algorithm=c14n_algo
+            )
+            signed_root = signer.sign(
+                root,
+                key=private_key,
+                cert=certs_pem,
+                reference_uri=reference_uri
+            )
+        else:
+            raise e
 
     # --- KEYINFO PRUNING (Crucial for Sefin E0714) ---
     # We must ONLY have X509Data/X509Certificate inside KeyInfo.
