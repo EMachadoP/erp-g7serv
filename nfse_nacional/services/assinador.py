@@ -250,37 +250,29 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     """
     Assina o XML da DPS usando o certificado A1 (.pfx).
     """
-def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=False):
+def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     """Assina o XML usando o certificado PFX."""
     import os
     import sys
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
-    # --- DIAGNOSTICS FOR SHA1 (Core Fix for Railway Environment) ---
-    print(f"[ASSINADOR] OPENSSL_CONF={os.environ.get('OPENSSL_CONF')}", file=sys.stderr)
-    try:
-        print(f"[ASSINADOR] OpenSSL version: {ossl.openssl_version_text()}", file=sys.stderr)
-        # Check if SHA1 is rejected by actually trying to finalize a hash
-        try:
-            h = hashes.Hash(hashes.SHA1(), backend=ossl)
-            h.update(b"test")
-            h.finalize()
-            print("[ASSINADOR] SHA1 FULLY supported by cryptography.", file=sys.stderr)
-            usar_fallback_sha256 = False
-        except Exception as e:
-            print(f"[ASSINADOR] SHA1 REJECTED during finalize: {e}. FORCING SHA256 fallback for signature.", file=sys.stderr)
-            usar_fallback_sha256 = True
-    except Exception as e:
-        print(f"[ASSINADOR] Error during cryptography diagnostics: {e}", file=sys.stderr)
-        usar_fallback_sha256 = True # Default to True on error for safety
+    # --- SHA256 FORCED BY USER REQUEST (Bypassing SHA1 restriction) ---
+    signature_algorithm = 'rsa-sha256'
+    digest_algorithm = 'sha256'
+    print("[ASSINADOR] FORCING SHA256 for signature and digest.", file=sys.stderr)
 
     # Load Certificate
     try:
         private_key, certificate = carregar_certificado(caminho_ou_bytes_pfx, senha)
     except Exception as e:
-        if "SHA1-based algorithms are not supported" in str(e):
-             raise Exception(f"Certificado PFX rejeitado pelo servidor (SHA1). {e}")
+        msg = str(e)
+        if "SHA1-based algorithms are not supported" in msg or "mac verify failure" in msg:
+             raise Exception(
+                 f"O certificado PFX foi REJEITADO pelo servidor (SHA1 detectado no arquivo). "
+                 f"Por favor, reexporte seu certificado PFX usando criptografia AES256/SHA256. "
+                 f"Erro original: {msg}"
+             )
         raise e
 
     certs_pem = certificate.public_bytes(serialization.Encoding.PEM)
@@ -291,18 +283,10 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=False):
     
     # Load XML
     root = etree.fromstring(xml_string.encode('utf-8'))
-
-    # Digital Signature Settings - Manual says SHA1, but we add fallback if system blocks it
-    if usar_fallback_sha256:
-        signature_algorithm = 'rsa-sha256'
-        digest_algorithm = 'sha256'
-        print("[ASSINADOR] Using SHA256 due to SHA1 restriction.", file=sys.stderr)
-    else:
-        signature_algorithm = 'rsa-sha1'
-        digest_algorithm = 'sha1'
     
     c14n_algo = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     
+    # Create Signer
     # Create Signer
     signer = XMLSigner(
         method=methods.enveloped,
@@ -324,7 +308,8 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=False):
         root,
         key=private_key,
         cert=certs_pem,
-        reference_uri=reference_uri
+        reference_uri=reference_uri,
+        digest_algorithm=digest_algorithm
     )
 
     # --- PRUNING AND RE-CONSTRUCTION ---
