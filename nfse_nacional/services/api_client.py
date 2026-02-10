@@ -12,6 +12,10 @@ from nfse_nacional.models import NFSe
 class NFSeNacionalClient:
     URL_PRODUCAO = "https://sefin.nfse.gov.br/SefinNacional/nfse"
     URL_HOMOLOGACAO = "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse"
+    
+    # Endpoints específicos para DANFSe (PDF)
+    URL_DANFSE_PRODUCAO = "https://adn.nfse.gov.br/danfse"
+    URL_DANFSE_HOMOLOGACAO = "https://adn.producaorestrita.nfse.gov.br/danfse"
 
     def enviar_dps(self, nfse_obj: NFSe):
         """
@@ -195,9 +199,9 @@ class NFSeNacionalClient:
             raise ValueError("Chave de acesso não disponível para baixar DANFSe.")
         
         if nfse_obj.empresa.ambiente == 1:
-            base_url = self.URL_PRODUCAO
+            base_url = self.URL_DANFSE_PRODUCAO
         else:
-            base_url = self.URL_HOMOLOGACAO
+            base_url = self.URL_DANFSE_HOMOLOGACAO
         
         url = f"{base_url}/{nfse_obj.chave_acesso}"
         print(f"DEBUG NFSe: Iniciando GET em {url}")
