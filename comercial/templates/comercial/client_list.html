@@ -28,7 +28,7 @@
  <div class="card-body p-0">
  <div class="table table-responsive">
  <table class="table table-premium table-hover align-middle mb-0">
- <thead class="bg-light">
+ <thead>
  <tr>
  <th class="ps-4">Nome</th>
  <th>CPF / CNPJ</th>
@@ -82,10 +82,10 @@
  data-bs-toggle="dropdown" data-bs-boundary="viewport">
  Ações
  </button>
- <ul class="dropdown-menu dropdown-menu-end">
- <li><a class="dropdown-item" href="{% url 'comercial:client_update' client.id %}"><i
+ <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+ <li><a class="dropdown-item py-2" href="{% url 'comercial:client_update' client.id %}"><i
  class="bi bi-pencil me-2"></i>Editar</a></li>
- <li><a class="dropdown-item" href="{% url 'comercial:client_detail' client.id %}"><i
+ <li><a class="dropdown-item py-2" href="{% url 'comercial:client_detail' client.id %}"><i
  class="bi bi-eye me-2"></i>Detalhes</a></li>
  <li>
  <hr class="dropdown-divider">
