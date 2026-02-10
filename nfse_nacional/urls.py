@@ -12,4 +12,6 @@ urlpatterns = [
     # NFSe URLs
     path('nfse/', views.nfse_list, name='nfse_list'),
     path('nfse/nova/', views.nfse_create, name='nfse_create'),
+    path('nfse/<int:pk>/xml/', views.nfse_xml, name='nfse_xml'),
+    path('nfse/<int:pk>/view/', views.nfse_view, name='nfse_view'),
 ]
