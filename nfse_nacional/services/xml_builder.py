@@ -104,6 +104,9 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     
     # Insert colon in timezone offset (-0300 -> -03:00)
     dh_emi_formatted = dh_emi_str[:-2] + ":" + dh_emi_str[-2:]
+    
+    # Also format competence date from the SAME (clamped) dt_emi
+    d_compet_formatted = dt_emi.strftime('%Y-%m-%d')
 
     # Tax Regime Logic
     # opSimpNac: 1=Não Optante, 2=MEI, 3=ME/EPP (Simples Nacional)
@@ -179,6 +182,7 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         'p_iss': p_iss,
         'v_iss': v_iss,
         'inf_dps_id': inf_dps_id,
+        'd_compet_formatted': d_compet_formatted,
         'serie_formatted': serie_display, # Tag <serie> without leading zeros
         'num_dps_simples': str(nfse_obj.numero_dps), # Tag <nDPS> without leading zeros
         'cod_mun_ibge': cod_mun_ibge,

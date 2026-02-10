@@ -5,7 +5,7 @@
         <verAplic>ERP_G7_1.0</verAplic>
         <serie>{{ serie_formatted }}</serie>
         <nDPS>{{ num_dps_simples }}</nDPS>
-        <dCompet>{{ nfse.data_emissao|date:"Y-m-d" }}</dCompet>
+        <dCompet>{{ d_compet_formatted }}</dCompet>
         <tpEmit>1</tpEmit>
         <cLocEmi>{{ cod_mun_ibge }}</cLocEmi>
 
