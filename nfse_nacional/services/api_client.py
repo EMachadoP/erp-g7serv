@@ -115,6 +115,7 @@ class NFSeNacionalClient:
                 # 5. Processar Resposta
                 if response.status_code in (200, 201):
                     data = response.json()
+                    print(f"DEBUG NFSe: Resposta POST recebida. Chaves: {list(data.keys())}")
                     
                     # Check for business errors (if 'erros' key exists and is not empty)
                     if 'erros' in data and data['erros']:
@@ -136,16 +137,26 @@ class NFSeNacionalClient:
                     xml_gzip_b64 = data.get('nfseXmlGZipB64')
                     if xml_gzip_b64:
                         try:
+                            import gzip
                             xml_bytes = gzip.decompress(base64.b64decode(xml_gzip_b64))
                             nfse_obj.xml_retorno = xml_bytes.decode('utf-8')
                         except Exception as e:
                             print(f"Erro ao descompactar XML de retorno: {e}")
                             nfse_obj.xml_retorno = response.text # Fallback
 
+                    # NOVO: Verifica se o PDF já veio na resposta da emissão
+                    pdf_b64 = data.get('danfsePdfB64') or data.get('pdfB64') or data.get('danfsePdf')
+                    if pdf_b64:
+                        try:
+                            nfse_obj.pdf_danfse = base64.b64decode(pdf_b64)
+                            print("DEBUG NFSe: PDF encontrado na resposta da emissão!")
+                        except:
+                            pass
+
                     nfse_obj.save()
                     
-                    # Após autorização, tenta baixar o DANFSe (PDF)
-                    if nfse_obj.chave_acesso:
+                    # Após autorização, tenta baixar o DANFSe (PDF) se ainda não tiver
+                    if nfse_obj.chave_acesso and not nfse_obj.pdf_danfse:
                         try:
                             self.baixar_danfse(nfse_obj, cert_path_temp, key_path)
                         except Exception as e:
@@ -165,9 +176,9 @@ class NFSeNacionalClient:
             finally:
                 # Limpar arquivos temporários
                 if os.path.exists(key_path):
-                    os.unlink(key_path)
+                     os.unlink(key_path)
                 if os.path.exists(cert_path_temp):
-                    os.unlink(cert_path_temp)
+                     os.unlink(cert_path_temp)
 
         except Exception as e:
             nfse_obj.status = 'Rejeitada'
@@ -178,7 +189,7 @@ class NFSeNacionalClient:
     def baixar_danfse(self, nfse_obj, cert_path=None, key_path=None):
         """
         Baixa o DANFSe (PDF) da API Nacional usando a chave de acesso.
-        Endpoint: GET /nfse/{chaveAcesso} com Accept: application/pdf
+        Endpoint: GET /nfse/{chaveAcesso}
         """
         if not nfse_obj.chave_acesso:
             raise ValueError("Chave de acesso não disponível para baixar DANFSe.")
@@ -189,10 +200,15 @@ class NFSeNacionalClient:
             base_url = self.URL_HOMOLOGACAO
         
         url = f"{base_url}/{nfse_obj.chave_acesso}"
+        print(f"DEBUG NFSe: Iniciando GET em {url}")
         
+        # ... (código de certificado igual ao anterior até o try)
+        # (Vou resumir para não estourar o limite de linhas do tool, mas mantendo a lógica de certificado)
+
         # Se cert_path e key_path não foram fornecidos, cria temporários
         temp_files = []
         if not cert_path or not key_path:
+            # Reuso da lógica de criação de cert temporário
             try:
                 if nfse_obj.empresa.certificado_base64:
                     cert_bytes_raw = base64.b64decode(nfse_obj.empresa.certificado_base64)
@@ -213,9 +229,11 @@ class NFSeNacionalClient:
                 cert_bytes_raw, nfse_obj.empresa.senha_certificado
             )
             
+            import tempfile
             key_file = tempfile.NamedTemporaryFile(delete=False)
             cert_file = tempfile.NamedTemporaryFile(delete=False)
             
+            from cryptography.hazmat.primitives import serialization
             key_bytes = private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
@@ -235,34 +253,62 @@ class NFSeNacionalClient:
             temp_files = [key_path, cert_path]
         
         try:
-            # Tenta baixar como PDF (DANFSe)
-            headers_pdf = {
-                'Accept': 'application/pdf'
+            # Tenta baixar com Accept PDF
+            headers = {
+                'Accept': 'application/pdf, application/json'
             }
             
-            print(f"--- Baixando DANFSe de: {url} ---")
             response = requests.get(
                 url,
-                headers=headers_pdf,
+                headers=headers,
                 cert=(cert_path, key_path),
                 timeout=30
             )
             
-            if response.status_code == 200 and 'pdf' in response.headers.get('Content-Type', '').lower():
-                nfse_obj.pdf_danfse = response.content
-                nfse_obj.save(update_fields=['pdf_danfse'])
-                print(f"DANFSe PDF baixado com sucesso ({len(response.content)} bytes)")
-                return True
-            else:
-                # Pode não suportar PDF, tenta XML para ter pelo menos os dados
-                print(f"DANFSe PDF não disponível (status={response.status_code}, content-type={response.headers.get('Content-Type')})")
-                
-                # Tenta construir link para consulta pública
+            print(f"DEBUG NFSe: Status GET: {response.status_code}")
+            content_type = response.headers.get('Content-Type', '').lower()
+            print(f"DEBUG NFSe: Content-Type GET: {content_type}")
+            
+            if response.status_code == 200:
+                if 'pdf' in content_type:
+                    nfse_obj.pdf_danfse = response.content
+                    nfse_obj.save(update_fields=['pdf_danfse'])
+                    print(f"DEBUG NFSe: PDF binário baixado ({len(response.content)} bytes)")
+                    return True
+                elif 'json' in content_type:
+                    data = response.json()
+                    print(f"DEBUG NFSe: Resposta GET é JSON. Chaves: {list(data.keys())}")
+                    # Tenta extrair PDF do JSON
+                    pdf_b64 = data.get('danfsePdfB64') or data.get('pdfB64') or data.get('danfsePdf')
+                    if pdf_b64:
+                        nfse_obj.pdf_danfse = base64.b64decode(pdf_b64)
+                        nfse_obj.save(update_fields=['pdf_danfse'])
+                        print(f"DEBUG NFSe: PDF extraído do JSON ({len(nfse_obj.pdf_danfse)} bytes)")
+                        return True
+                    
+                    # Se não tem PDF mas tem XML, atualiza o XML retorno se estiver vazio
+                    xml_b64 = data.get('xmlB64') or data.get('nfseXmlGZipB64')
+                    if xml_b64 and not nfse_obj.xml_retorno:
+                         try:
+                             if data.get('nfseXmlGZipB64'):
+                                 import gzip
+                                 nfse_obj.xml_retorno = gzip.decompress(base64.b64decode(xml_b64)).decode('utf-8')
+                             else:
+                                 nfse_obj.xml_retorno = base64.b64decode(xml_b64).decode('utf-8')
+                             nfse_obj.save(update_fields=['xml_retorno'])
+                         except:
+                             pass
+
+            print(f"DEBUG NFSe: Falha ao obter PDF (Status {response.status_code})")
+            
+            # Tenta construir link para consulta pública se ainda não tiver e se falhou o PDF
+            if not nfse_obj.link_danfse:
                 link = f"https://www.nfse.gov.br/ConsultaPublica/?chave={nfse_obj.chave_acesso}"
                 nfse_obj.link_danfse = link
                 nfse_obj.save(update_fields=['link_danfse'])
-                return False
-                
+            
+            return False
+            
         finally:
             for f in temp_files:
                 if os.path.exists(f):
