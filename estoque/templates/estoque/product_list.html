@@ -23,8 +23,8 @@
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+        <div class=\"table table-premium-responsive\">
+            <table class="table table-premium align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
                         <th class="ps-4">Nome</th>
@@ -49,32 +49,32 @@
                             {% if product.current_stock <= product.minimum_stock %} <span
                                 class="badge bg-danger bg-opacity-10 text-danger">{{ product.current_stock }}</span>
                                 {% else %}
-                                <span class="badge bg-success bg-opacity-10 text-success">{{ product.current_stock }}</span>
+                                <span class="badge bg-success bg-opacity-10 text-success">{{ product.current_stock
+                                    }}</span>
                                 {% endif %}
                         </td>
                         <td>R$ {{ product.cost_price }}</td>
                         <td>
                             {% if product.active %}
-                            <span
-                                class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Ativo</span>
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Ativo</span>
                             {% else %}
-                            <span
-                                class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Inativo</span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Inativo</span>
                             {% endif %}
                         </td>
                         <td class="text-end pe-4">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown">
+                                    data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     Ações
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{% url 'estoque:product_detail' product.id %}"><i
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <li><a class="dropdown-item py-2"
+                                            href="{% url 'estoque:product_detail' product.id %}"><i
                                                 class="bi bi-eye me-2"></i>Detalhes</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <li><a class="dropdown-item text-danger" href="#"><i
+                                    <li><a class="dropdown-item py-2 text-danger" href="#"><i
                                                 class="bi bi-trash me-2"></i>Excluir</a></li>
                                 </ul>
                             </div>

@@ -151,6 +151,78 @@
         .module-card .btn-action:hover {
             background-color: #e2e6ea;
         }
+
+        /* Premium UI Enhancements (ui-ux-pro-max) */
+        .table-premium {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-premium thead th {
+            background-color: #f8f9fa;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            padding: 1.25rem 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .table-premium tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-premium tbody tr:hover {
+            background-color: #f1f5f9 !important;
+            transform: scale(1.002);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            z-index: 1;
+            position: relative;
+        }
+
+        .table-premium td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Fix for list alignment and spacing */
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            padding: 0.5em 0.85em;
+        }
+
+        /* Fixing Dropdown clipping in responsive tables */
+        .table-responsive {
+            overflow: visible !important;
+            padding-bottom: 1px;
+        }
+
+        @media (max-width: 991.98px) {
+            .table-responsive {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .dropdown-menu {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            transition: background 0.15s ease;
+        }
     </style>
 </head>
 
