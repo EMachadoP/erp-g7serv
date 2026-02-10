@@ -66,9 +66,11 @@ class NFSe(models.Model):
     chave_acesso = models.CharField(max_length=50, blank=True, null=True, verbose_name="Chave de Acesso")
     xml_envio = models.TextField(blank=True, null=True, verbose_name="XML Envio")
     xml_retorno = models.TextField(blank=True, null=True, verbose_name="XML Retorno")
-    xml_envio = models.TextField(blank=True, null=True, verbose_name="XML Envio")
-    xml_retorno = models.TextField(blank=True, null=True, verbose_name="XML Retorno")
     json_erro = models.JSONField(blank=True, null=True, verbose_name="JSON Erro")
+    
+    # DANFSe (PDF oficial do portal)
+    pdf_danfse = models.BinaryField(blank=True, null=True, verbose_name="PDF DANFSe")
+    link_danfse = models.URLField(max_length=500, blank=True, null=True, verbose_name="Link DANFSe Portal")
     
     # Override fields from Service/Invoice
     valor_servico = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Valor do Serviço (Override)")

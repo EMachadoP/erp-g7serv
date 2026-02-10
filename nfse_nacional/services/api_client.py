@@ -131,7 +131,6 @@ class NFSeNacionalClient:
                     
                     # Extract fields
                     nfse_obj.chave_acesso = data.get('chaveAcesso')
-                    # nfse_obj.numero_nfse = data.get('idDps') # Field does not exist yet
                     
                     # Decompress XML to store the full NFS-e
                     xml_gzip_b64 = data.get('nfseXmlGZipB64')
@@ -144,6 +143,14 @@ class NFSeNacionalClient:
                             nfse_obj.xml_retorno = response.text # Fallback
 
                     nfse_obj.save()
+                    
+                    # Após autorização, tenta baixar o DANFSe (PDF)
+                    if nfse_obj.chave_acesso:
+                        try:
+                            self.baixar_danfse(nfse_obj, cert_path_temp, key_path)
+                        except Exception as e:
+                            print(f"Aviso: Não foi possível baixar DANFSe automaticamente: {e}")
+                    
                     return True, "NFS-e Autorizada com sucesso."
                 else:
                     nfse_obj.status = 'Rejeitada'
@@ -167,3 +174,96 @@ class NFSeNacionalClient:
             nfse_obj.json_erro = {'exception': str(e)}
             nfse_obj.save()
             return False, f"Erro interno: {str(e)}"
+
+    def baixar_danfse(self, nfse_obj, cert_path=None, key_path=None):
+        """
+        Baixa o DANFSe (PDF) da API Nacional usando a chave de acesso.
+        Endpoint: GET /nfse/{chaveAcesso} com Accept: application/pdf
+        """
+        if not nfse_obj.chave_acesso:
+            raise ValueError("Chave de acesso não disponível para baixar DANFSe.")
+        
+        if nfse_obj.empresa.ambiente == 1:
+            base_url = self.URL_PRODUCAO
+        else:
+            base_url = self.URL_HOMOLOGACAO
+        
+        url = f"{base_url}/{nfse_obj.chave_acesso}"
+        
+        # Se cert_path e key_path não foram fornecidos, cria temporários
+        temp_files = []
+        if not cert_path or not key_path:
+            try:
+                if nfse_obj.empresa.certificado_base64:
+                    cert_bytes_raw = base64.b64decode(nfse_obj.empresa.certificado_base64)
+                elif nfse_obj.empresa.certificado_a1:
+                    with nfse_obj.empresa.certificado_a1.open("rb") as f:
+                        cert_bytes_raw = f.read()
+                else:
+                    raise ValueError("Certificado não configurado.")
+            except Exception as e:
+                if hasattr(nfse_obj.empresa.certificado_a1, 'path'):
+                    with open(nfse_obj.empresa.certificado_a1.path, 'rb') as f:
+                        cert_bytes_raw = f.read()
+                else:
+                    raise e
+            
+            from .assinador import carregar_certificado
+            private_key, certificate = carregar_certificado(
+                cert_bytes_raw, nfse_obj.empresa.senha_certificado
+            )
+            
+            key_file = tempfile.NamedTemporaryFile(delete=False)
+            cert_file = tempfile.NamedTemporaryFile(delete=False)
+            
+            key_bytes = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+            key_file.write(key_bytes)
+            key_file.flush()
+            
+            cert_bytes_pem = certificate.public_bytes(serialization.Encoding.PEM)
+            cert_file.write(cert_bytes_pem)
+            cert_file.flush()
+            
+            key_path = key_file.name
+            cert_path = cert_file.name
+            key_file.close()
+            cert_file.close()
+            temp_files = [key_path, cert_path]
+        
+        try:
+            # Tenta baixar como PDF (DANFSe)
+            headers_pdf = {
+                'Accept': 'application/pdf'
+            }
+            
+            print(f"--- Baixando DANFSe de: {url} ---")
+            response = requests.get(
+                url,
+                headers=headers_pdf,
+                cert=(cert_path, key_path),
+                timeout=30
+            )
+            
+            if response.status_code == 200 and 'pdf' in response.headers.get('Content-Type', '').lower():
+                nfse_obj.pdf_danfse = response.content
+                nfse_obj.save(update_fields=['pdf_danfse'])
+                print(f"DANFSe PDF baixado com sucesso ({len(response.content)} bytes)")
+                return True
+            else:
+                # Pode não suportar PDF, tenta XML para ter pelo menos os dados
+                print(f"DANFSe PDF não disponível (status={response.status_code}, content-type={response.headers.get('Content-Type')})")
+                
+                # Tenta construir link para consulta pública
+                link = f"https://www.nfse.gov.br/ConsultaPublica/?chave={nfse_obj.chave_acesso}"
+                nfse_obj.link_danfse = link
+                nfse_obj.save(update_fields=['link_danfse'])
+                return False
+                
+        finally:
+            for f in temp_files:
+                if os.path.exists(f):
+                    os.unlink(f)

@@ -807,64 +807,96 @@ def invoice_bulk_generate_nfse(request):
 
 from django.http import HttpResponse
 
-@login_required
-def invoice_nfse_xml(request, pk):
-    """Serve o XML de retorno da NFSe para download."""
-    invoice = get_object_or_404(Invoice, pk=pk)
-    
-    # Auto-link: se invoice.nfse_record é None, tenta encontrar NFSe pela descrição
-    if not invoice.nfse_record:
-        from nfse_nacional.models import NFSe as NFSeNacional
+def _auto_link_nfse(invoice):
+    """Tenta vincular automaticamente uma NFSe órfã à fatura."""
+    if invoice.nfse_record:
+        return invoice.nfse_record
+    from nfse_nacional.models import NFSe as NFSeNacional
+    nfse = NFSeNacional.objects.filter(
+        descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
+    ).first()
+    if not nfse:
         nfse = NFSeNacional.objects.filter(
-            descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
-        ).first()
-        if not nfse:
-            # Tenta buscar por cliente + status Autorizada
-            nfse = NFSeNacional.objects.filter(
-                cliente=invoice.client,
-                status='Autorizada'
-            ).order_by('-data_emissao').first()
-        if nfse:
-            invoice.nfse_record = nfse
-            invoice.save(update_fields=['nfse_record'])
-    
-    if not invoice.nfse_record or not invoice.nfse_record.xml_retorno:
-        messages.error(request, "XML da NFSe não disponível.")
-        return redirect('faturamento:list')
-    
-    response = HttpResponse(invoice.nfse_record.xml_retorno, content_type='application/xml')
-    response['Content-Disposition'] = f'attachment; filename="NFSe_{invoice.number}.xml"'
-    return response
+            cliente=invoice.client, status='Autorizada'
+        ).order_by('-data_emissao').first()
+    if nfse:
+        invoice.nfse_record = nfse
+        invoice.save(update_fields=['nfse_record'])
+    return nfse
 
 @login_required
-def invoice_nfse_view(request, pk):
-    """Visualização bonita dos dados da NFSe Autorizada."""
+def invoice_nfse_xml(request, pk):
+    """Download do DANFSe (PDF) ou XML da NFSe."""
     invoice = get_object_or_404(Invoice, pk=pk)
+    nfse = _auto_link_nfse(invoice)
     
-    # Auto-link: se invoice.nfse_record é None, tenta encontrar NFSe pela descrição
-    if not invoice.nfse_record:
-        from nfse_nacional.models import NFSe as NFSeNacional
-        nfse = NFSeNacional.objects.filter(
-            descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
-        ).first()
-        if not nfse:
-            # Tenta buscar por cliente + status Autorizada
-            nfse = NFSeNacional.objects.filter(
-                cliente=invoice.client,
-                status='Autorizada'
-            ).order_by('-data_emissao').first()
-        if nfse:
-            invoice.nfse_record = nfse
-            invoice.save(update_fields=['nfse_record'])
-    
-    if not invoice.nfse_record:
+    if not nfse:
         messages.error(request, "NFS-e não encontrada para esta fatura.")
         return redirect('faturamento:list')
     
-    return render(request, 'faturamento/nfse_view.html', {
-        'invoice': invoice,
-        'nfse': invoice.nfse_record
-    })
+    # Prioridade: PDF DANFSe > Tentar baixar > XML como fallback
+    if nfse.pdf_danfse:
+        response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="NFSe_{invoice.number}.pdf"'
+        return response
+    
+    # Tenta baixar o DANFSe agora se tem chave de acesso
+    if nfse.chave_acesso:
+        try:
+            from nfse_nacional.services.api_client import NFSeNacionalClient
+            client = NFSeNacionalClient()
+            if client.baixar_danfse(nfse):
+                nfse.refresh_from_db()
+                response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="NFSe_{invoice.number}.pdf"'
+                return response
+        except Exception as e:
+            print(f"Erro ao baixar DANFSe on-demand: {e}")
+    
+    # Fallback: serve XML
+    if nfse.xml_retorno:
+        response = HttpResponse(nfse.xml_retorno, content_type='application/xml')
+        response['Content-Disposition'] = f'attachment; filename="NFSe_{invoice.number}.xml"'
+        return response
+    
+    messages.error(request, "Nenhum documento da NFSe disponível para download.")
+    return redirect('faturamento:list')
+
+@login_required
+def invoice_nfse_view(request, pk):
+    """Visualizar NFSe: redireciona para consulta pública no portal ou baixa PDF."""
+    invoice = get_object_or_404(Invoice, pk=pk)
+    nfse = _auto_link_nfse(invoice)
+    
+    if not nfse:
+        messages.error(request, "NFS-e não encontrada para esta fatura.")
+        return redirect('faturamento:list')
+    
+    # Se tem PDF, serve inline (visualização no browser)
+    if nfse.pdf_danfse:
+        response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="NFSe_{invoice.number}.pdf"'
+        return response
+    
+    # Se tem chave de acesso, tenta baixar o PDF
+    if nfse.chave_acesso:
+        try:
+            from nfse_nacional.services.api_client import NFSeNacionalClient
+            client = NFSeNacionalClient()
+            if client.baixar_danfse(nfse):
+                nfse.refresh_from_db()
+                response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
+                response['Content-Disposition'] = f'inline; filename="NFSe_{invoice.number}.pdf"'
+                return response
+        except Exception as e:
+            print(f"Erro ao baixar DANFSe on-demand: {e}")
+        
+        # Fallback: redireciona para o portal de consulta pública
+        link = nfse.link_danfse or f"https://www.nfse.gov.br/ConsultaPublica/?chave={nfse.chave_acesso}"
+        return redirect(link)
+    
+    messages.error(request, "NFSe sem chave de acesso. Documento não disponível.")
+    return redirect('faturamento:list')
 
 
 @login_required

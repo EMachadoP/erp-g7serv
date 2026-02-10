@@ -258,9 +258,10 @@ class BillingEmailService:
             # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
             invoice.refresh_from_db()
 
-            # Anexo NFSe XML (se existir) — com auto-link de registros órfãos
-            nfse_xml = None
+            # Anexo NFSe (PDF ou XML) — com auto-link de registros órfãos
+            nfse_content = None
             nfse_filename = None
+            nfse_content_type = None
             
             # Auto-link: tenta encontrar NFSe se o FK estiver vazio
             if not invoice.nfse_record and invoice.nfse_status == 'EMITIDA':
@@ -277,9 +278,31 @@ class BillingEmailService:
                     invoice.save(update_fields=['nfse_record'])
                     invoice.refresh_from_db()
             
-            if invoice.nfse_record and invoice.nfse_record.xml_retorno:
-                nfse_xml = invoice.nfse_record.xml_retorno
-                nfse_filename = f"NFSe_{invoice.number}.xml"
+            if invoice.nfse_record:
+                nfse_rec = invoice.nfse_record
+                # Prioridade: PDF DANFSe > tentar baixar > XML fallback
+                if nfse_rec.pdf_danfse:
+                    nfse_content = bytes(nfse_rec.pdf_danfse)
+                    nfse_filename = f"NFSe_{invoice.number}.pdf"
+                    nfse_content_type = 'pdf'
+                elif nfse_rec.chave_acesso:
+                    # Tenta baixar o DANFSe on-demand
+                    try:
+                        from nfse_nacional.services.api_client import NFSeNacionalClient
+                        client = NFSeNacionalClient()
+                        if client.baixar_danfse(nfse_rec):
+                            nfse_rec.refresh_from_db()
+                            nfse_content = bytes(nfse_rec.pdf_danfse)
+                            nfse_filename = f"NFSe_{invoice.number}.pdf"
+                            nfse_content_type = 'pdf'
+                    except Exception as e:
+                        logger.warning(f"Falha ao baixar DANFSe on-demand: {e}")
+                
+                # Fallback: XML
+                if not nfse_content and nfse_rec.xml_retorno:
+                    nfse_content = nfse_rec.xml_retorno
+                    nfse_filename = f"NFSe_{invoice.number}.xml"
+                    nfse_content_type = 'xml'
 
             return BillingEmailService.send_via_brevo(
                 recipient_email=recipient_email,
@@ -287,8 +310,9 @@ class BillingEmailService:
                 body=body,
                 invoice=invoice,
                 pdf_content=pdf_content,
-                nfse_xml=nfse_xml,
-                nfse_filename=nfse_filename
+                nfse_data=nfse_content,
+                nfse_filename=nfse_filename,
+                nfse_content_type=nfse_content_type
             )
 
         email = EmailMessage(
@@ -313,17 +337,26 @@ class BillingEmailService:
                 "application/pdf"
             )
 
-        # 3. Anexo: NFSe XML (SMTP)
-        if invoice.nfse_record and invoice.nfse_record.xml_retorno:
+        # 3. Anexo: NFSe PDF ou XML (SMTP)
+        if invoice.nfse_record:
             try:
-                email.attach(
-                    f"NFSe_{invoice.number}.xml",
-                    invoice.nfse_record.xml_retorno,
-                    "application/xml"
-                )
-                logger.info(f"Anexando NFSe XML via SMTP para fatura {invoice.number}")
+                nfse_rec = invoice.nfse_record
+                if nfse_rec.pdf_danfse:
+                    email.attach(
+                        f"NFSe_{invoice.number}.pdf",
+                        bytes(nfse_rec.pdf_danfse),
+                        "application/pdf"
+                    )
+                    logger.info(f"Anexando NFSe PDF via SMTP para fatura {invoice.number}")
+                elif nfse_rec.xml_retorno:
+                    email.attach(
+                        f"NFSe_{invoice.number}.xml",
+                        nfse_rec.xml_retorno,
+                        "application/xml"
+                    )
+                    logger.info(f"Anexando NFSe XML via SMTP para fatura {invoice.number}")
             except Exception as e:
-                logger.warning(f"Falha ao anexar NFSe XML (SMTP): {e}")
+                logger.warning(f"Falha ao anexar NFSe (SMTP): {e}")
             
         try:
             email.send()
@@ -336,7 +369,7 @@ class BillingEmailService:
             return False, msg
 
     @staticmethod
-    def send_via_brevo(recipient_email, subject, body, invoice, pdf_content=None, nfse_xml=None, nfse_filename=None):
+    def send_via_brevo(recipient_email, subject, body, invoice, pdf_content=None, nfse_data=None, nfse_filename=None, nfse_content_type=None):
         """
         Envia e-mail via API HTTP da Brevo (Sendinblue).
         """
@@ -396,17 +429,20 @@ class BillingEmailService:
             except Exception as e:
                 logger.warning(f"Falha ao baixar boleto remoto para Brevo: {e}")
 
-        # 3. Anexo: NFSe XML (Brevo)
-        if nfse_xml:
+        # 3. Anexo: NFSe PDF ou XML (Brevo)
+        if nfse_data:
             try:
-                content = base64.b64encode(nfse_xml.encode('utf-8') if isinstance(nfse_xml, str) else nfse_xml).decode('utf-8')
+                if isinstance(nfse_data, str):
+                    content = base64.b64encode(nfse_data.encode('utf-8')).decode('utf-8')
+                else:
+                    content = base64.b64encode(nfse_data).decode('utf-8')
                 data["attachment"].append({
                     "content": content,
-                    "name": nfse_filename or f"NFSe_{invoice.number}.xml"
+                    "name": nfse_filename or f"NFSe_{invoice.number}.pdf"
                 })
-                logger.info(f"Anexando NFSe XML via Brevo: {nfse_filename}")
+                logger.info(f"Anexando NFSe ({nfse_content_type or 'auto'}) via Brevo: {nfse_filename}")
             except Exception as e:
-                logger.warning(f"Falha ao processar NFSe XML para Brevo: {e}")
+                logger.warning(f"Falha ao processar NFSe para Brevo: {e}")
 
         try:
             response = requests.post(url, json=data, headers=headers, timeout=20)
