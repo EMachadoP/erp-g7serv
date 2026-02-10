@@ -2,10 +2,6 @@ openssl_conf = openssl_init
 
 [openssl_init]
 providers = provider_sect
-alg_section = evp_properties
-
-[evp_properties]
-default_properties = "fips=no,legacy=yes"
 
 [provider_sect]
 default = default_sect
