@@ -811,6 +811,23 @@ from django.http import HttpResponse
 def invoice_nfse_xml(request, pk):
     """Serve o XML de retorno da NFSe para download."""
     invoice = get_object_or_404(Invoice, pk=pk)
+    
+    # Auto-link: se invoice.nfse_record é None, tenta encontrar NFSe pela descrição
+    if not invoice.nfse_record:
+        from nfse_nacional.models import NFSe as NFSeNacional
+        nfse = NFSeNacional.objects.filter(
+            descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
+        ).first()
+        if not nfse:
+            # Tenta buscar por cliente + status Autorizada
+            nfse = NFSeNacional.objects.filter(
+                cliente=invoice.client,
+                status='Autorizada'
+            ).order_by('-data_emissao').first()
+        if nfse:
+            invoice.nfse_record = nfse
+            invoice.save(update_fields=['nfse_record'])
+    
     if not invoice.nfse_record or not invoice.nfse_record.xml_retorno:
         messages.error(request, "XML da NFSe não disponível.")
         return redirect('faturamento:list')
@@ -823,12 +840,27 @@ def invoice_nfse_xml(request, pk):
 def invoice_nfse_view(request, pk):
     """Visualização bonita dos dados da NFSe Autorizada."""
     invoice = get_object_or_404(Invoice, pk=pk)
+    
+    # Auto-link: se invoice.nfse_record é None, tenta encontrar NFSe pela descrição
+    if not invoice.nfse_record:
+        from nfse_nacional.models import NFSe as NFSeNacional
+        nfse = NFSeNacional.objects.filter(
+            descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
+        ).first()
+        if not nfse:
+            # Tenta buscar por cliente + status Autorizada
+            nfse = NFSeNacional.objects.filter(
+                cliente=invoice.client,
+                status='Autorizada'
+            ).order_by('-data_emissao').first()
+        if nfse:
+            invoice.nfse_record = nfse
+            invoice.save(update_fields=['nfse_record'])
+    
     if not invoice.nfse_record:
         messages.error(request, "NFS-e não encontrada para esta fatura.")
         return redirect('faturamento:list')
     
-    # Se tiver chave de acesso, podemos montar link para consulta nacional se o sefin permitir
-    # Mas por ora mostramos os dados que temos no NFSe model
     return render(request, 'faturamento/nfse_view.html', {
         'invoice': invoice,
         'nfse': invoice.nfse_record

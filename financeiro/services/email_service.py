@@ -258,9 +258,25 @@ class BillingEmailService:
             # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
             invoice.refresh_from_db()
 
-            # Anexo NFSe XML (se existir)
+            # Anexo NFSe XML (se existir) — com auto-link de registros órfãos
             nfse_xml = None
             nfse_filename = None
+            
+            # Auto-link: tenta encontrar NFSe se o FK estiver vazio
+            if not invoice.nfse_record and invoice.nfse_status == 'EMITIDA':
+                from nfse_nacional.models import NFSe as NFSeNacional
+                nfse = NFSeNacional.objects.filter(
+                    descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
+                ).first()
+                if not nfse:
+                    nfse = NFSeNacional.objects.filter(
+                        cliente=invoice.client, status='Autorizada'
+                    ).order_by('-data_emissao').first()
+                if nfse:
+                    invoice.nfse_record = nfse
+                    invoice.save(update_fields=['nfse_record'])
+                    invoice.refresh_from_db()
+            
             if invoice.nfse_record and invoice.nfse_record.xml_retorno:
                 nfse_xml = invoice.nfse_record.xml_retorno
                 nfse_filename = f"NFSe_{invoice.number}.xml"
@@ -366,6 +382,17 @@ class BillingEmailService:
             except Exception as e:
                 logger.warning(f"Falha ao carregar fatura via storage para Brevo: {e}")
 
+        # 2. Anexo: Boleto (URL Remota)
+        if invoice.boleto_url:
+            try:
+                resp = requests.get(invoice.boleto_url, timeout=10)
+                if resp.status_code == 200:
+                    content = base64.b64encode(resp.content).decode('utf-8')
+                    data["attachment"].append({
+                        "content": content,
+                        "name": f"Boleto_Bancario_{invoice.number}.pdf"
+                    })
+                    logger.info(f"Anexando boleto da Cora: Boleto_Bancario_{invoice.number}.pdf")
             except Exception as e:
                 logger.warning(f"Falha ao baixar boleto remoto para Brevo: {e}")
 
