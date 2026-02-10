@@ -301,36 +301,37 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
 
     # Forçar a remoção de todos os prefixos (ns0, ns1, ds, etc.)
     # NFSe Nacional exige namespace padrão sem prefixos (Erro E6155)
-    for el in signed_root.xpath('//*'):
-        # Se o elemento tem prefixo, reconstrói a tag apenas com o nome local
-        # Mas mantendo o namespace implicitamente via xmlns no root
+    def remove_prefixes(el):
+        # Namespace do elemento original
+        ns = etree.QName(el).namespace
+        # Se tem prefixo, reconstrói sem ele
         if el.prefix is not None:
-            # Pegamos o local name (ex: 'DPS' em vez de 'ns0:DPS')
-            tag_local = etree.QName(el).localname
-            el.tag = "{http://www.sped.fazenda.gov.br/nfse}" + tag_local
-            
-        # Limpamos atributos também (importante para o Signature)
-        for attr in list(el.attrib):
-            if ":" in attr:
-                val = el.attrib[attr]
-                del el.attrib[attr]
-                # Re-adiciona sem prefixo se necessário (raro em NFSe)
-                
+            el.tag = "{%s}%s" % (ns, etree.QName(el).localname)
+        
+        # Limpar atributos (alguns atributos como 'Id' podem vir prefixados)
+        for attr, val in list(el.attrib.items()):
+            if ":" in attr or etree.QName(attr).prefix:
+                 local_attr = etree.QName(attr).localname
+                 # Se for um atributo de namespace (xmlns:...), removemos
+                 del el.attrib[attr]
+                 # Re-adicionamos apenas atributos reais sem prefixo (raro)
+        
+        for child in el:
+            remove_prefixes(child)
+
+    # Aplica a remoção recursivamente
+    remove_prefixes(signed_root)
+
     # Digital Signature Namespace (DS) deve ser tratado com cuidado
-    # Geralmente a Signature pode ficar no namespace padrão ou ter seu próprio xmlns sem prefixo
+    # Garantir que Signature use o namespace DS sem prefixo
     for sig in signed_root.xpath('//*[local-name()="Signature"]'):
-        sig.tag = "{http://www.w3.org/2000/09/xmldsig#}" + "Signature"
+        sig.tag = "{http://www.w3.org/2000/09/xmldsig#}Signature"
         for child in sig.xpath('.//*'):
-             child.tag = "{http://www.w3.org/2000/09/xmldsig#}" + etree.QName(child).localname
+             ns_child = etree.QName(child).namespace
+             local_name = etree.QName(child).localname
+             child.tag = "{%s}%s" % (ns_child, local_name)
 
-    # Remove declarações de namespace redundantes e limpa prefixos
-    etree.cleanup_namespaces(signed_root, top_nsmap={
-        None: 'http://www.sped.fazenda.gov.br/nfse',
-        'ds': 'http://www.w3.org/2000/09/xmldsig#' # Muitas vezes NFSe aceita ds: ou nada, vamos tentar forçar o mínimo
-    })
+    # Limpar namespaces redundantes
+    etree.cleanup_namespaces(signed_root)
     
-    # Se o problema persistir, removemos até o 'ds'
-    for el in signed_root.xpath('//*'):
-        el.prefix = None
-
     return etree.tostring(signed_root, encoding='UTF-8', xml_declaration=True).decode('utf-8')
