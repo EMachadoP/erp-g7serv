@@ -21,18 +21,22 @@ def emitir_nfse(invoice):
 
     # 2. Get or Create Default Service (if Invoice doesn't have specific service logic yet)
     # Ideally, Invoice items should map to Services. For now, we take a default approach.
-    service_code = '1.07.01' # Default fallback
-    default_service = Service.objects.filter(codigo_tributacao_nacional=service_code).first()
+    # 2. Get or Create Default Service
+    # For Recife, the national code is 14.02.01 and the municipal complement is 501.
+    service_code_nac = '14.02.01'
+    service_code_mun = '14.02.01.501' # or just '501'
+    
+    default_service = Service.objects.filter(codigo_tributacao_nacional=service_code_nac).first()
     
     if not default_service:
         # Create a default service placeholder if none exists
         default_service = Service.objects.create(
-            name="Serviço Padrão (Suporte Técnico)",
+            name="Serviço Padrão (Assistência Técnica)",
             base_cost=0,
             sale_price=0,
-            codigo_tributacao_nacional=service_code,
-            # codigo_municipio_ibge removed as it is not in Service model
-            description="Serviços de suporte técnico e manutenção."
+            codigo_tributacao_nacional=service_code_nac,
+            codigo_tributacao_municipal=service_code_mun,
+            description="Prestação de serviços de assistência técnica."
         )
 
     client = NFSeNacionalClient()
