@@ -9,8 +9,8 @@
             <p class="text-muted">Movimentações consolidadas de todas as contas</p>
         </div>
         <div>
-            {% if selected_account and 'cora' in selected_account.name.lower or 'cora' in
-            selected_account.bank_name.lower %}
+            {% if selected_account and 'cora' in selected_account.name|lower or 'cora' in
+            selected_account.bank_name|lower %}
             <a href="{% url 'financeiro:sync_cora_statement' %}?account_id={{ selected_account.id }}"
                 class="btn btn-outline-info fw-bold">
                 <i class="bi bi-arrow-repeat me-2"></i> Sincronizar Cora
