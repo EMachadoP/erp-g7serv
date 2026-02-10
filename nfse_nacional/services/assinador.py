@@ -257,10 +257,10 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
-    # --- SHA256 FORCED BY USER REQUEST (Bypassing SHA1 restriction) ---
-    signature_algorithm = 'rsa-sha256'
-    digest_algorithm = 'sha256'
-    print("[ASSINADOR] FORCING SHA256 for signature and digest.", file=sys.stderr)
+    # Digital Signature Settings - Manual says SHA1. SECLEVEL=1 should now allow it.
+    signature_algorithm = 'rsa-sha1'
+    digest_algorithm = 'sha1'
+    print(f"[ASSINADOR] Using {signature_algorithm}/{digest_algorithm} with SECLEVEL=1", file=sys.stderr)
 
     # Load Certificate
     try:
@@ -304,6 +304,7 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
             reference_uri = f"#{dps_id}"
 
     # Sign the document
+    # signxml will add the Signature element at the end of the root
     signed_root = signer.sign(
         root,
         key=private_key,
@@ -311,60 +312,30 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         reference_uri=reference_uri
     )
 
-    # --- PRUNING AND RE-CONSTRUCTION ---
-    # Sefin requires strictly: <X509Certificate> inside <X509Data> inside <KeyInfo>
-    # Also requires NO prefixes in business tags and Signature with local xmlns or 'ds'
-    # Actually, the user says <Signature xmlns="..."> without prefix.
+    # --- KEYINFO PRUNING (Crucial for Sefin E0714) ---
+    # We must ONLY have X509Data/X509Certificate inside KeyInfo.
+    # We do this in-place to avoid breaking the signature.
+    try:
+        sig_ns = "{http://www.w3.org/2000/09/xmldsig#}"
+        key_info = signed_root.find(f".//{sig_ns}KeyInfo")
+        if key_info is not None:
+            # We want to keep only X509Data, and inside it only X509Certificate
+            for child in list(key_info):
+                if child.tag != f"{sig_ns}X509Data":
+                    key_info.remove(child)
+                else:
+                    # Inside X509Data, keep only X509Certificate
+                    for subchild in list(child):
+                        if subchild.tag != f"{sig_ns}X509Certificate":
+                            child.remove(subchild)
+    except Exception as e:
+        print(f"[ASSINADOR] Warning pruning KeyInfo: {e}", file=sys.stderr)
+
+    # Export to string
+    # Since we use default namespace in the template, we don't need prefixes for business tags.
+    # For Signature, signxml uses prefixes by default (ds:). 
+    # Let's try to keep it as it is first.
     
-    def copy_element_clean(old_el, ns_target, ns_dsig, is_keyinfo=False):
-        qname = etree.QName(old_el)
-        ns = qname.namespace
-        ln = qname.localname
-        
-        # Pruning KeyInfo logic
-        if ln == "KeyInfo":
-            is_keyinfo = True
-        
-        # Define nsmap:
-        if ln == "DPS":
-            new_nsmap = {None: ns_target}
-        elif ln == "Signature":
-            new_nsmap = {None: ns_dsig} # Force no prefix for Signature
-        else:
-            new_nsmap = None
-            
-        if ns == ns_target:
-            tag = "{%s}%s" % (ns_target, ln)
-        elif ns == ns_dsig:
-            # Pruning KeyInfo: only keep X509Data and X509Certificate
-            if is_keyinfo and ln not in ("KeyInfo", "X509Data", "X509Certificate"):
-                return None
-            tag = "{%s}%s" % (ns_dsig, ln)
-        else:
-            tag = old_el.tag
-            
-        new_el = etree.Element(tag, nsmap=new_nsmap)
-        new_el.text = old_el.text
-        new_el.tail = old_el.tail
-        
-        for k, v in old_el.attrib.items():
-            aq = etree.QName(k)
-            if aq.namespace:
-                new_el.set(k, v)
-            else:
-                new_el.set(aq.localname, v)
-            
-        for child in old_el:
-            if isinstance(child, etree._Element):
-                res = copy_element_clean(child, ns_target, ns_dsig, is_keyinfo)
-                if res is not None:
-                    new_el.append(res)
-                
-        return new_el
-
-    definitive_root = copy_element_clean(signed_root, NS_NFSE, NS_DSIG)
-    etree.cleanup_namespaces(definitive_root)
-
-    xml_output = etree.tostring(definitive_root, encoding='UTF-8', xml_declaration=False).decode('utf-8')
+    xml_output = etree.tostring(signed_root, encoding='UTF-8', xml_declaration=False).decode('utf-8')
     header = '<?xml version="1.0" encoding="UTF-8"?>'
     return header + xml_output
