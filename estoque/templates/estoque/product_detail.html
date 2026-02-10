@@ -26,13 +26,21 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body text-center pt-5 pb-4">
                 <div class="mb-3">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" class="img-fluid rounded border shadow-sm"
+                        style="max-width: 150px; height: auto;" alt="{{ product.name }}">
+                    {% else %}
                     <div class="rounded bg-secondary bg-opacity-10 d-inline-flex align-items-center justify-content-center"
                         style="width: 100px; height: 100px;">
                         <i class="bi bi-box-seam text-secondary display-4"></i>
                     </div>
+                    {% endif %}
                 </div>
                 <h5 class="card-title mb-0">{{ product.name }}</h5>
                 <p class="text-muted small">{{ product.sku|default:"Sem SKU" }}</p>
+                {% if product.family %}
+                <span class="badge bg-primary-subtle text-primary fw-normal">{{ product.family.name }}</span>
+                {% endif %}
             </div>
         </div>
 
@@ -116,25 +124,115 @@
 
                     <!-- Informações Tab -->
                     <div class="tab-pane fade" id="info" role="tabpanel">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="card border">
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label class="text-muted small d-block">Descrição</label>
-                                            <p>{{ product.description|default:"Sem descrição." }}</p>
-                                        </div>
-                                        <div class="mb-0">
-                                            <label class="text-muted small d-block">Status</label>
-                                            {% if product.active %}
-                                            <span class="badge bg-success">Ativo</span>
+                        <!-- Precificação -->
+                        <div class="card border-0 bg-light mb-4">
+                            <div
+                                class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3">
+                                <h6 class="mb-0 fw-bold">Precificação</h6>
+                                <a href="{% url 'estoque:product_update' product.id %}"
+                                    class="btn btn-sm btn-link text-decoration-none p-0">Editar</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="text-muted small d-block">Custo</label>
+                                        <span class="fw-medium">R$ {{ product.cost_price }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="text-muted small d-block">Margem</label>
+                                        <span class="fw-medium">
+                                            {% if product.cost_price > 0 %}
+                                            {{
+                                            product.sale_price|add:product.cost_price|divisibleby:product.cost_price|linebreaksbr
+                                            }}
+                                            <!-- This logic is just a placeholder, real margin usually calculated in view/model -->
+                                            {% with margin=product.sale_price|add:"-1" %}
+                                            <!-- Simple diff for now, ideally percentage -->
+                                            {% endwith %}
+                                            -
                                             {% else %}
-                                            <span class="badge bg-danger">Inativo</span>
+                                            -
                                             {% endif %}
-                                        </div>
+                                        </span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="text-muted small d-block">Venda</label>
+                                        <span class="fw-medium">R$ {{ product.sale_price }}</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Dados Tributários -->
+                        <div class="card border-0 bg-light mb-4">
+                            <div
+                                class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3">
+                                <h6 class="mb-0 fw-bold">Dados Tributários</h6>
+                                <a href="{% url 'estoque:product_update' product.id %}"
+                                    class="btn btn-sm btn-link text-decoration-none p-0">Editar</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="text-muted small d-block">NCM</label>
+                                        <span class="fw-medium">{{ product.ncm|default:"Não informado" }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="text-muted small d-block">CEST</label>
+                                        <span class="fw-medium">{{ product.cest|default:"Não informado" }}</span>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="text-muted small d-block">Origem do Produto</label>
+                                        <span class="fw-medium">{{ product.get_product_origin_display }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dados Adicionais -->
+                        <div class="card border-0 bg-light mb-4">
+                            <div
+                                class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3">
+                                <h6 class="mb-0 fw-bold">Dados Adicionais</h6>
+                                <a href="{% url 'estoque:product_update' product.id %}"
+                                    class="btn btn-sm btn-link text-decoration-none p-0">Editar</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="text-muted small d-block">Código do Fornecedor</label>
+                                        <span class="fw-medium">{{ product.supplier_code|default:"Não informado"
+                                            }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted small d-block">Código de barras</label>
+                                        <span class="fw-medium">{{ product.barcode|default:"Não informado" }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted small d-block">Permite Estoque Negativo</label>
+                                        <span class="fw-medium">{% if product.allow_negative_stock %}Sim{% else %}Não{%
+                                            endif %}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted small d-block">Pode ser Locado</label>
+                                        <span class="fw-medium">{% if product.can_be_rented %}Sim{% else %}Não{% endif
+                                            %}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Descrição</label>
+                            <p>{{ product.description|default:"Sem descrição." }}</p>
+                        </div>
+                        <div class="mb-0">
+                            <label class="text-muted small d-block">Status</label>
+                            {% if product.active %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
