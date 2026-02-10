@@ -250,14 +250,39 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     """
     Assina o XML da DPS usando o certificado A1 (.pfx).
     """
-    # Load Key and Cert
-    # carregar_certificado returns (private_key, certificate) - we adapted to ignore chain for compat
-    # Re-reading to get chain if needed? 
-    # Let's adapt carregar_certificado to ignore chain for now or update callers.
-    # The snippet used 'carregar_certificado' returning 3 values.
-    # My existing code expects 2. I kept 2 in the return above.
-    
-    private_key, certificate = carregar_certificado(caminho_ou_bytes_pfx, senha)
+def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=False):
+    """Assina o XML usando o certificado PFX."""
+    import os
+    import sys
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+
+    # --- DIAGNOSTICS FOR SHA1 (Core Fix for Railway Environment) ---
+    print(f"[ASSINADOR] OPENSSL_CONF={os.environ.get('OPENSSL_CONF')}", file=sys.stderr)
+    try:
+        print(f"[ASSINADOR] OpenSSL version: {ossl.openssl_version_text()}", file=sys.stderr)
+        # Check if SHA1 is rejected by actually trying to finalize a hash
+        try:
+            h = hashes.Hash(hashes.SHA1(), backend=ossl)
+            h.update(b"test")
+            h.finalize()
+            print("[ASSINADOR] SHA1 FULLY supported by cryptography.", file=sys.stderr)
+            usar_fallback_sha256 = False
+        except Exception as e:
+            print(f"[ASSINADOR] SHA1 REJECTED during finalize: {e}. FORCING SHA256 fallback for signature.", file=sys.stderr)
+            usar_fallback_sha256 = True
+    except Exception as e:
+        print(f"[ASSINADOR] Error during cryptography diagnostics: {e}", file=sys.stderr)
+        usar_fallback_sha256 = True # Default to True on error for safety
+
+    # Load Certificate
+    try:
+        private_key, certificate = carregar_certificado(caminho_ou_bytes_pfx, senha)
+    except Exception as e:
+        if "SHA1-based algorithms are not supported" in str(e):
+             raise Exception(f"Certificado PFX rejeitado pelo servidor (SHA1). {e}")
+        raise e
+
     certs_pem = certificate.public_bytes(serialization.Encoding.PEM)
     
     # Namespaces
@@ -266,25 +291,6 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     
     # Load XML
     root = etree.fromstring(xml_string.encode('utf-8'))
-
-    # --- DIAGNOSTICS FOR SHA1 (Core Fix for Railway Environment) ---
-    import sys
-    print(f"[ASSINADOR] OPENSSL_CONF={os.environ.get('OPENSSL_CONF')}", file=sys.stderr)
-    try:
-        from cryptography.hazmat.backends.openssl.backend import backend as ossl
-        print(f"[ASSINADOR] OpenSSL version: {ossl.openssl_version_text()}", file=sys.stderr)
-        # Check if SHA1 is rejected
-        from cryptography.hazmat.primitives import hashes
-        try:
-            hashes.Hash(hashes.SHA1(), backend=ossl)
-            print("[ASSINADOR] SHA1 supported by cryptography.", file=sys.stderr)
-            usar_fallback_sha256 = False
-        except Exception as e:
-            print(f"[ASSINADOR] SHA1 NOT SUPPORTED: {e}. Falling back to SHA256 if forced.", file=sys.stderr)
-            usar_fallback_sha256 = True
-    except Exception as e:
-        print(f"[ASSINADOR] Error during diagnostics: {e}", file=sys.stderr)
-        usar_fallback_sha256 = False
 
     # Digital Signature Settings - Manual says SHA1, but we add fallback if system blocks it
     if usar_fallback_sha256:
