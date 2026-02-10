@@ -27,13 +27,8 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         
     c_trib_mun = nfse_obj.servico.codigo_tributacao_municipal
     if c_trib_mun:
-        c_trib_mun = c_trib_mun.strip()
-        # If format is "14.02.01.501", take only the last part "501"
-        if '.' in c_trib_mun:
-            c_trib_mun = c_trib_mun.split('.')[-1]
-        c_trib_mun = c_trib_mun.replace('-', '').strip()
-        # Max 3 digits for TCCodTribMun
-        c_trib_mun = c_trib_mun[:3]
+        # Extract only digits to allow both short complements (501) or long codes
+        c_trib_mun = "".join(filter(str.isdigit, c_trib_mun))
         
     c_nbs = nfse_obj.servico.codigo_nbs
     if c_nbs:
