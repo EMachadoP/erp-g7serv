@@ -1,3 +1,5 @@
+from django.contrib import admin
+from django.db import models
 from .models import Product, StockMovement, ProductFamily, Brand, Category, StockLocation
 
 class LowStockFilter(admin.SimpleListFilter):
