@@ -267,9 +267,34 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     # Load XML
     root = etree.fromstring(xml_string.encode('utf-8'))
 
-    # Digital Signature Settings - FORCED to RSA-SHA1/SHA1 as per manual
-    signature_algorithm = 'rsa-sha1'
-    digest_algorithm = 'sha1'
+    # --- DIAGNOSTICS FOR SHA1 (Core Fix for Railway Environment) ---
+    import sys
+    print(f"[ASSINADOR] OPENSSL_CONF={os.environ.get('OPENSSL_CONF')}", file=sys.stderr)
+    try:
+        from cryptography.hazmat.backends.openssl.backend import backend as ossl
+        print(f"[ASSINADOR] OpenSSL version: {ossl.openssl_version_text()}", file=sys.stderr)
+        # Check if SHA1 is rejected
+        from cryptography.hazmat.primitives import hashes
+        try:
+            hashes.Hash(hashes.SHA1(), backend=ossl)
+            print("[ASSINADOR] SHA1 supported by cryptography.", file=sys.stderr)
+            usar_fallback_sha256 = False
+        except Exception as e:
+            print(f"[ASSINADOR] SHA1 NOT SUPPORTED: {e}. Falling back to SHA256 if forced.", file=sys.stderr)
+            usar_fallback_sha256 = True
+    except Exception as e:
+        print(f"[ASSINADOR] Error during diagnostics: {e}", file=sys.stderr)
+        usar_fallback_sha256 = False
+
+    # Digital Signature Settings - Manual says SHA1, but we add fallback if system blocks it
+    if usar_fallback_sha256:
+        signature_algorithm = 'rsa-sha256'
+        digest_algorithm = 'sha256'
+        print("[ASSINADOR] Using SHA256 due to SHA1 restriction.", file=sys.stderr)
+    else:
+        signature_algorithm = 'rsa-sha1'
+        digest_algorithm = 'sha1'
+    
     c14n_algo = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     
     # Create Signer
