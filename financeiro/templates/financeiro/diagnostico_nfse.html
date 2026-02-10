@@ -9,6 +9,27 @@
             <h4 class="mb-0"><i class="bi bi-tools me-2"></i>Diagnóstico de Conexão NFS-e</h4>
         </div>
         <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card p-3 bg-light">
+                        <small class="text-muted">OPENSSL_CONF</small>
+                        <div class="fw-bold text-truncate">{{ openssl_conf }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 bg-light">
+                        <small class="text-muted">OpenSSL Version</small>
+                        <div class="fw-bold">{{ openssl_version }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 bg-light">
+                        <small class="text-muted">Suporte SHA1</small>
+                        <div class="fw-bold">{{ sha1_support }}</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="alert alert-info">
                 <i class="bi bi-info-circle me-2"></i>
                 Este diagnóstico testa a leitura do certificado, a conexão com a API Nacional e assina um XML de teste.

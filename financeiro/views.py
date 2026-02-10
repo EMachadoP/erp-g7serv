@@ -1333,8 +1333,27 @@ def diagnostico_nfse_nacional(request):
     import traceback
     from contextlib import redirect_stdout
     from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+    from cryptography.hazmat.primitives import hashes
     from nfse_nacional.models import Empresa
     from nfse_nacional.services.assinador import carregar_certificado, assinar_xml, decode_pfx_base64, diagnosticar_pfx_com_openssl
+    
+    sha1_check = "Não testado"
+    try:
+        h = hashes.Hash(hashes.SHA1(), backend=ossl)
+        h.update(b"test")
+        h.finalize()
+        sha1_check = "✅ Suportado (EVP)"
+    except Exception as e:
+        sha1_check = f"❌ Não suportado: {str(e)}"
+    
+    ctx = {
+        'openssl_conf': os.environ.get('OPENSSL_CONF', 'Não definida'),
+        'openssl_version': ossl.openssl_version_text(),
+        'sha1_support': sha1_check,
+        'results': [],
+        'error': None
+    }
     
     output = io.StringIO()
     
