@@ -22,6 +22,8 @@ urlpatterns = [
     path('faturas/gerar-boletos-lote/', views.invoice_bulk_generate_boletos, name='invoice_bulk_generate_boletos'),
     path('faturas/enviar-emails-lote/', views.invoice_bulk_send_emails, name='invoice_bulk_send_emails'),
     path('faturas/gerar-nfse-lote/', views.invoice_bulk_generate_nfse, name='invoice_bulk_generate_nfse'),
+    path('faturas/<int:pk>/nfse/xml/', views.invoice_nfse_xml, name='nfse_xml'),
+    path('faturas/<int:pk>/nfse/view/', views.invoice_nfse_view, name='nfse_view'),
     
     # NFe Input (Compras)
     path('notas-entrada/', views.nota_entrada_list, name='nota_entrada_list'),

@@ -79,6 +79,7 @@ class Invoice(models.Model):
     boleto_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="URL do Boleto")
     nfse_link = models.URLField(max_length=500, blank=True, null=True, verbose_name="Link da NFSe")
     pdf_fatura = models.FileField(upload_to='faturas/pdf/', blank=True, null=True, verbose_name="PDF da Fatura")
+    nfse_record = models.ForeignKey('nfse_nacional.NFSe', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices_linked', verbose_name="Registro NFSe Nacional")
     
     # Status de Comunicação
     email_sent_at = models.DateTimeField(null=True, blank=True, verbose_name="E-mail enviado em")

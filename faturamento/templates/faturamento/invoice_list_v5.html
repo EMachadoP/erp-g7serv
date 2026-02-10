@@ -287,8 +287,9 @@
                             <div class="d-flex flex-column gap-1">
                                 <div class="d-flex align-items-center gap-2">
                                     <span
-                                        class="badge-status {% if invoice.status == 'PD' %}badge-pending{% elif invoice.status == 'PG' %}badge-paid{% else %}badge-cancelled{% endif %} w-100 text-center">
-                                        {{ invoice.get_status_display }}
+                                        class="badge-status {% if invoice.status == 'PD' %}{% if invoice.nfse_status == 'EMITIDA' %}badge-nfse{% else %}badge-pending{% endif %}{% elif invoice.status == 'PG' %}badge-paid{% else %}badge-cancelled{% endif %} w-100 text-center">
+                                        {% if invoice.status == 'PD' and invoice.nfse_status == 'EMITIDA' %}Aberto
+                                        (Fiscal OK){% else %}{{ invoice.get_status_display }}{% endif %}
                                     </span>
                                 </div>
                                 <div class="d-flex gap-1 mt-1">
@@ -304,12 +305,25 @@
                         <div class="col-md-3 text-end">
                             <div class="amount-text mb-1">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
                             <div class="d-flex justify-content-end gap-2 mt-2">
+                                <!-- Botões NFS-e -->
+                                {% if invoice.nfse_status == 'EMITIDA' %}
+                                <a href="{% url 'faturamento:nfse_view' invoice.id %}"
+                                    class="btn btn-outline-success btn-sm rounded-pill px-3" title="Visualizar NFS-e">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </a>
+                                <a href="{% url 'faturamento:nfse_xml' invoice.id %}"
+                                    class="btn btn-outline-info btn-sm rounded-pill px-3" title="Baixar XML">
+                                    <i class="bi bi-file-earmark-code"></i>
+                                </a>
+                                {% endif %}
+
                                 {% if invoice.boleto_url %}
                                 <a href="{{ invoice.boleto_url }}" target="_blank"
                                     class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ver Boleto">
                                     <i class="bi bi-upc"></i>
                                 </a>
                                 {% endif %}
+
                                 {% if invoice.status == 'PD' %}
                                 <a href="{% url 'faturamento:cancel_invoice' invoice.id %}"
                                     class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Cancelar"
