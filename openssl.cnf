@@ -2,6 +2,17 @@ openssl_conf = openssl_init
 
 [openssl_init]
 providers = provider_sect
+ssl_conf = ssl_module
+
+[ssl_module]
+system_default = system_default_sect
+
+[system_default_sect]
+# SECLEVEL=0 is required for SHA1 signing in many OpenSSL 3 environments.
+# Using 'DEFAULT' without the '@' or with ':' depending on the version.
+# 'DEFAULT:@SECLEVEL=0' is common for Debian-based systems.
+CipherString = DEFAULT:@SECLEVEL=0
+SignatureAlgorithms = RSA+SHA1:ECDSA+SHA1:RSA+SHA256:RSA+SHA384:RSA+SHA512
 
 [provider_sect]
 default = default_sect
