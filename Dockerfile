@@ -27,6 +27,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /app/
 
+# Enable legacy OpenSSL providers (SHA1) for NFSe signature
+ENV OPENSSL_CONF=/app/openssl.cnf
+
 # Copy and set execution permissions for the entrypoint script
 RUN chmod +x /app/run-migrations.sh
 

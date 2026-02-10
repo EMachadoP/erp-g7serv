@@ -168,10 +168,10 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         'prest_fone': prest_fone,
         'prest_email': prest_email,
         'tomador_endereco': {
-            'logradouro': nfse_obj.cliente.address,
-            'numero': nfse_obj.cliente.number,
-            'complemento': nfse_obj.cliente.complement,
-            'bairro': nfse_obj.cliente.neighborhood,
+            'logradouro': _sanitize(nfse_obj.cliente.address),
+            'numero': _sanitize(nfse_obj.cliente.number),
+            'complemento': _sanitize(nfse_obj.cliente.complement),
+            'bairro': _sanitize(nfse_obj.cliente.neighborhood),
             'codigo_municipio': nfse_obj.cliente.codigo_municipio_ibge,
             'uf': nfse_obj.cliente.state,
             'cep': nfse_obj.cliente.zip_code.replace('.', '').replace('-', '') if nfse_obj.cliente.zip_code else '',
@@ -197,7 +197,20 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     # Render the template
     xml_content = render_to_string('nfse/dps_padrao_nacional.xml', context)
     
-    # Clean up whitespace and newlines
+    # Clean up whitespace and newlines (single continuous line)
     clean_xml = " ".join(xml_content.split())
     
     return clean_xml.strip()
+
+
+def _sanitize(text):
+    """Remove special chars that break XML schema validation."""
+    if not text:
+        return text
+    s = str(text)
+    # Replace XML-breaking chars
+    s = s.replace('&', 'e').replace('<', '').replace('>', '')
+    s = s.replace('#', '').replace('%', '').replace('"', '')
+    # Collapse whitespace/newlines into single space
+    s = ' '.join(s.split())
+    return s.strip()

@@ -294,15 +294,23 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         if dps_id:
             reference_uri = f"#{dps_id}"
 
+    def create_signer(sig_algo, dig_algo):
+        """Create an XMLSigner WITHOUT ds: prefix (E6155 fix)."""
+        s = XMLSigner(
+            method=methods.enveloped,
+            signature_algorithm=sig_algo,
+            digest_algorithm=dig_algo,
+            c14n_algorithm=c14n_algo
+        )
+        # CRITICAL: Remove ds: prefix. SEFIN rejects prefixed XML (E6155).
+        # Setting None as key makes DSIG the default namespace on Signature.
+        s.namespaces = {None: NS_DSIG}
+        return s
+
     # Sign with Try/Except for SHA1 restriction
     try:
         print(f"[ASSINADOR] Attempting {signature_algorithm}/{digest_algorithm}...", file=sys.stderr)
-        signer = XMLSigner(
-            method=methods.enveloped,
-            signature_algorithm=signature_algorithm,
-            digest_algorithm=digest_algorithm,
-            c14n_algorithm=c14n_algo
-        )
+        signer = create_signer(signature_algorithm, digest_algorithm)
         signed_root = signer.sign(
             root,
             key=private_key,
@@ -310,16 +318,9 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
             reference_uri=reference_uri
         )
     except Exception as e:
-        if "SHA1-based algorithms are not supported" in str(e):
-            print(f"[ASSINADOR] SHA1 BLOCKED by OS. Falling back to SHA256. Error: {e}", file=sys.stderr)
-            signature_algorithm = 'rsa-sha256'
-            digest_algorithm = 'sha256'
-            signer = XMLSigner(
-                method=methods.enveloped,
-                signature_algorithm=signature_algorithm,
-                digest_algorithm=digest_algorithm,
-                c14n_algorithm=c14n_algo
-            )
+        if "SHA1" in str(e) and ("not supported" in str(e) or "blocked" in str(e).lower()):
+            print(f"[ASSINADOR] SHA1 BLOCKED. Falling back to SHA256. Error: {e}", file=sys.stderr)
+            signer = create_signer('rsa-sha256', 'sha256')
             signed_root = signer.sign(
                 root,
                 key=private_key,
@@ -329,19 +330,17 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         else:
             raise e
 
-    # --- KEYINFO PRUNING (Crucial for Sefin E0714) ---
-    # We must ONLY have X509Data/X509Certificate inside KeyInfo.
-    # We do this in-place to avoid breaking the signature.
+    # --- KEYINFO PRUNING ---
+    # SEFIN requires only X509Data/X509Certificate inside KeyInfo.
+    # Done in-place to preserve signature integrity.
     try:
         sig_ns = "{http://www.w3.org/2000/09/xmldsig#}"
         key_info = signed_root.find(f".//{sig_ns}KeyInfo")
         if key_info is not None:
-            # We want to keep only X509Data, and inside it only X509Certificate
             for child in list(key_info):
                 if child.tag != f"{sig_ns}X509Data":
                     key_info.remove(child)
                 else:
-                    # Inside X509Data, keep only X509Certificate
                     for subchild in list(child):
                         if subchild.tag != f"{sig_ns}X509Certificate":
                             child.remove(subchild)
@@ -349,10 +348,6 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         print(f"[ASSINADOR] Warning pruning KeyInfo: {e}", file=sys.stderr)
 
     # Export to string
-    # Since we use default namespace in the template, we don't need prefixes for business tags.
-    # For Signature, signxml uses prefixes by default (ds:). 
-    # Let's try to keep it as it is first.
-    
     xml_output = etree.tostring(signed_root, encoding='UTF-8', xml_declaration=False).decode('utf-8')
     header = '<?xml version="1.0" encoding="UTF-8"?>'
     return header + xml_output
