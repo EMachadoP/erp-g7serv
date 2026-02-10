@@ -260,14 +260,14 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     private_key, certificate = carregar_certificado(caminho_ou_bytes_pfx, senha)
     # chain is missing in this call, but we can reconstruct pem 
     
-    certs_pem = certificate.public_bytes(serialization.Encoding.PEM)
-    # If we need chain, we should update carregar_certificado to return it.
+    # Namespaces
+    NS_NFSE = 'http://www.sped.fazenda.gov.br/nfse'
+    NS_DSIG = 'http://www.w3.org/2000/09/xmldsig#'
     
-    # Define o namespace da NFSe Nacional
-    NS_MAP = {None: 'http://www.sped.fazenda.gov.br/nfse'}
-    
+    # Load XML
     root = etree.fromstring(xml_string.encode('utf-8'))
 
+    # Digital Signature Settings
     if usar_sha256:
         signature_algorithm = 'rsa-sha256'
         digest_algorithm = 'sha256'
@@ -275,6 +275,7 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         signature_algorithm = 'rsa-sha1'
         digest_algorithm = 'sha1'
 
+    # Create Signer
     signer = XMLSigner(
         method=methods.enveloped,
         signature_algorithm=signature_algorithm,
@@ -282,16 +283,15 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     )
 
-    # Buscar infDPS no namespace correto (Nacional usa CamelCase infDPS)
-    inf_dps = root.find('.//{http://www.sped.fazenda.gov.br/nfse}infDPS')
+    # Find infDPS (National standard uses 'infDPS')
+    inf_dps = root.find('.//{%s}infDPS' % NS_NFSE)
     reference_uri = None
-    
     if inf_dps is not None:
         dps_id = inf_dps.get('Id')
         if dps_id:
-             reference_uri = f"#{dps_id}"
+            reference_uri = f"#{dps_id}"
 
-    # Assinar
+    # Sign the document
     signed_root = signer.sign(
         root,
         key=private_key,
@@ -299,44 +299,62 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         reference_uri=reference_uri
     )
 
-    # Forçar a remoção de todos os prefixos (ns0, ns1, ds, etc.)
-    # NFSe Nacional exige namespace padrão sem prefixos (Erro E6155)
-    def remove_prefixes(el):
-        # Namespace do elemento original
+    # --- Refinamento de Namespaces (Core Fix for E6155) ---
+    
+    # 1. Garantir que os elementos de negócio NÃO tenham prefixo
+    # 2. Garantir que a Signature TENHA o prefixo "ds"
+    
+    def adjust_namespaces(el):
         qname = etree.QName(el)
         ns = qname.namespace
         ln = qname.localname
         
-        # Se tem prefixo, reconstrói a tag apenas com o namespace entre chaves
-        # O lxml cuidará de renderizar como xmlns= se o prefixo for None
-        if el.prefix is not None:
-            el.tag = "{%s}%s" % (ns, ln)
+        if ns == NS_DSIG:
+            # Forçar prefixo "ds" para Signature e seus filhos
+            el.tag = "{%s}%s" % (NS_DSIG, ln)
+            # No lxml, definimos o prefixo via nsmap na criação ou via técnica de re-tag
+            # Para Signature, queremos que ela tenha seu próprio nsmap local com 'ds'
+        elif ns == NS_NFSE:
+            # Forçar SEM prefixo para elementos de negócio
+            el.tag = "{%s}%s" % (NS_NFSE, ln)
         
-        # Limpar atributos
+        # Limpar atributos prefixados
         for attr, val in list(el.attrib.items()):
             aq = etree.QName(attr)
-            # Se o atributo está em um namespace ou tem prefixo na string
-            if aq.namespace or ":" in attr:
-                 # Remove e re-adiciona como atributo local
-                 del el.attrib[attr]
-                 el.attrib[aq.localname] = val
-        
+            if aq.namespace and aq.namespace != ns: # Keep only if strictly necessary (like Id?)
+                pass 
+            elif ":" in attr:
+                del el.attrib[attr]
+                el.attrib[aq.localname] = val
+
         for child in el:
-            remove_prefixes(child)
+            adjust_namespaces(child)
 
-    # Aplica a remoção recursivamente
-    remove_prefixes(signed_root)
+    # Executa ajuste recursivo
+    adjust_namespaces(signed_root)
 
-    # Digital Signature Namespace (DS) deve ser tratado com cuidado
-    # Garantir que Signature use o namespace DS sem prefixo
-    for sig in signed_root.xpath('//*[local-name()="Signature"]'):
-        sig.tag = "{http://www.w3.org/2000/09/xmldsig#}Signature"
-        for child in sig.xpath('.//*'):
-             ns_child = etree.QName(child).namespace
-             local_name = etree.QName(child).localname
-             child.tag = "{%s}%s" % (ns_child, local_name)
+    # Fix Signature element specifically to use 'ds' prefix
+    for sig in signed_root.xpath('//*[local-name()="Signature" and namespace-uri()="%s"]' % NS_DSIG):
+        # We recreate the element or use lxml magic to force prefix
+        # Mapping 'ds' to DSIG namespace
+        new_sig = etree.Element("{%s}Signature" % NS_DSIG, nsmap={'ds': NS_DSIG})
+        # Copy children and attributes
+        for attr, val in sig.attrib.items(): new_sig.attrib[attr] = val
+        for child in sig: new_sig.append(child)
+        
+        # Replace old signature with new one (retaining the parent)
+        parent = sig.getparent()
+        if parent is not None:
+            parent.replace(sig, new_sig)
 
-    # Limpar namespaces redundantes
-    etree.cleanup_namespaces(signed_root)
+    # Cleanup with a strict TOP_NSMAP
+    etree.cleanup_namespaces(signed_root, top_nsmap={
+        None: NS_NFSE,
+        'ds': NS_DSIG
+    })
     
+    # Final check: root must not have a prefix
+    if signed_root.prefix is not None:
+        signed_root.tag = "{%s}%s" % (NS_NFSE, etree.QName(signed_root).localname)
+
     return etree.tostring(signed_root, encoding='UTF-8', xml_declaration=True).decode('utf-8')
