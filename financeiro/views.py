@@ -1338,56 +1338,9 @@ def diagnostico_nfse_nacional(request):
     
     output = io.StringIO()
     
-    # Se for POST, testar arquivo enviado
+    # Diagnóstico de Conexão
     if request.method == 'POST':
-        try:
-            uploaded_pfx = request.FILES.get('pfx_file')
-            password_input = request.POST.get('password_input')
-            
-            with redirect_stdout(output):
-                print("--- DIAGNOSTICO INTERATIVO (UPLOAD) ---")
-                if not uploaded_pfx or not password_input:
-                     print("ERRO: Arquivo PFX ou Senha não fornecidos.")
-                else:
-                     pfx_bytes = uploaded_pfx.read()
-                     print(f"Arquivo recebido: {uploaded_pfx.name} (len={len(pfx_bytes)})")
-                     print(f"Senha fornecida: {repr(password_input)}")
-                     
-                     # Diagnostico OpenSSL
-                     print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
-                     diag_root = diagnosticar_pfx_com_openssl(pfx_bytes, password_input)
-                     
-                     print(f"SHA256 do Arquivo Enviado: {diag_root.get('file_sha256')}")
-                     print("\n[OpenSSL Providers Loaded]:")
-                     print(diag_root.get('openssl_providers', '').strip())
-                     print("-" * 30)
-                     
-                     tried = diag_root.get('tried_encodings', [])
-                     results = diag_root.get('last_result', {})
-                     
-                     encryption_ok = False
-                     for enc in tried:
-                        res = results.get(enc, {})
-                        norm_ok = res.get('openssl_normal_ok', False)
-                        legacy_ok = res.get('openssl_legacy_ok', False)
-                        print(f"[{enc}] Normal OK? {norm_ok} | Legacy OK? {legacy_ok}")
-                        if norm_ok or legacy_ok:
-                            encryption_ok = True
-                            if legacy_ok: print(f">>> SUCESSO com {enc} (Legacy) <<<")
-                            else: print(f">>> SUCESSO com {enc} (Moderno) <<<")
-                        else:
-                            err = res.get('legacy_err', '') or res.get('normal_err', '')
-                            print(f"    Erro ({enc}): {err.splitlines()[0] if err else ''}")
-                     
-                     if not encryption_ok:
-                         print("\n>>> FALHA: O arquivo enviado também foi rejeitado com esta senha.")
-                     else:
-                         print("\n>>> SUCESSO: O arquivo enviado E a senha estão CORRETOS!")
-                         print("Isso indica que o arquivo no BANCO DE DADOS estava corrompido ou a senha salva estava errada.")
-                         
-        except Exception as e:
-             output.write(f"\nERRO NO PROCESSAMENTO DO UPLOAD: {e}\n")
-             traceback.print_exc(file=output)
+        pass 
 
     try:
         with redirect_stdout(output):
@@ -1427,55 +1380,32 @@ def diagnostico_nfse_nacional(request):
                     cert_bytes = None
 
                 if cert_bytes:
-                    # INSPEÇÃO DE SENHA (Novo)
-                    pwd = empresa.senha_certificado
-                    print("\n--- INSPEÇÃO DE SENHA ---")
-                    if pwd:
-                        print(f"Senha (Len): {len(pwd)}")
-                        print(f"Senha (Repr): {repr(pwd)}") 
-                        masked = pwd[:2] + "*" * (len(pwd)-4) + pwd[-2:] if len(pwd) > 4 else "****"
-                        print(f"Senha (Mask): {masked}")
-                    else:
-                        print("Senha está VAZIA (None ou String vazia)")
-
-                    # DIAGNOSTICO OPENSSL (Tira teima - Brute Force Encoding)
                     print("\n--- DIAGNOSTICO OPENSSL (PKCS12) ---")
                     diag_root = diagnosticar_pfx_com_openssl(cert_bytes, empresa.senha_certificado)
-                    
-                    print(f"SHA256 do PFX (Check Integridade): {diag_root.get('file_sha256')}")
-                    print("\n[OpenSSL Providers Loaded]:")
-                    print(diag_root.get('openssl_providers', '').strip())
-                    print("-" * 30)
-                    
-                    tried = diag_root.get('tried_encodings', [])
+                    print(f"SHA256 do PFX: {diag_root.get('file_sha256')}")
                     
                     tried = diag_root.get('tried_encodings', [])
                     results = diag_root.get('last_result', {})
                     
                     encryption_ok = False
-                    
                     for enc in tried:
                         res = results.get(enc, {})
                         norm_ok = res.get('openssl_normal_ok', False)
                         legacy_ok = res.get('openssl_legacy_ok', False)
                         
-                        print(f"[{enc}] Normal OK? {norm_ok} | Legacy OK? {legacy_ok}")
-                        
                         if norm_ok or legacy_ok:
                             encryption_ok = True
-                            if legacy_ok and not norm_ok:
-                                print(f">>> SUCESSO com {enc} (Requer Legacy Provider) <<<")
-                            elif norm_ok:
-                                print(f">>> SUCESSO com {enc} (Moderno) <<<")
+                            print(f"[{enc}] SUCESSO {'(Moderno)' if norm_ok else '(Requer Legacy)'}")
                         else:
                             # Se falhou, mostrar erro resumido
                             err = res.get('legacy_err', '') or res.get('normal_err', '')
-                            clean_err = err.split('\n')[0] if err else 'Sem erro capturado'
-                            print(f"    Erro ({enc}): {clean_err}")
+                            clean_err = err.split('\n')[0] if err else 'Senha Rejeitada'
+                            print(f"[{enc}] Falha: {clean_err}")
 
                     if not encryption_ok:
-                         print("\n>>> ERRO FATAL: Nenhuma combinação de senha/encoding funcionou.")
-                         print("Verifique se a senha contém caracteres especiais ou se o arquivo está corrompido.")
+                         print("\n>>> ERRO: Nenhuma combinação de senha/encoding funcionou.")
+                    else:
+                         print("\n>>> SUCESSO: Certificado validado com a senha salva.")
                     
                     # 2. Testar Carregamento do PFX (Robustez)
                     private_key = None
