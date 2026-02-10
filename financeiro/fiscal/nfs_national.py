@@ -24,7 +24,7 @@ def emitir_nfse(invoice):
     # 2. Get or Create Default Service
     # For Recife, the national code is 14.02.01 and the municipal complement is 501.
     service_code_nac = '14.02.01'
-    service_code_mun = '14.02.01.501' # or just '501'
+    service_code_mun = '501' # Recife uses the sub-item 501
     
     default_service = Service.objects.filter(codigo_tributacao_nacional=service_code_nac).first()
     
