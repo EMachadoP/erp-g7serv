@@ -276,11 +276,14 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         digest_algorithm = 'sha1'
 
     # Create Signer
+    # Using Exclusive C14N which is often more resilient to prefix changes in modern APIs
+    c14n_algo = 'http://www.w3.org/2001/10/xml-exc-c14n#'
+    
     signer = XMLSigner(
         method=methods.enveloped,
         signature_algorithm=signature_algorithm,
         digest_algorithm=digest_algorithm,
-        c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
+        c14n_algorithm=c14n_algo
     )
 
     # Find infDPS (National standard uses 'infDPS')
@@ -292,16 +295,31 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
             reference_uri = f"#{dps_id}"
 
     # Sign the document
-    signed_root = signer.sign(
-        root,
-        key=private_key,
-        cert=certs_pem,
-        reference_uri=reference_uri
-    )
+    # We try to use ns_prefix=None if the library supports it to avoid prefixes from the start
+    try:
+        signed_root = signer.sign(
+            root,
+            key=private_key,
+            cert=certs_pem,
+            reference_uri=reference_uri,
+            always_add_id=False
+        )
+    except TypeError:
+        # Fallback if always_add_id or other params are not supported
+        signed_root = signer.sign(
+            root,
+            key=private_key,
+            cert=certs_pem,
+            reference_uri=reference_uri
+        )
 
     # --- RE-CONSTRUÇÃO RIGOROSA DE NAMESPACES (Core Fix for E6155) ---
     # Para resolver definitivamente o erro E6155 (Sefin), 
     # precisamos garantir que tags de negócio NÃO tenham prefixo e Signature TENHA 'ds'
+    # OU também não tenha, mas o Sefin é chato. 
+    # Se usarmos Exclusive C14N, a remoção do prefixo 'ds' do Signature element 
+    # e a troca pelo xmlns default no Signature block DEVE manter a signature válida
+    # porque as referências internas serão recalibradas pelo C14N-EXCL.
     
     def copy_element_clean(old_el, ns_target, ns_dsig):
         qname = etree.QName(old_el)
@@ -309,18 +327,13 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         ln = qname.localname
         
         # Define nsmap:
-        # 1. No root (DPS), definimos o namespace padrão de negócio.
-        # 2. No Signature, trocamos o namespace padrão para xmldsig (conforme exigência Sefin de zero prefixos).
         if ln == "DPS":
             new_nsmap = {None: ns_target}
         elif ln == "Signature":
-            new_nsmap = {None: ns_dsig}
+            new_nsmap = {None: ns_dsig} # Sefin exigindo Signature sem prefixo
         else:
             new_nsmap = None # Herda do pai
             
-        # Define a nova tag usando o namespace correspondente.
-        # Como o None prefix está mapeado no nsmap local ou herdado,
-        # o lxml gerará as tags sem prefixo (ex: <Signature xmlns="...">).
         if ns == ns_target:
             tag = "{%s}%s" % (ns_target, ln)
         elif ns == ns_dsig:
@@ -335,7 +348,11 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         # Copiar atributos (Removendo prefixos de Ids etc.)
         for k, v in old_el.attrib.items():
             aq = etree.QName(k)
-            new_el.set(aq.localname, v)
+            # Preservar o namespace do atributo se não for o padrão
+            if aq.namespace:
+                new_el.set(k, v)
+            else:
+                new_el.set(aq.localname, v)
             
         # Copiar filhos recursivamente
         for child in old_el:
@@ -345,16 +362,13 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         return new_el
 
     # Re-gera o documento inteiro a partir da raiz limpa
-    # signed_root é o elemento <DPS> retornado pelo signxml
     definitive_root = copy_element_clean(signed_root, NS_NFSE, NS_DSIG)
 
-    # Double check for redundant declarations
+    # Limpeza final de namespaces redundantes
     etree.cleanup_namespaces(definitive_root)
 
     # Gera string XML final
     xml_output = etree.tostring(definitive_root, encoding='UTF-8', xml_declaration=False).decode('utf-8')
     
-    # Prepend declaration manualmente com aspas duplas e sem newline se possivel
-    # A Sefin pode ser chata com aspas simples ou espaços extras
     header = '<?xml version="1.0" encoding="UTF-8"?>'
     return header + xml_output
