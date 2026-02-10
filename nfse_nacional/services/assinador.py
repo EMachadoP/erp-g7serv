@@ -308,21 +308,25 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         ns = qname.namespace
         ln = qname.localname
         
-        # Define nsmap: se for root (DPS), definimos os namespaces principais
+        # Define nsmap:
+        # 1. No root (DPS), definimos o namespace padrão de negócio.
+        # 2. No Signature, trocamos o namespace padrão para xmldsig (conforme exigência Sefin de zero prefixos).
         if ln == "DPS":
-            new_nsmap = {None: ns_target, 'ds': ns_dsig}
+            new_nsmap = {None: ns_target}
+        elif ln == "Signature":
+            new_nsmap = {None: ns_dsig}
         else:
             new_nsmap = None # Herda do pai
             
-        # Define a nova tag
-        # Se for negócio (NS_NFSE), usamos default namespace (None prefix)
-        # Se for assinatura (NS_DSIG), usamos prefixo 'ds' especificado no root
+        # Define a nova tag usando o namespace correspondente.
+        # Como o None prefix está mapeado no nsmap local ou herdado,
+        # o lxml gerará as tags sem prefixo (ex: <Signature xmlns="...">).
         if ns == ns_target:
             tag = "{%s}%s" % (ns_target, ln)
         elif ns == ns_dsig:
             tag = "{%s}%s" % (ns_dsig, ln)
         else:
-            tag = old_el.tag # Fallback
+            tag = old_el.tag
             
         new_el = etree.Element(tag, nsmap=new_nsmap)
         new_el.text = old_el.text
