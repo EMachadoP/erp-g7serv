@@ -2,7 +2,7 @@ openssl_conf = openssl_init
 
 [openssl_init]
 providers = provider_sect
-alg_section = algorithm_sect
+ssl_conf = ssl_module
 
 [provider_sect]
 default = default_sect
@@ -14,8 +14,9 @@ activate = 1
 [legacy_sect]
 activate = 1
 
-[algorithm_sect]
-system_default = system_default_sect
+[ssl_module]
+system_default = crypto_policy
 
-[system_default_sect]
-CipherString = DEFAULT:@SECLEVEL=1
+[crypto_policy]
+CipherString = DEFAULT@SECLEVEL=1
+SignatureAlgorithms = RSA+SHA1:DEFAULT
