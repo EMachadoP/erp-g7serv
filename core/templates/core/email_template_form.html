@@ -5,104 +5,104 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h3 mb-0 text-gray-800">
-                <i class="bi bi-envelope-paper me-2 text-primary"></i>{{ title }}
-            </h2>
-            <a href="{% url 'core:email_template_list' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Voltar
-            </a>
-        </div>
-    </div>
+ <div class="col-12">
+ <div class="d-flex justify-content-between align-items-center">
+ <h2 class="h3 mb-0 text-gray-800">
+ <i class="bi bi-envelope-paper me-2 text-primary"></i>{{ title }}
+ </h2>
+ <a href="{% url 'core:email_template_list' %}" class="btn btn-outline-secondary">
+ <i class="bi bi-arrow-left me-1"></i>Voltar
+ </a>
+ </div>
+ </div>
 </div>
 
 <div class="row">
-    <div class="col-xl-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-primary">Dados do Template</h6>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
+ <div class="col-xl-8">
+ <div class="card shadow-sm border-0">
+ <div class="card-header bg-white py-3">
+ <h6 class="m-0 fw-bold text-primary">Dados do Template</h6>
+ </div>
+ <div class="card-body">
+ <form method="post">
+ {% csrf_token %}
 
-                    <div class="row mb-3">
-                        <div class="col-md-8">
-                            <label class="form-label fw-bold small text-uppercase">Nome do Template</label>
-                            {{ form.name }}
-                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small text-uppercase">Tipo</label>
-                            {{ form.template_type }}
-                            {% if form.template_type.errors %}<div class="text-danger small">{{ form.template_type.errors }}</div>{% endif %}
-                        </div>
-                    </div>
+ <div class="row mb-3">
+ <div class="col-md-8">
+ <label class="form-label fw-bold small text-uppercase">Nome do Template</label>
+ {{ form.name }}
+ {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+ </div>
+ <div class="col-md-4">
+ <label class="form-label fw-bold small text-uppercase">Tipo</label>
+ {{ form.template_type }}
+ {% if form.template_type.errors %}<div class="text-danger small">{{ form.template_type.errors }}</div>{% endif %}
+ </div>
+ </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-uppercase">Assunto do E-mail</label>
-                        {{ form.subject }}
-                        {% if form.subject.errors %}<div class="text-danger small">{{ form.subject.errors }}</div>{% endif %}
-                        <div class="form-text small">Use placeholders como <code>{cliente}</code> ou <code>{fatura}</code></div>
-                    </div>
+ <div class="mb-3">
+ <label class="form-label fw-bold small text-uppercase">Assunto do E-mail</label>
+ {{ form.subject }}
+ {% if form.subject.errors %}<div class="text-danger small">{{ form.subject.errors }}</div>{% endif %}
+ <div class="form-text small">Use placeholders como <code>{cliente}</code> ou <code>{fatura}</code></div>
+ </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-uppercase">Corpo do E-mail (HTML)</label>
-                        {{ form.body }}
-                        {% if form.body.errors %}<div class="text-danger small">{{ form.body.errors }}</div>{% endif %}
-                    </div>
+ <div class="mb-3">
+ <label class="form-label fw-bold small text-uppercase">Corpo do E-mail (HTML)</label>
+ {{ form.body }}
+ {% if form.body.errors %}<div class="text-danger small">{{ form.body.errors }}</div>{% endif %}
+ </div>
 
-                    <div class="mb-4">
-                        <div class="form-check">
-                            {{ form.active }}
-                            <label class="form-check-label" for="id_active">Template Ativo</label>
-                        </div>
-                    </div>
+ <div class="mb-4">
+ <div class="form-check">
+ {{ form.active }}
+ <label class="form-check-label" for="id_active">Template Ativo</label>
+ </div>
+ </div>
 
-                    <hr>
+ <hr>
 
-                    <div class="d-flex justify-content-end">
-                        <a href="{% url 'core:email_template_list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-save me-1"></i>Salvar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+ <div class="d-flex justify-content-end">
+ <a href="{% url 'core:email_template_list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
+ <button type="submit" class="btn btn-primary px-4">
+ <i class="bi bi-save me-1"></i>Salvar
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
 
-    <div class="col-xl-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-light py-2">
-                <h6 class="m-0 fw-bold text-dark"><i class="bi bi-code-slash me-2"></i>Placeholders</h6>
-            </div>
-            <div class="card-body small">
-                <p class="text-muted mb-2">Use os seguintes placeholders:</p>
-                <table class="table table-sm mb-0">
-                    <tr><td><code>{cliente}</code></td><td>Nome do cliente</td></tr>
-                    <tr><td><code>{valor}</code></td><td>Valor (R$ X,XX)</td></tr>
-                    <tr><td><code>{vencimento}</code></td><td>Data de vencimento</td></tr>
-                    <tr><td><code>{fatura}</code></td><td>Numero da fatura</td></tr>
-                    <tr><td><code>{link_boleto}</code></td><td>URL do boleto</td></tr>
-                    <tr><td><code>{link_nf}</code></td><td>URL da NFS-e</td></tr>
-                </table>
-            </div>
-        </div>
+ <div class="col-xl-4">
+ <div class="card shadow-sm border-0">
+ <div class="card-header bg-light py-2">
+ <h6 class="m-0 fw-bold text-dark"><i class="bi bi-code-slash me-2"></i>Placeholders</h6>
+ </div>
+ <div class="card-body small">
+ <p class="text-muted mb-2">Use os seguintes placeholders:</p>
+ <table class="table table-sm mb-0">
+ <tr><td><code>{cliente}</code></td><td>Nome do cliente</td></tr>
+ <tr><td><code>{valor}</code></td><td>Valor (R$ X,XX)</td></tr>
+ <tr><td><code>{vencimento}</code></td><td>Data de vencimento</td></tr>
+ <tr><td><code>{fatura}</code></td><td>Numero da fatura</td></tr>
+ <tr><td><code>{link_boleto}</code></td><td>URL do boleto</td></tr>
+ <tr><td><code>{link_nf}</code></td><td>URL da NFS-e</td></tr>
+ </table>
+ </div>
+ </div>
 
-        <div class="card shadow-sm border-0 mt-3">
-            <div class="card-header bg-light py-2">
-                <h6 class="m-0 fw-bold text-dark"><i class="bi bi-lightbulb me-2"></i>Dicas</h6>
-            </div>
-            <div class="card-body small">
-                <ul class="mb-0 ps-3">
-                    <li>O corpo do e-mail aceita HTML basico</li>
-                    <li>Templates do tipo <strong>Boleto + NF</strong> sao usados como padrao no faturamento</li>
-                    <li>Marque como <strong>Inativo</strong> para parar de usar sem excluir</li>
-                </ul>
-            </div>
-        </div>
-    </div>
+ <div class="card shadow-sm border-0 mt-3">
+ <div class="card-header bg-light py-2">
+ <h6 class="m-0 fw-bold text-dark"><i class="bi bi-lightbulb me-2"></i>Dicas</h6>
+ </div>
+ <div class="card-body small">
+ <ul class="mb-0 ps-3">
+ <li>O corpo do e-mail aceita HTML basico</li>
+ <li>Templates do tipo <strong>Boleto + NF</strong> sao usados como padrao no faturamento</li>
+ <li>Marque como <strong>Inativo</strong> para parar de usar sem excluir</li>
+ </ul>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

@@ -2,169 +2,169 @@
 
 {% block content %}
 <div class="text-center mb-5 mt-4">
-    <h2 class="fw-bold text-secondary">Bem-vindo ao G7Serv ERP</h2>
+ <h2 class="fw-bold text-secondary">Bem-vindo ao G7Serv ERP</h2>
 
-    <!-- Role Selection Buttons (Mobile/Quick Access) -->
-    <div class="d-md-none d-grid gap-3 mt-4 px-4">
-        <a href="{% url 'operacional:mobile_os_list' %}" class="btn btn-primary btn-lg p-4 shadow-sm">
-            <i class="fas fa-tools fa-2x mb-2 d-block"></i>
-            Sou Técnico (Minhas OS)
-        </a>
-        <a href="{% url 'portal:home' %}" class="btn btn-success btn-lg p-4 shadow-sm">
-            <i class="fas fa-user-circle fa-2x mb-2 d-block"></i>
-            Sou Cliente (Portal)
-        </a>
-    </div>
+ <!-- Role Selection Buttons (Mobile/Quick Access) -->
+ <div class="d-md-none d-grid gap-3 mt-4 px-4">
+ <a href="{% url 'operacional:mobile_os_list' %}" class="btn btn-primary btn-lg p-4 shadow-sm">
+ <i class="fas fa-tools fa-2x mb-2 d-block"></i>
+ Sou Técnico (Minhas OS)
+ </a>
+ <a href="{% url 'portal:home' %}" class="btn btn-success btn-lg p-4 shadow-sm">
+ <i class="fas fa-user-circle fa-2x mb-2 d-block"></i>
+ Sou Cliente (Portal)
+ </a>
+ </div>
 </div>
 
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
-    <!-- Comercial -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-briefcase text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Comercial</h5>
-                <p class="card-text text-muted small mb-4">
-                    {{ total_clients }} Clientes<br>
-                    {{ active_contracts }} Contratos Ativos
-                </p>
-                <a href="{% url 'comercial:client_list' %}"
-                    class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Comercial -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-briefcase text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Comercial</h5>
+ <p class="card-text text-muted small mb-4">
+ {{ total_clients }} Clientes<br>
+ {{ active_contracts }} Contratos Ativos
+ </p>
+ <a href="{% url 'comercial:client_list' %}"
+ class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Operacional -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-tools text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Operacional</h5>
-                <p class="card-text text-muted small mb-4">
-                    {{ open_os }} OS Abertas<br>
-                    Gestão de Serviços
-                </p>
-                <a href="{% url 'operacional:service_order_list' %}"
-                    class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Operacional -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-tools text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Operacional</h5>
+ <p class="card-text text-muted small mb-4">
+ {{ open_os }} OS Abertas<br>
+ Gestão de Serviços
+ </p>
+ <a href="{% url 'operacional:service_order_list' %}"
+ class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Faturamento -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-cash-coin text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Faturamento</h5>
-                <p class="card-text text-muted small mb-4">
-                    {{ pending_invoices_count }} Pendentes<br>
-                    R$ {{ pending_invoices_value|floatformat:2 }}
-                </p>
-                <a href="{% url 'faturamento:list' %}" class="btn btn-light border w-100 mt-auto text-secondary">Saiba
-                    mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Faturamento -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-cash-coin text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Faturamento</h5>
+ <p class="card-text text-muted small mb-4">
+ {{ pending_invoices_count }} Pendentes<br>
+ R$ {{ pending_invoices_value|floatformat:2 }}
+ </p>
+ <a href="{% url 'faturamento:list' %}" class="btn btn-light border w-100 mt-auto text-secondary">Saiba
+ mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Estoque -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-box-seam text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Estoque</h5>
-                <p class="card-text text-muted small mb-4">
-                    {{ low_stock_products }} Baixo Estoque<br>
-                    Controle de Produtos
-                </p>
-                <a href="{% url 'estoque:product_list' %}"
-                    class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Estoque -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-box-seam text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Estoque</h5>
+ <p class="card-text text-muted small mb-4">
+ {{ low_stock_products }} Baixo Estoque<br>
+ Controle de Produtos
+ </p>
+ <a href="{% url 'estoque:product_list' %}"
+ class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Indicadores -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-graph-up text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Indicadores</h5>
-                <p class="card-text text-muted small mb-4">
-                    Análise de Desempenho<br>
-                    Dashboards
-                </p>
-                <a href="{% url 'reports:dashboard' %}" class="btn btn-light border w-100 mt-auto text-secondary">Saiba
-                    mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Indicadores -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-graph-up text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Indicadores</h5>
+ <p class="card-text text-muted small mb-4">
+ Análise de Desempenho<br>
+ Dashboards
+ </p>
+ <a href="{% url 'reports:dashboard' %}" class="btn btn-light border w-100 mt-auto text-secondary">Saiba
+ mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Financeiro -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-currency-dollar text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Financeiro</h5>
-                <p class="card-text text-muted small mb-4">
-                    Contas a Pagar/Receber<br>
-                    Gestão Financeira
-                </p>
-                <a href="{% url 'financeiro:dashboard' %}"
-                    class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Financeiro -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-currency-dollar text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Financeiro</h5>
+ <p class="card-text text-muted small mb-4">
+ Contas a Pagar/Receber<br>
+ Gestão Financeira
+ </p>
+ <a href="{% url 'financeiro:dashboard' %}"
+ class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Notas Fiscais -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-receipt text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Notas Fiscais</h5>
-                <p class="card-text text-muted small mb-4">
-                    Emissão de NF-e<br>
-                    Gestão Fiscal
-                </p>
-                <a href="#" class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Notas Fiscais -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-receipt text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Notas Fiscais</h5>
+ <p class="card-text text-muted small mb-4">
+ Emissão de NF-e<br>
+ Gestão Fiscal
+ </p>
+ <a href="#" class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
+ </div>
+ </div>
+ </div>
 
-    <!-- Boletos (Placeholder) -->
-    <div class="col">
-        <div class="card h-100 border-0 shadow-sm text-center py-3">
-            <div class="card-body d-flex flex-column align-items-center">
-                <div class="mb-3">
-                    <i class="bi bi-upc-scan text-primary display-4"></i>
-                </div>
-                <h5 class="card-title fw-bold text-secondary">Boletos</h5>
-                <p class="card-text text-muted small mb-4">
-                    Emissão de Boletos<br>
-                    Remessa Bancária
-                </p>
-                <a href="#" class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
-            </div>
-        </div>
-    </div>
+ <!-- Boletos (Placeholder) -->
+ <div class="col">
+ <div class="card h-100 border-0 shadow-sm text-center py-3">
+ <div class="card-body d-flex flex-column align-items-center">
+ <div class="mb-3">
+ <i class="bi bi-upc-scan text-primary display-4"></i>
+ </div>
+ <h5 class="card-title fw-bold text-secondary">Boletos</h5>
+ <p class="card-text text-muted small mb-4">
+ Emissão de Boletos<br>
+ Remessa Bancária
+ </p>
+ <a href="#" class="btn btn-light border w-100 mt-auto text-secondary">Saiba mais</a>
+ </div>
+ </div>
+ </div>
 </div>
 
 <!-- BI Dashboard Avançado -->
 <div class="mt-5 mb-5">
-    <h2 class="fw-bold text-secondary text-center mb-4">BI Avançado & Triagem IA</h2>
-    {% include 'dashboard/home.html' %}
+ <h2 class="fw-bold text-secondary text-center mb-4">BI Avançado & Triagem IA</h2>
+ {% include 'dashboard/home.html' %}
 </div>
 
 {% endblock %}

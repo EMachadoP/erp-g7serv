@@ -2,31 +2,31 @@
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-md-8 col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h4 class="card-title mb-0">{% if location %}Editar{% else %}Novo{% endif %} Local de Estoque</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nome do Local</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ location.name }}"
-                            required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="description" name="description"
-                            rows="3">{{ location.description }}</textarea>
-                    </div>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'estoque:location_list' %}" class="btn btn-light me-md-2">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">Salvar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+ <div class="col-md-8 col-lg-6">
+ <div class="card border-0 shadow-sm">
+ <div class="card-header bg-white py-3">
+ <h4 class="card-title mb-0">{% if location %}Editar{% else %}Novo{% endif %} Local de Estoque</h4>
+ </div>
+ <div class="card-body">
+ <form method="post">
+ {% csrf_token %}
+ <div class="mb-3">
+ <label for="name" class="form-label">Nome do Local</label>
+ <input type="text" class="form-control" id="name" name="name" value="{{ location.name }}"
+ required>
+ </div>
+ <div class="mb-3">
+ <label for="description" class="form-label">Descrição</label>
+ <textarea class="form-control" id="description" name="description"
+ rows="3">{{ location.description }}</textarea>
+ </div>
+ <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+ <a href="{% url 'estoque:location_list' %}" class="btn btn-light me-md-2">Cancelar</a>
+ <button type="submit" class="btn btn-primary">Salvar</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

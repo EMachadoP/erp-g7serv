@@ -2,117 +2,117 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-lg-8 mx-auto text-center">
-        <h1 class="display-4 mb-4">
-            <i class="bi bi-file-earmark-spreadsheet text-primary"></i>
-        </h1>
-        <h2 class="mb-4">Motor de Importação Inteligente</h2>
-        <p class="lead text-muted mb-5">
-            Importe planilhas de qualquer formato para o seu ERP de forma automática e inteligente.
-            Nossa IA padroniza datas, moedas, CNPJ/CPF e muito mais.
-        </p>
+ <div class="col-lg-8 mx-auto text-center">
+ <h1 class="display-4 mb-4">
+ <i class="bi bi-file-earmark-spreadsheet text-primary"></i>
+ </h1>
+ <h2 class="mb-4">Motor de Importação Inteligente</h2>
+ <p class="lead text-muted mb-5">
+ Importe planilhas de qualquer formato para o seu ERP de forma automática e inteligente.
+ Nossa IA padroniza datas, moedas, CNPJ/CPF e muito mais.
+ </p>
 
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="bi bi-upload display-4 text-primary mb-3"></i>
-                        <h5>1. Faça Upload</h5>
-                        <p class="text-muted small">Envie planilhas Excel ou CSV de qualquer formato</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="bi bi-magic display-4 text-success mb-3"></i>
-                        <h5>2. Mapeie Colunas</h5>
-                        <p class="text-muted small">Nossa IA sugere o mapeamento automaticamente</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="bi bi-check-circle display-4 text-info mb-3"></i>
-                        <h5>3. Importe</h5>
-                        <p class="text-muted small">Visualize o preview e confirme a importação</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <div class="row g-4 mb-5">
+ <div class="col-md-4">
+ <div class="card h-100 border-0 shadow-sm">
+ <div class="card-body text-center">
+ <i class="bi bi-upload display-4 text-primary mb-3"></i>
+ <h5>1. Faça Upload</h5>
+ <p class="text-muted small">Envie planilhas Excel ou CSV de qualquer formato</p>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="card h-100 border-0 shadow-sm">
+ <div class="card-body text-center">
+ <i class="bi bi-magic display-4 text-success mb-3"></i>
+ <h5>2. Mapeie Colunas</h5>
+ <p class="text-muted small">Nossa IA sugere o mapeamento automaticamente</p>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="card h-100 border-0 shadow-sm">
+ <div class="card-body text-center">
+ <i class="bi bi-check-circle display-4 text-info mb-3"></i>
+ <h5>3. Importe</h5>
+ <p class="text-muted small">Visualize o preview e confirme a importação</p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <a href="{% url 'importador:upload_page' %}" class="btn btn-primary btn-lg px-4 gap-3">
-                <i class="bi bi-upload"></i> Começar Importação
-            </a>
-            <a href="{% url 'importador:templates_page' %}" class="btn btn-outline-secondary btn-lg px-4">
-                <i class="bi bi-journal-text"></i> Ver Templates
-            </a>
-        </div>
-    </div>
+ <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+ <a href="{% url 'importador:upload_page' %}" class="btn btn-primary btn-lg px-4 gap-3">
+ <i class="bi bi-upload"></i> Começar Importação
+ </a>
+ <a href="{% url 'importador:templates_page' %}" class="btn btn-outline-secondary btn-lg px-4">
+ <i class="bi bi-journal-text"></i> Ver Templates
+ </a>
+ </div>
+ </div>
 </div>
 
 <!-- Módulos Suportados -->
 <div class="row mt-5">
-    <div class="col-12">
-        <h4 class="text-center mb-4">Módulos Suportados</h4>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-cash-coin display-5 text-success"></i>
-                <h6 class="mt-2">Contas a Pagar</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-cash-stack display-5 text-info"></i>
-                <h6 class="mt-2">Contas a Receber</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-box-seam display-5 text-warning"></i>
-                <h6 class="mt-2">Estoque</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-tools display-5 text-danger"></i>
-                <h6 class="mt-2">Ordens de Serviço</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-people display-5 text-primary"></i>
-                <h6 class="mt-2">Clientes</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-file-earmark-text display-5 text-secondary"></i>
-                <h6 class="mt-2">Orçamentos</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-file-contract display-5 text-dark"></i>
-                <h6 class="mt-2">Contratos</h6>
-            </div>
-        </div>
-    </div>
+ <div class="col-12">
+ <h4 class="text-center mb-4">Módulos Suportados</h4>
+ </div>
+ <div class="col-md-3">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-cash-coin display-5 text-success"></i>
+ <h6 class="mt-2">Contas a Pagar</h6>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-cash-stack display-5 text-info"></i>
+ <h6 class="mt-2">Contas a Receber</h6>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-box-seam display-5 text-warning"></i>
+ <h6 class="mt-2">Estoque</h6>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-3 mb-4">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-tools display-5 text-danger"></i>
+ <h6 class="mt-2">Ordens de Serviço</h6>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-3 mb-4">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-people display-5 text-primary"></i>
+ <h6 class="mt-2">Clientes</h6>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-3 mb-4">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-file-earmark-text display-5 text-secondary"></i>
+ <h6 class="mt-2">Orçamentos</h6>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-3 mb-4">
+ <div class="card text-center h-100">
+ <div class="card-body">
+ <i class="bi bi-file-contract display-5 text-dark"></i>
+ <h6 class="mt-2">Contratos</h6>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

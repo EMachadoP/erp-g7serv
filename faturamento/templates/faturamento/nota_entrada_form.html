@@ -2,38 +2,38 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Importar XML da NFe</h4>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Selecione o arquivo XML da Nota Fiscal Eletrônica para realizar a importação.
-                    </p>
+ <div class="row justify-content-center">
+ <div class="col-md-6">
+ <div class="card shadow">
+ <div class="card-header bg-primary text-white">
+ <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Importar XML da NFe</h4>
+ </div>
+ <div class="card-body">
+ <p class="text-muted">Selecione o arquivo XML da Nota Fiscal Eletrônica para realizar a importação.
+ </p>
 
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
+ <form method="post" enctype="multipart/form-data">
+ {% csrf_token %}
 
-                        <div class="mb-4">
-                            <label for="xml_file" class="form-label">Arquivo XML</label>
-                            <input type="file" class="form-control" name="xml_file" id="xml_file" accept=".xml"
-                                required>
-                            <div class="form-text">O sistema irá cadastrar automaticamente o fornecedor e os produtos se
-                                não existirem.</div>
-                        </div>
+ <div class="mb-4">
+ <label for="xml_file" class="form-label">Arquivo XML</label>
+ <input type="file" class="form-control" name="xml_file" id="xml_file" accept=".xml"
+ required>
+ <div class="form-text">O sistema irá cadastrar automaticamente o fornecedor e os produtos se
+ não existirem.</div>
+ </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-gear-fill"></i> Processar Importação
-                            </button>
-                            <a href="{% url 'faturamento:nota_entrada_list' %}"
-                                class="btn btn-outline-secondary">Cancelar</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+ <div class="d-grid gap-2">
+ <button type="submit" class="btn btn-primary btn-lg">
+ <i class="bi bi-gear-fill"></i> Processar Importação
+ </button>
+ <a href="{% url 'faturamento:nota_entrada_list' %}"
+ class="btn btn-outline-secondary">Cancelar</a>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

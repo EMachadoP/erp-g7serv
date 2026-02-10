@@ -2,158 +2,158 @@
 
 {% block content %}
 <style>
-    .budget-grid {
-        font-size: 0.85rem;
-    }
+ .budget-grid {
+ font-size: 0.85rem;
+ }
 
-    .budget-grid th,
-    .budget-grid td {
-        padding: 0.5rem;
-        vertical-align: middle;
-    }
+ .budget-grid th,
+ .budget-grid td {
+ padding: 0.5rem;
+ vertical-align: middle;
+ }
 
-    .budget-input {
-        width: 80px;
-        text-align: right;
-        border: 1px solid transparent;
-        background-color: transparent;
-        padding: 0;
-        margin: 0;
-    }
+ .budget-input {
+ width: 80px;
+ text-align: right;
+ border: 1px solid transparent;
+ background-color: transparent;
+ padding: 0;
+ margin: 0;
+ }
 
-    .budget-input:hover,
-    .budget-input:focus {
-        border: 1px solid #ced4da;
-        background-color: white;
-    }
+ .budget-input:hover,
+ .budget-input:focus {
+ border: 1px solid #ced4da;
+ background-color: white;
+ }
 
-    .realized-value {
-        font-size: 0.75rem;
-        color: #6c757d;
-        display: block;
-    }
+ .realized-value {
+ font-size: 0.75rem;
+ color: #6c757d;
+ display: block;
+ }
 
-    .category-row.level-0 {
-        background-color: #f8f9fa;
-        font-weight: bold;
-    }
+ .category-row.level-0 {
+ background-color: #f8f9fa;
+ font-weight: bold;
+ }
 
-    .category-row.level-1 {
-        background-color: white;
-    }
+ .category-row.level-1 {
+ background-color: white;
+ }
 
-    .expand-icon {
-        cursor: pointer;
-        width: 20px;
-        display: inline-block;
-        text-align: center;
-    }
+ .expand-icon {
+ cursor: pointer;
+ width: 20px;
+ display: inline-block;
+ text-align: center;
+ }
 </style>
 
 <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{% url 'financeiro:budget_plan_list' %}"
-                class="text-decoration-none text-muted mb-2 d-inline-block">
-                <i class="bi bi-arrow-left"></i> Voltar a listagem de planejamentos
-            </a>
-            <h2><i class="bi bi-calendar-event me-2"></i> Planejamento para {{ plan.year }} <small
-                    class="text-muted fs-6">({{ plan.description }})</small></h2>
-        </div>
-        <div>
-            <div class="form-check form-switch d-inline-block me-3">
-                <input class="form-check-input" type="checkbox" id="toggleRealized" checked>
-                <label class="form-check-label" for="toggleRealized">Mostrar Realizado</label>
-            </div>
-        </div>
-    </div>
+ <div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+ <a href="{% url 'financeiro:budget_plan_list' %}"
+ class="text-decoration-none text-muted mb-2 d-inline-block">
+ <i class="bi bi-arrow-left"></i> Voltar a listagem de planejamentos
+ </a>
+ <h2><i class="bi bi-calendar-event me-2"></i> Planejamento para {{ plan.year }} <small
+ class="text-muted fs-6">({{ plan.description }})</small></h2>
+ </div>
+ <div>
+ <div class="form-check form-switch d-inline-block me-3">
+ <input class="form-check-input" type="checkbox" id="toggleRealized" checked>
+ <label class="form-check-label" for="toggleRealized">Mostrar Realizado</label>
+ </div>
+ </div>
+ </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0 table-responsive">
-            <table class="table table-bordered budget-grid mb-0">
-                <thead class="bg-light text-center">
-                    <tr>
-                        <th class="text-start" style="min-width: 250px;">Categorias de Receita/Despesa</th>
-                        {% for month in months %}
-                        <th style="min-width: 100px;">{{ month }}/{{ plan.year }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for category in categories %}
-                    {% include 'financeiro/includes/budget_row.html' with category=category level=0 %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+ <div class="card shadow-sm">
+ <div class="card-body p-0 table-responsive">
+ <table class="table table-bordered budget-grid mb-0">
+ <thead class="bg-light text-center">
+ <tr>
+ <th class="text-start" style="min-width: 250px;">Categorias de Receita/Despesa</th>
+ {% for month in months %}
+ <th style="min-width: 100px;">{{ month }}/{{ plan.year }}</th>
+ {% endfor %}
+ </tr>
+ </thead>
+ <tbody>
+ {% for category in categories %}
+ {% include 'financeiro/includes/budget_row.html' with category=category level=0 %}
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Toggle Subcategories
-        document.querySelectorAll('.expand-icon').forEach(icon => {
-            icon.addEventListener('click', function () {
-                const row = this.closest('tr');
-                const catId = row.dataset.categoryId;
-                const isExpanded = this.classList.contains('bi-dash-square');
+ document.addEventListener('DOMContentLoaded', function () {
+ // Toggle Subcategories
+ document.querySelectorAll('.expand-icon').forEach(icon => {
+ icon.addEventListener('click', function () {
+ const row = this.closest('tr');
+ const catId = row.dataset.categoryId;
+ const isExpanded = this.classList.contains('bi-dash-square');
 
-                // Toggle icon
-                this.classList.toggle('bi-dash-square');
-                this.classList.toggle('bi-plus-square');
+ // Toggle icon
+ this.classList.toggle('bi-dash-square');
+ this.classList.toggle('bi-plus-square');
 
-                // Toggle visibility of children
-                document.querySelectorAll(`.parent-${catId}`).forEach(child => {
-                    child.style.display = isExpanded ? 'none' : 'table-row';
-                });
-            });
-        });
+ // Toggle visibility of children
+ document.querySelectorAll(`.parent-${catId}`).forEach(child => {
+ child.style.display = isExpanded ? 'none' : 'table-row';
+ });
+ });
+ });
 
-        // Toggle Realized Values
-        document.getElementById('toggleRealized').addEventListener('change', function () {
-            const show = this.checked;
-            document.querySelectorAll('.realized-value').forEach(el => {
-                el.style.display = show ? 'block' : 'none';
-            });
-        });
+ // Toggle Realized Values
+ document.getElementById('toggleRealized').addEventListener('change', function () {
+ const show = this.checked;
+ document.querySelectorAll('.realized-value').forEach(el => {
+ el.style.display = show ? 'block' : 'none';
+ });
+ });
 
-        // Auto-save Budget Inputs
-        document.querySelectorAll('.budget-input').forEach(input => {
-            input.addEventListener('change', function () {
-                const catId = this.dataset.categoryId;
-                const month = this.dataset.month;
-                const amount = this.value;
-                const planId = '{{ plan.id }}';
+ // Auto-save Budget Inputs
+ document.querySelectorAll('.budget-input').forEach(input => {
+ input.addEventListener('change', function () {
+ const catId = this.dataset.categoryId;
+ const month = this.dataset.month;
+ const amount = this.value;
+ const planId = '{{ plan.id }}';
 
-                fetch('{% url "financeiro:budget_item_update" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        plan_id: planId,
-                        category_id: catId,
-                        month: month,
-                        amount: amount
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            // Optional: Show success indicator
-                            this.style.backgroundColor = '#d4edda';
-                            setTimeout(() => this.style.backgroundColor = 'transparent', 1000);
-                        } else {
-                            alert('Erro ao salvar: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Erro ao salvar alteração.');
-                    });
-            });
-        });
-    });
+ fetch('{% url "financeiro:budget_item_update" %}', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': '{{ csrf_token }}'
+ },
+ body: JSON.stringify({
+ plan_id: planId,
+ category_id: catId,
+ month: month,
+ amount: amount
+ })
+ })
+ .then(response => response.json())
+ .then(data => {
+ if (data.status === 'success') {
+ // Optional: Show success indicator
+ this.style.backgroundColor = '#d4edda';
+ setTimeout(() => this.style.backgroundColor = 'transparent', 1000);
+ } else {
+ alert('Erro ao salvar: ' + data.message);
+ }
+ })
+ .catch(error => {
+ console.error('Error:', error);
+ alert('Erro ao salvar alteração.');
+ });
+ });
+ });
+ });
 </script>
 {% endblock %}

@@ -1,64 +1,64 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 mt-4">
-    <!-- Card de Atendimentos IA -->
-    <div class="bg-white p-4 rounded shadow-sm border">
-        <h3 class="font-bold mb-4 text-secondary">
-            <i class="bi bi-robot me-2"></i>Triagem Studio AI (Setores)
-        </h3>
-        <div style="max-height: 300px;" class="d-flex justify-content-center">
-            <canvas id="aiChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Card de Status Operacional -->
-    <div class="bg-white p-4 rounded shadow-sm border">
-        <h3 class="font-bold mb-4 text-secondary">
-            <i class="bi bi-activity me-2"></i>Status de Ordens de Serviço
-        </h3>
-        <div style="max-height: 300px;" class="d-flex justify-content-center">
-            <canvas id="osChart"></canvas>
-        </div>
-    </div>
+ <!-- Card de Atendimentos IA -->
+ <div class="bg-white p-4 rounded shadow-sm border">
+ <h3 class="font-bold mb-4 text-secondary">
+ <i class="bi bi-robot me-2"></i>Triagem Studio AI (Setores)
+ </h3>
+ <div style="max-height: 300px;" class="d-flex justify-content-center">
+ <canvas id="aiChart"></canvas>
+ </div>
+ </div>
+ 
+ <!-- Card de Status Operacional -->
+ <div class="bg-white p-4 rounded shadow-sm border">
+ <h3 class="font-bold mb-4 text-secondary">
+ <i class="bi bi-activity me-2"></i>Status de Ordens de Serviço
+ </h3>
+ <div style="max-height: 300px;" class="d-flex justify-content-center">
+ <canvas id="osChart"></canvas>
+ </div>
+ </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Dados para Triagem IA
-    const aiCtx = document.getElementById('aiChart').getContext('2d');
-    new Chart(aiCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Comercial', 'Suporte', 'Financeiro', 'Outros'],
-            datasets: [{
-                data: [{{ ai_comercial }}, {{ ai_suporte }}, {{ ai_financeiro }}, {{ ai_outros }}],
-                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#6b7280']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
-    });
+ // Dados para Triagem IA
+ const aiCtx = document.getElementById('aiChart').getContext('2d');
+ new Chart(aiCtx, {
+ type: 'doughnut',
+ data: {
+ labels: ['Comercial', 'Suporte', 'Financeiro', 'Outros'],
+ datasets: [{
+ data: [{{ ai_comercial }}, {{ ai_suporte }}, {{ ai_financeiro }}, {{ ai_outros }}],
+ backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#6b7280']
+ }]
+ },
+ options: {
+ responsive: true,
+ maintainAspectRatio: false,
+ plugins: {
+ legend: { position: 'bottom' }
+ }
+ }
+ });
 
-    // Dados para Operacional (OS)
-    const osCtx = document.getElementById('osChart').getContext('2d');
-    new Chart(osCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Pendentes', 'Em Andamento', 'Concluídas'],
-            datasets: [{
-                data: [{{ os_pendente }}, {{ os_andamento }}, {{ os_concluida }}],
-                backgroundColor: ['#ef4444', '#3b82f6', '#10b981']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
-    });
+ // Dados para Operacional (OS)
+ const osCtx = document.getElementById('osChart').getContext('2d');
+ new Chart(osCtx, {
+ type: 'pie',
+ data: {
+ labels: ['Pendentes', 'Em Andamento', 'Concluídas'],
+ datasets: [{
+ data: [{{ os_pendente }}, {{ os_andamento }}, {{ os_concluida }}],
+ backgroundColor: ['#ef4444', '#3b82f6', '#10b981']
+ }]
+ },
+ options: {
+ responsive: true,
+ maintainAspectRatio: false,
+ plugins: {
+ legend: { position: 'bottom' }
+ }
+ }
+ });
 </script>

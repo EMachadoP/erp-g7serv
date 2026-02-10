@@ -4,253 +4,252 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{% url 'comercial:contract_readjustment_list' %}">Reajustes</a>
-                </li>
-                <li class="breadcrumb-item active">Novo Reajuste</li>
-            </ol>
-        </nav>
-        <h2>Aplicar Reajuste</h2>
-    </div>
+ <div>
+ <nav aria-label="breadcrumb">
+ <ol class="breadcrumb mb-1">
+ <li class="breadcrumb-item"><a href="{% url 'comercial:contract_readjustment_list' %}">Reajustes</a>
+ </li>
+ <li class="breadcrumb-item active">Novo Reajuste</li>
+ </ol>
+ </nav>
+ <h2>Aplicar Reajuste</h2>
+ </div>
 </div>
 
 <form method="post" id="readjustmentForm">
-    {% csrf_token %}
+ {% csrf_token %}
 
-    <div class="row">
-        <!-- Sidebar: Configurações do Reajuste -->
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">Configurações</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Tipo de Operação</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="readjustment_type" id="type_readjust"
-                                value="READJUSTMENT" checked>
-                            <label class="btn btn-outline-primary" for="type_readjust">Reajuste</label>
+ <div class="row">
+ <!-- Sidebar: Configurações do Reajuste -->
+ <div class="col-md-4">
+ <div class="card border-0 shadow-sm mb-4">
+ <div class="card-header bg-white py-3">
+ <h5 class="mb-0">Configurações</h5>
+ </div>
+ <div class="card-body">
+ <div class="mb-4">
+ <label class="form-label fw-bold">Tipo de Operação</label>
+ <div class="btn-group w-100" role="group">
+ <input type="radio" class="btn-check" name="readjustment_type" id="type_readjust"
+ value="READJUSTMENT" checked>
+ <label class="btn btn-outline-primary" for="type_readjust">Reajuste</label>
 
-                            <input type="radio" class="btn-check" name="readjustment_type" id="type_defer"
-                                value="DEFERRAL">
-                            <label class="btn btn-outline-secondary" for="type_defer">Adiamento</label>
-                        </div>
-                    </div>
+ <input type="radio" class="btn-check" name="readjustment_type" id="type_defer"
+ value="DEFERRAL">
+ <label class="btn btn-outline-secondary" for="type_defer">Adiamento</label>
+ </div>
+ </div>
 
-                    <div id="readjustment_fields">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Percentual de Reajuste (%)</label>
-                            <div class="input-group">
-                                <input type="number" name="percentage" step="0.01" class="form-control"
-                                    placeholder="ex: 10.5" id="percentageInput">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <div class="form-text">O valor será aplicado sobre o valor unitário de cada item do
-                                contrato.</div>
-                        </div>
-                    </div>
+ <div id="readjustment_fields">
+ <div class="mb-3">
+ <label class="form-label fw-bold">Percentual de Reajuste (%)</label>
+ <div class="input-group">
+ <input type="number" name="percentage" step="0.01" class="form-control"
+ placeholder="ex: 10.5" id="percentageInput">
+ <span class="input-group-text">%</span>
+ </div>
+ <div class="form-text">O valor será aplicado sobre o valor unitário de cada item do
+ contrato.</div>
+ </div>
+ </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Observações / Justificativa</label>
-                        <textarea name="observation" class="form-control" rows="3" placeholder="Motivo da operação..."
-                            required></textarea>
-                        <div class="form-text" id="obs_help">Obrigatório para documentar o histórico.</div>
-                    </div>
+ <div class="mb-3">
+ <label class="form-label fw-bold">Observações / Justificativa</label>
+ <textarea name="observation" class="form-control" rows="3" placeholder="Motivo da operação..."
+ required></textarea>
+ <div class="form-text" id="obs_help">Obrigatório para documentar o histórico.</div>
+ </div>
 
-                    <hr>
+ <hr>
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
-                            <i class="bi bi-check-circle me-2"></i><span id="btnText">Aplicar Reajuste</span>
-                        </button>
-                        <a href="{% url 'comercial:contract_readjustment_list' %}" class="btn btn-light">Cancelar</a>
-                    </div>
-                </div>
-            </div>
+ <div class="d-grid gap-2">
+ <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+ <i class="bi bi-check-circle me-2"></i><span id="btnText">Aplicar Reajuste</span>
+ </button>
+ <a href="{% url 'comercial:contract_readjustment_list' %}" class="btn btn-light">Cancelar</a>
+ </div>
+ </div>
+ </div>
 
-            <div class="alert alert-info border-0 shadow-sm small">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                Selecione os contratos na lista ao lado para habilitar a aplicação.
-            </div>
-        </div>
+ <div class="alert alert-info border-0 shadow-sm small">
+ <i class="bi bi-info-circle-fill me-2"></i>
+ Selecione os contratos na lista ao lado para habilitar a aplicação.
+ </div>
+ </div>
 
-        <!-- Main: Lista de Contratos -->
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-body">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-md-6">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
-                                <input type="text" id="contractSearch" class="form-control border-start-0 ps-0"
-                                    placeholder="Buscar na tabela...">
-                            </div>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <span class="text-muted small" id="selectedCount">0 contratos selecionados</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+ <!-- Main: Lista de Contratos -->
+ <div class="col-md-8">
+ <div class="card border-0 shadow-sm mb-3">
+ <div class="card-body">
+ <div class="row g-2 align-items-center">
+ <div class="col-md-6">
+ <div class="input-group input-group-sm">
+ <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+ <input type="text" id="contractSearch" class="form-control border-start-0 ps-0"
+ placeholder="Buscar na tabela...">
+ </div>
+ </div>
+ <div class="col-md-6 text-end">
+ <span class="text-muted small" id="selectedCount">0 contratos selecionados</span>
+ </div>
+ </div>
+ </div>
+ </div>
 
-            <div class="card border-0 shadow-sm overflow-hidden">
-                <div class="table-responsive" style="max-height: 500px;">
-                    <table class="table table-hover align-middle mb-0" id="contractsTable">
-                        <thead class="bg-light sticky-top">
-                            <tr>
-                                <th class="ps-4" style="width: 40px;">
-                                    <input type="checkbox" class="form-check-input" id="selectAll">
-                                </th>
-                                <th>Cliente</th>
-                                <th>Aniversário</th>
-                                <th>Grupo</th>
-                                <th class="text-end pe-4">Valor Atual</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for c in contracts %}
-                            <tr class="contract-row">
-                                <td class="ps-4">
-                                    <input type="checkbox" name="contracts" value="{{ c.id }}"
-                                        class="form-check-input contract-checkbox">
-                                </td>
-                                <td>
-                                    <div class="fw-bold">{{ c.client.name }}</div>
-                                    <div class="text-muted small">Contrato #{{ c.id }}</div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-{{ c.anniversary_class }} px-2 py-1 rounded-pill small">
-                                        {{ c.anniversary_label }}
-                                    </span>
-                                    <div class="text-muted extra-small">Prox: {{ c.next_readjustment_date|date:"d/m/y"
-                                        }}</div>
-                                </td>
-                                <td>{{ c.billing_group.name|default:"-" }}</td>
-                                <td class="text-end pe-4 fw-bold text-dark">
-                                    R$ {{ c.value|floatformat:2 }}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">Nenhum contrato ativo encontrado.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+ <div class="card border-0 shadow-sm overflow-hidden">
+ <div class="table-responsive" style="max-height: 500px;">
+ <table class="table table-hover align-middle mb-0" id="contractsTable">
+ <thead class="bg-light sticky-top">
+ <tr>
+ <th class="ps-4" style="width: 40px;">
+ <input type="checkbox" class="form-check-input" id="selectAll">
+ </th>
+ <th>Cliente</th>
+ <th>Aniversário</th>
+ <th>Grupo</th>
+ <th class="text-end pe-4">Valor Atual</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for c in contracts %}
+ <tr class="contract-row">
+ <td class="ps-4">
+ <input type="checkbox" name="contracts" value="{{ c.id }}"
+ class="form-check-input contract-checkbox">
+ </td>
+ <td>
+ <div class="fw-bold">{{ c.client.name }}</div>
+ <div class="text-muted small">Contrato #{{ c.id }}</div>
+ </td>
+ <td>
+ <span class="badge bg-{{ c.anniversary_class }} px-2 py-1 rounded-pill small">
+ {{ c.anniversary_label }}
+ </span>
+ <div class="text-muted extra-small">Prox: {{ c.next_readjustment_date|date:"d/m/y" }}</div>
+ </td>
+ <td>{{ c.billing_group.name|default:"-" }}</td>
+ <td class="text-end pe-4 fw-bold text-dark">
+ R$ {{ c.value|floatformat:2 }}
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="4" class="text-center py-5 text-muted">Nenhum contrato ativo encontrado.
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </div>
 </form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.contract-checkbox');
-        const submitBtn = document.getElementById('submitBtn');
-        const selectedCountDisplay = document.getElementById('selectedCount');
-        const searchInput = document.getElementById('contractSearch');
-        const rows = document.querySelectorAll('.contract-row');
+ document.addEventListener('DOMContentLoaded', function () {
+ const selectAll = document.getElementById('selectAll');
+ const checkboxes = document.querySelectorAll('.contract-checkbox');
+ const submitBtn = document.getElementById('submitBtn');
+ const selectedCountDisplay = document.getElementById('selectedCount');
+ const searchInput = document.getElementById('contractSearch');
+ const rows = document.querySelectorAll('.contract-row');
 
-        // Mode toggle
-        const typeReadjust = document.getElementById('type_readjust');
-        const typeDefer = document.getElementById('type_defer');
-        const readjustFields = document.getElementById('readjustment_fields');
-        const btnText = document.getElementById('btnText');
-        const percentageInput = document.getElementById('percentageInput');
+ // Mode toggle
+ const typeReadjust = document.getElementById('type_readjust');
+ const typeDefer = document.getElementById('type_defer');
+ const readjustFields = document.getElementById('readjustment_fields');
+ const btnText = document.getElementById('btnText');
+ const percentageInput = document.getElementById('percentageInput');
 
-        function toggleMode() {
-            if (typeReadjust.checked) {
-                readjustFields.style.display = 'block';
-                btnText.textContent = 'Aplicar Reajuste';
-                percentageInput.required = true;
-                submitBtn.className = 'btn btn-primary btn-lg';
-            } else {
-                readjustFields.style.display = 'none';
-                btnText.textContent = 'Confirmar Adiamento';
-                percentageInput.required = false;
-                submitBtn.className = 'btn btn-secondary btn-lg';
-            }
-        }
+ function toggleMode() {
+ if (typeReadjust.checked) {
+ readjustFields.style.display = 'block';
+ btnText.textContent = 'Aplicar Reajuste';
+ percentageInput.required = true;
+ submitBtn.className = 'btn btn-primary btn-lg';
+ } else {
+ readjustFields.style.display = 'none';
+ btnText.textContent = 'Confirmar Adiamento';
+ percentageInput.required = false;
+ submitBtn.className = 'btn btn-secondary btn-lg';
+ }
+ }
 
-        typeReadjust.addEventListener('change', toggleMode);
-        typeDefer.addEventListener('change', toggleMode);
-        toggleMode();
+ typeReadjust.addEventListener('change', toggleMode);
+ typeDefer.addEventListener('change', toggleMode);
+ toggleMode();
 
 
-        function updateSelectedCount() {
-            const count = document.querySelectorAll('.contract-checkbox:checked').length;
-            selectedCountDisplay.textContent = `${count} contratos selecionados`;
-            submitBtn.disabled = count === 0;
-        }
+ function updateSelectedCount() {
+ const count = document.querySelectorAll('.contract-checkbox:checked').length;
+ selectedCountDisplay.textContent = `${count} contratos selecionados`;
+ submitBtn.disabled = count === 0;
+ }
 
-        selectAll.addEventListener('change', function () {
-            const isChecked = this.checked;
-            rows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    row.querySelector('.contract-checkbox').checked = isChecked;
-                }
-            });
-            updateSelectedCount();
-        });
+ selectAll.addEventListener('change', function () {
+ const isChecked = this.checked;
+ rows.forEach(row => {
+ if (row.style.display !== 'none') {
+ row.querySelector('.contract-checkbox').checked = isChecked;
+ }
+ });
+ updateSelectedCount();
+ });
 
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateSelectedCount);
-        });
+ checkboxes.forEach(cb => {
+ cb.addEventListener('change', updateSelectedCount);
+ });
 
-        // Simple search filter
-        searchInput.addEventListener('input', function () {
-            const query = this.value.toLowerCase();
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
+ // Simple search filter
+ searchInput.addEventListener('input', function () {
+ const query = this.value.toLowerCase();
+ rows.forEach(row => {
+ const text = row.textContent.toLowerCase();
+ row.style.display = text.includes(query) ? '' : 'none';
+ });
+ });
 
-        // Confirmation before submit
-        document.getElementById('readjustmentForm').addEventListener('submit', function (e) {
-            const type = document.querySelector('input[name="readjustment_type"]:checked').value;
-            const count = document.querySelectorAll('.contract-checkbox:checked').length;
-            const percentage = document.querySelector('input[name="percentage"]').value;
+ // Confirmation before submit
+ document.getElementById('readjustmentForm').addEventListener('submit', function (e) {
+ const type = document.querySelector('input[name="readjustment_type"]:checked').value;
+ const count = document.querySelectorAll('.contract-checkbox:checked').length;
+ const percentage = document.querySelector('input[name="percentage"]').value;
 
-            let msg = '';
-            if (type === 'READJUSTMENT') {
-                msg = `Você está prestes a aplicar um reajuste de ${percentage}% em ${count} contratos. Esta ação modificará os valores unitários dos itens e o valor total dos contratos.`;
-            } else {
-                msg = `Você está prestes a adiar o reajuste de ${count} contratos por mais um ano.`;
-            }
+ let msg = '';
+ if (type === 'READJUSTMENT') {
+ msg = `Você está prestes a aplicar um reajuste de ${percentage}% em ${count} contratos. Esta ação modificará os valores unitários dos itens e o valor total dos contratos.`;
+ } else {
+ msg = `Você está prestes a adiar o reajuste de ${count} contratos por mais um ano.`;
+ }
 
-            if (!confirm(`${msg}\n\nDeseja continuar?`)) {
-                e.preventDefault();
-            }
-        });
-    });
+ if (!confirm(`${msg}\n\nDeseja continuar?`)) {
+ e.preventDefault();
+ }
+ });
+ });
 </script>
 
 <style>
-    .sticky-top {
-        top: 0;
-        z-index: 10;
-    }
+ .sticky-top {
+ top: 0;
+ z-index: 10;
+ }
 
-    .card {
-        border-radius: 0.75rem;
-    }
+ .card {
+ border-radius: 0.75rem;
+ }
 
-    .table thead th {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-        color: #64748b;
-        border-bottom: 2px solid #f1f5f9;
-    }
+ .table thead th {
+ font-size: 0.8rem;
+ text-transform: uppercase;
+ letter-spacing: 0.025em;
+ color: #64748b;
+ border-bottom: 2px solid #f1f5f9;
+ }
 
-    .extra-small {
-        font-size: 0.7rem;
-    }
+ .extra-small {
+ font-size: 0.7rem;
+ }
 </style>
 {% endblock %}

@@ -5,406 +5,405 @@
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex align-items-center">
-                <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                    <i class="bi bi-check2-circle text-primary" style="font-size: 2rem;"></i>
-                </div>
-                <div>
-                    <h2 class="text-primary mb-0">Faturamento Realizado</h2>
-                    <p class="text-muted mb-0">Veja todos os faturamentos de contratos realizados.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- Header -->
+ <div class="row mb-4">
+ <div class="col-12">
+ <div class="d-flex align-items-center">
+ <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+ <i class="bi bi-check2-circle text-primary" style="font-size: 2rem;"></i>
+ </div>
+ <div>
+ <h2 class="text-primary mb-0">Faturamento Realizado</h2>
+ <p class="text-muted mb-0">Veja todos os faturamentos de contratos realizados.</p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- Resumo do Faturamento -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Resumo do Faturamento</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <small class="text-muted d-block">Competência:</small>
-                    <strong class="text-primary">{{ batch.competence_month }}/{{ batch.competence_year }}</strong>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <small class="text-muted d-block">Realizado por:</small>
-                    <strong>{{ batch.user.username }}</strong>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <small class="text-muted d-block">Realizado em:</small>
-                    <strong>{{ batch.started_at|date:"d/m/Y H:i" }}</strong>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <small class="text-muted d-block">Dia de cobrança entre:</small>
-                    <strong>Dia {{ batch.day_range_start }} à dia {{ batch.day_range_end }}</strong>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <small class="text-muted d-block">Grupo de Faturamento:</small>
-                    <strong>{{ batch.billing_group.name|default:"Todos" }}</strong>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <small class="text-muted d-block">Processo:</small>
-                    <strong class="text-primary">Iniciado às {{ batch.started_at|time:"H:i" }}{% if batch.finished_at %}
-                        e encerrado às {{ batch.finished_at|time:"H:i" }}{% endif %}</strong>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- Resumo do Faturamento -->
+ <div class="card mb-4 shadow-sm">
+ <div class="card-header bg-white">
+ <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Resumo do Faturamento</h5>
+ </div>
+ <div class="card-body">
+ <div class="row">
+ <div class="col-md-4 mb-3">
+ <small class="text-muted d-block">Competência:</small>
+ <strong class="text-primary">{{ batch.competence_month }}/{{ batch.competence_year }}</strong>
+ </div>
+ <div class="col-md-4 mb-3">
+ <small class="text-muted d-block">Realizado por:</small>
+ <strong>{{ batch.user.username }}</strong>
+ </div>
+ <div class="col-md-4 mb-3">
+ <small class="text-muted d-block">Realizado em:</small>
+ <strong>{{ batch.started_at|date:"d/m/Y H:i" }}</strong>
+ </div>
+ </div>
+ <div class="row">
+ <div class="col-md-4 mb-3">
+ <small class="text-muted d-block">Dia de cobrança entre:</small>
+ <strong>Dia {{ batch.day_range_start }} à dia {{ batch.day_range_end }}</strong>
+ </div>
+ <div class="col-md-4 mb-3">
+ <small class="text-muted d-block">Grupo de Faturamento:</small>
+ <strong>{{ batch.billing_group.name|default:"Todos" }}</strong>
+ </div>
+ <div class="col-md-4 mb-3">
+ <small class="text-muted d-block">Processo:</small>
+ <strong class="text-primary">Iniciado às {{ batch.started_at|time:"H:i" }}{% if batch.finished_at %}
+ e encerrado às {{ batch.finished_at|time:"H:i" }}{% endif %}</strong>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- Totalizadores -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Totalizadores</h5>
-        </div>
-        <div class="card-body">
-            <div class="row text-center">
-                <div class="col-md-3 mb-3">
-                    <small class="text-muted d-block">Não Faturado</small>
-                    <h4 class="text-secondary">R$ {{ batch.total_not_invoiced|floatformat:2 }}</h4>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <small class="text-muted d-block">Faturado</small>
-                    <h4 class="text-success">R$ {{ total_faturado|floatformat:2 }}</h4>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <small class="text-muted d-block">Total de Contratos</small>
-                    <h4 class="text-primary">{{ batch.total_contracts }}</h4>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <small class="text-muted d-block">Valor Total</small>
-                    <h4 class="text-dark fw-bold">R$ {{ total_faturado|floatformat:2 }}</h4>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- Totalizadores -->
+ <div class="card mb-4 shadow-sm">
+ <div class="card-header bg-white">
+ <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Totalizadores</h5>
+ </div>
+ <div class="card-body">
+ <div class="row text-center">
+ <div class="col-md-3 mb-3">
+ <small class="text-muted d-block">Não Faturado</small>
+ <h4 class="text-secondary">R$ {{ batch.total_not_invoiced|floatformat:2 }}</h4>
+ </div>
+ <div class="col-md-3 mb-3">
+ <small class="text-muted d-block">Faturado</small>
+ <h4 class="text-success">R$ {{ total_faturado|floatformat:2 }}</h4>
+ </div>
+ <div class="col-md-3 mb-3">
+ <small class="text-muted d-block">Total de Contratos</small>
+ <h4 class="text-primary">{{ batch.total_contracts }}</h4>
+ </div>
+ <div class="col-md-3 mb-3">
+ <small class="text-muted d-block">Valor Total</small>
+ <h4 class="text-dark fw-bold">R$ {{ total_faturado|floatformat:2 }}</h4>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- Tabs e Lista de Faturas -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <ul class="nav nav-tabs card-header-tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="faturas-tab" data-bs-toggle="tab"
-                        data-bs-target="#faturas-content" type="button" role="tab">
-                        <i class="bi bi-receipt me-1"></i>Faturas Geradas
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="contratos-tab" data-bs-toggle="tab" data-bs-target="#contratos-content"
-                        type="button" role="tab">
-                        <i class="bi bi-file-earmark-text me-1 text-success"></i>Contratos Selecionados
-                    </button>
-                </li>
-            </ul>
-            <a href="{% url 'faturamento:contract_billing_summary' %}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-clock-history me-1"></i>Processamentos
-            </a>
-        </div>
+ <!-- Tabs e Lista de Faturas -->
+ <div class="card shadow-sm">
+ <div class="card-header bg-white d-flex justify-content-between align-items-center">
+ <ul class="nav nav-tabs card-header-tabs" role="tablist">
+ <li class="nav-item" role="presentation">
+ <button class="nav-link active" id="faturas-tab" data-bs-toggle="tab"
+ data-bs-target="#faturas-content" type="button" role="tab">
+ <i class="bi bi-receipt me-1"></i>Faturas Geradas
+ </button>
+ </li>
+ <li class="nav-item" role="presentation">
+ <button class="nav-link" id="contratos-tab" data-bs-toggle="tab" data-bs-target="#contratos-content"
+ type="button" role="tab">
+ <i class="bi bi-file-earmark-text me-1 text-success"></i>Contratos Selecionados
+ </button>
+ </li>
+ </ul>
+ <a href="{% url 'faturamento:contract_billing_summary' %}" class="btn btn-outline-secondary btn-sm">
+ <i class="bi bi-clock-history me-1"></i>Processamentos
+ </a>
+ </div>
 
-        <div class="card-body p-0">
-            <div class="tab-content">
-                <!-- Tab Faturas Geradas -->
-                <div class="tab-pane fade show active" id="faturas-content" role="tabpanel">
-                    <!-- Barra de Busca e Seleção -->
-                    <div class="p-3 border-bottom bg-light">
-                        <div class="row align-items-center">
-                            <div class="col-md-5">
-                                <form method="get" class="d-flex">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                                        <input type="text" name="search" class="form-control"
-                                            placeholder="Pesquise pelos contratos" value="{{ search_query }}">
-                                        <button type="submit" class="btn btn-primary">Buscar</button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="col-md-7 text-end">
-                                <a href="#" id="selectAll" class="text-primary text-decoration-none me-2">Selecionar
-                                    todas</a>
-                                /
-                                <a href="#" id="deselectAll" class="text-primary text-decoration-none ms-2">Desmarcar
-                                    todas</a>
-                            </div>
-                        </div>
-                    </div>
+ <div class="card-body p-0">
+ <div class="tab-content">
+ <!-- Tab Faturas Geradas -->
+ <div class="tab-pane fade show active" id="faturas-content" role="tabpanel">
+ <!-- Barra de Busca e Seleção -->
+ <div class="p-3 border-bottom bg-light">
+ <div class="row align-items-center">
+ <div class="col-md-5">
+ <form method="get" class="d-flex">
+ <div class="input-group">
+ <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+ <input type="text" name="search" class="form-control"
+ placeholder="Pesquise pelos contratos" value="{{ search_query }}">
+ <button type="submit" class="btn btn-primary">Buscar</button>
+ </div>
+ </form>
+ </div>
+ <div class="col-md-7 text-end">
+ <a href="#" id="selectAll" class="text-primary text-decoration-none me-2">Selecionar
+ todas</a>
+ /
+ <a href="#" id="deselectAll" class="text-primary text-decoration-none ms-2">Desmarcar
+ todas</a>
+ </div>
+ </div>
+ </div>
 
-                    <!-- Lista de Faturas -->
-                    <div class="list-group list-group-flush" id="invoicesList">
-                        {% for invoice in invoices %}
-                        <div class="list-group-item list-group-item-action">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <input type="checkbox" class="form-check-input invoice-checkbox"
-                                        value="{{ invoice.id }}" id="invoice-{{ invoice.id }}">
-                                </div>
-                                <div class="col">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <strong>#{{ invoice.number }}</strong> - {{ invoice.client.name|default:"Cliente não informado" }}
-                                        </div>
-                                        <div class="text-end">
-                                            <strong class="text-primary">R$ {{ invoice.amount|floatformat:2 }}</strong>
-                                        </div>
-                                    </div>
-                                    <div class="text-muted small mt-1">
-                                        <i class="bi bi-calendar me-1"></i>Competência: {{ invoice.competence_month }}/{{ invoice.competence_year }}
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-tag me-1"></i>Fatura de Serviços
-                                    </div>
-                                    <div class="text-muted small">
-                                        <i class="bi bi-calendar-check me-1"></i>Registro: {{ invoice.created_at|date:"d/m/Y" }}
-                                        {% if invoice.boleto_url %}
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i><a
-                                            href="{{ invoice.boleto_url }}" target="_blank">Boleto</a>
-                                        {% endif %}
-                                        {% if invoice.nfse_link %}
-                                        &nbsp;|&nbsp;
-                                        <i class="bi bi-file-earmark-text text-success me-1"></i><a
-                                            href="{{ invoice.nfse_link }}" target="_blank">NFSe</a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <a href="{% url 'faturamento:detail' pk=invoice.id %}"
-                                        class="btn btn-outline-secondary btn-sm">
-                                        Fatura de contrato
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="p-4 text-center text-muted">
-                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                            Nenhuma fatura encontrada neste lote.
-                        </div>
-                        {% endfor %}
-                    </div>
+ <!-- Lista de Faturas -->
+ <div class="list-group list-group-flush" id="invoicesList">
+ {% for invoice in invoices %}
+ <div class="list-group-item list-group-item-action">
+ <div class="row align-items-center">
+ <div class="col-auto">
+ <input type="checkbox" class="form-check-input invoice-checkbox"
+ value="{{ invoice.id }}" id="invoice-{{ invoice.id }}">
+ </div>
+ <div class="col">
+ <div class="d-flex justify-content-between align-items-start">
+ <div>
+ <strong>#{{ invoice.number }}</strong> - {{ invoice.client.name|default:"Cliente não informado" }}
+ </div>
+ <div class="text-end">
+ <strong class="text-primary">R$ {{ invoice.amount|floatformat:2 }}</strong>
+ </div>
+ </div>
+ <div class="text-muted small mt-1">
+ <i class="bi bi-calendar me-1"></i>Competência: {{ invoice.competence_month }}/{{ invoice.competence_year }}
+ &nbsp;|&nbsp;
+ <i class="bi bi-file-text me-1"></i>Contrato: {{ invoice.contract.id|default:"-" }}
+ &nbsp;|&nbsp;
+ <i class="bi bi-tag me-1"></i>Fatura de Serviços
+ </div>
+ <div class="text-muted small">
+ <i class="bi bi-calendar-check me-1"></i>Registro: {{ invoice.created_at|date:"d/m/Y" }}
+ {% if invoice.boleto_url %}
+ &nbsp;|&nbsp;
+ <i class="bi bi-file-earmark-pdf text-danger me-1"></i><a
+ href="{{ invoice.boleto_url }}" target="_blank">Boleto</a>
+ {% endif %}
+ {% if invoice.nfse_link %}
+ &nbsp;|&nbsp;
+ <i class="bi bi-file-earmark-text text-success me-1"></i><a
+ href="{{ invoice.nfse_link }}" target="_blank">NFSe</a>
+ {% endif %}
+ </div>
+ </div>
+ <div class="col-auto">
+ <a href="{% url 'faturamento:detail' pk=invoice.id %}"
+ class="btn btn-outline-secondary btn-sm">
+ Fatura de contrato
+ </a>
+ </div>
+ </div>
+ </div>
+ {% empty %}
+ <div class="p-4 text-center text-muted">
+ <i class="bi bi-inbox display-4 d-block mb-2"></i>
+ Nenhuma fatura encontrada neste lote.
+ </div>
+ {% endfor %}
+ </div>
 
-                    <!-- Paginação -->
-                    {% if invoices.has_other_pages %}
-                    <div class="p-3 border-top">
-                        <nav aria-label="Paginação">
-                            <ul class="pagination justify-content-center mb-0">
-                                {% if invoices.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ invoices.previous_page_number }}">&laquo;
-                                        Anterior</a>
-                                </li>
-                                {% endif %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ invoices.number }} de {{ invoices.paginator.num_pages
-                                        }}</span>
-                                </li>
-                                {% if invoices.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ invoices.next_page_number }}">Próxima
-                                        &raquo;</a>
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    </div>
-                    {% endif %}
-                </div>
+ <!-- Paginação -->
+ {% if invoices.has_other_pages %}
+ <div class="p-3 border-top">
+ <nav aria-label="Paginação">
+ <ul class="pagination justify-content-center mb-0">
+ {% if invoices.has_previous %}
+ <li class="page-item">
+ <a class="page-link" href="?page={{ invoices.previous_page_number }}">&laquo;
+ Anterior</a>
+ </li>
+ {% endif %}
+ <li class="page-item active">
+ <span class="page-link">{{ invoices.number }} de {{ invoices.paginator.num_pages }}</span>
+ </li>
+ {% if invoices.has_next %}
+ <li class="page-item">
+ <a class="page-link" href="?page={{ invoices.next_page_number }}">Próxima
+ &raquo;</a>
+ </li>
+ {% endif %}
+ </ul>
+ </nav>
+ </div>
+ {% endif %}
+ </div>
 
-                <!-- Tab Contratos Selecionados -->
-                <div class="tab-pane fade" id="contratos-content" role="tabpanel">
-                    <div class="p-4 text-center text-muted">
-                        <i class="bi bi-file-earmark-text display-4 d-block mb-2"></i>
-                        Lista de contratos que foram selecionados para este faturamento.
-                    </div>
-                </div>
-            </div>
-        </div>
+ <!-- Tab Contratos Selecionados -->
+ <div class="tab-pane fade" id="contratos-content" role="tabpanel">
+ <div class="p-4 text-center text-muted">
+ <i class="bi bi-file-earmark-text display-4 d-block mb-2"></i>
+ Lista de contratos que foram selecionados para este faturamento.
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Footer com Ações -->
-        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
-            <div>
-                <span class="text-muted" id="totalRecords">{{ invoices.paginator.count }} registro(s)</span>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-                <button type="button" class="btn btn-warning" id="btnGerarNota" disabled>
-                    <i class="bi bi-file-earmark-text me-1"></i>Gerar Nota Fiscal
-                </button>
-                <button type="button" class="btn btn-outline-primary" id="btnGerarBoletos" disabled>
-                    <i class="bi bi-upc me-1"></i>Gerar Boletos
-                </button>
-                <button type="button" class="btn btn-outline-secondary" id="btnTransacionarCartao" disabled>
-                    <i class="bi bi-credit-card me-1"></i>Transacionar Cartão
-                </button>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false" id="btnEmail" disabled>
-                        <i class="bi bi-envelope me-1"></i>E-mail
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        {% for template in email_templates %}
-                        <li><a class="dropdown-item email-template-option" href="#"
-                                data-template-id="{{ template.id }}">{{ template.name }}</a></li>
-                        {% empty %}
-                        <li><a class="dropdown-item email-template-option" href="#" data-template-id="">Template
-                                Padrão</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <span class="badge bg-primary ms-2" id="selectedCount">0 fatura(s) selecionada(s)</span>
-            </div>
-        </div>
-    </div>
+ <!-- Footer com Ações -->
+ <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+ <div>
+ <span class="text-muted" id="totalRecords">{{ invoices.paginator.count }} registro(s)</span>
+ </div>
+ <div class="d-flex gap-2 align-items-center">
+ <button type="button" class="btn btn-warning" id="btnGerarNota" disabled>
+ <i class="bi bi-file-earmark-text me-1"></i>Gerar Nota Fiscal
+ </button>
+ <button type="button" class="btn btn-outline-primary" id="btnGerarBoletos" disabled>
+ <i class="bi bi-upc me-1"></i>Gerar Boletos
+ </button>
+ <button type="button" class="btn btn-outline-secondary" id="btnTransacionarCartao" disabled>
+ <i class="bi bi-credit-card me-1"></i>Transacionar Cartão
+ </button>
+ <div class="btn-group">
+ <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
+ aria-expanded="false" id="btnEmail" disabled>
+ <i class="bi bi-envelope me-1"></i>E-mail
+ </button>
+ <ul class="dropdown-menu dropdown-menu-end">
+ {% for template in email_templates %}
+ <li><a class="dropdown-item email-template-option" href="#"
+ data-template-id="{{ template.id }}">{{ template.name }}</a></li>
+ {% empty %}
+ <li><a class="dropdown-item email-template-option" href="#" data-template-id="">Template
+ Padrão</a></li>
+ {% endfor %}
+ </ul>
+ </div>
+ <span class="badge bg-primary ms-2" id="selectedCount">0 fatura(s) selecionada(s)</span>
+ </div>
+ </div>
+ </div>
 </div>
 
 <!-- Toast para notificações -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <strong class="me-auto" id="toastTitle">Notificação</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toastBody"></div>
-    </div>
+ <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+ <div class="toast-header">
+ <strong class="me-auto" id="toastTitle">Notificação</strong>
+ <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+ </div>
+ <div class="toast-body" id="toastBody"></div>
+ </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var checkboxes = document.querySelectorAll('.invoice-checkbox');
-        var selectedCountEl = document.getElementById('selectedCount');
-        var btnGerarNota = document.getElementById('btnGerarNota');
-        var btnGerarBoletos = document.getElementById('btnGerarBoletos');
-        var btnTransacionarCartao = document.getElementById('btnTransacionarCartao');
-        var btnEmail = document.getElementById('btnEmail');
-        var selectAllBtn = document.getElementById('selectAll');
-        var deselectAllBtn = document.getElementById('deselectAll');
+ document.addEventListener('DOMContentLoaded', function () {
+ var checkboxes = document.querySelectorAll('.invoice-checkbox');
+ var selectedCountEl = document.getElementById('selectedCount');
+ var btnGerarNota = document.getElementById('btnGerarNota');
+ var btnGerarBoletos = document.getElementById('btnGerarBoletos');
+ var btnTransacionarCartao = document.getElementById('btnTransacionarCartao');
+ var btnEmail = document.getElementById('btnEmail');
+ var selectAllBtn = document.getElementById('selectAll');
+ var deselectAllBtn = document.getElementById('deselectAll');
 
-        function updateSelectedCount() {
-            var selected = document.querySelectorAll('.invoice-checkbox:checked');
-            var count = selected.length;
-            selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
+ function updateSelectedCount() {
+ var selected = document.querySelectorAll('.invoice-checkbox:checked');
+ var count = selected.length;
+ selectedCountEl.textContent = count + ' fatura(s) selecionada(s)';
 
-            var hasSelection = count > 0;
-            btnGerarNota.disabled = !hasSelection;
-            btnGerarBoletos.disabled = !hasSelection;
-            btnTransacionarCartao.disabled = !hasSelection;
-            btnEmail.disabled = !hasSelection;
-        }
+ var hasSelection = count > 0;
+ btnGerarNota.disabled = !hasSelection;
+ btnGerarBoletos.disabled = !hasSelection;
+ btnTransacionarCartao.disabled = !hasSelection;
+ btnEmail.disabled = !hasSelection;
+ }
 
-        function getSelectedIds() {
-            var selected = document.querySelectorAll('.invoice-checkbox:checked');
-            var ids = [];
-            selected.forEach(function (cb) { ids.push(cb.value); });
-            return ids;
-        }
+ function getSelectedIds() {
+ var selected = document.querySelectorAll('.invoice-checkbox:checked');
+ var ids = [];
+ selected.forEach(function (cb) { ids.push(cb.value); });
+ return ids;
+ }
 
-        function showToast(title, message, type) {
-            var toast = document.getElementById('liveToast');
-            var toastTitle = document.getElementById('toastTitle');
-            var toastBody = document.getElementById('toastBody');
+ function showToast(title, message, type) {
+ var toast = document.getElementById('liveToast');
+ var toastTitle = document.getElementById('toastTitle');
+ var toastBody = document.getElementById('toastBody');
 
-            toastTitle.textContent = title;
-            toastBody.innerHTML = message;
+ toastTitle.textContent = title;
+ toastBody.innerHTML = message;
 
-            toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info');
-            if (type === 'success') { toast.classList.add('bg-success', 'text-white'); }
-            else if (type === 'error') { toast.classList.add('bg-danger', 'text-white'); }
-            else if (type === 'warning') { toast.classList.add('bg-warning'); }
+ toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info');
+ if (type === 'success') { toast.classList.add('bg-success', 'text-white'); }
+ else if (type === 'error') { toast.classList.add('bg-danger', 'text-white'); }
+ else if (type === 'warning') { toast.classList.add('bg-warning'); }
 
-            var bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-        }
+ var bsToast = new bootstrap.Toast(toast);
+ bsToast.show();
+ }
 
-        function callBulkAction(url, extraData) {
-            extraData = extraData || {};
-            var ids = getSelectedIds();
-            if (ids.length === 0) {
-                showToast('Atenção', 'Nenhuma fatura selecionada.', 'warning');
-                return;
-            }
+ function callBulkAction(url, extraData) {
+ extraData = extraData || {};
+ var ids = getSelectedIds();
+ if (ids.length === 0) {
+ showToast('Atenção', 'Nenhuma fatura selecionada.', 'warning');
+ return;
+ }
 
-            var payload = { invoice_ids: ids };
-            for (var key in extraData) { payload[key] = extraData[key]; }
+ var payload = { invoice_ids: ids };
+ for (var key in extraData) { payload[key] = extraData[key]; }
 
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify(payload)
-            })
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                    if (data.status === 'success' || data.status === 'info') {
-                        var msg = data.message;
-                        if (data.errors && data.errors.length > 0) {
-                            msg += '<br><small class="text-warning">' + data.errors.length + ' erros</small>';
-                        }
-                        showToast('Sucesso', msg, 'success');
-                    } else {
-                        showToast('Erro', data.message, 'error');
-                    }
-                })
-                .catch(function (error) {
-                    showToast('Erro', 'Erro ao processar: ' + error.message, 'error');
-                });
-        }
+ fetch(url, {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': '{{ csrf_token }}'
+ },
+ body: JSON.stringify(payload)
+ })
+ .then(function (response) { return response.json(); })
+ .then(function (data) {
+ if (data.status === 'success' || data.status === 'info') {
+ var msg = data.message;
+ if (data.errors && data.errors.length > 0) {
+ msg += '<br><small class="text-warning">' + data.errors.length + ' erros</small>';
+ }
+ showToast('Sucesso', msg, 'success');
+ } else {
+ showToast('Erro', data.message, 'error');
+ }
+ })
+ .catch(function (error) {
+ showToast('Erro', 'Erro ao processar: ' + error.message, 'error');
+ });
+ }
 
-        checkboxes.forEach(function (cb) {
-            cb.addEventListener('change', updateSelectedCount);
-        });
+ checkboxes.forEach(function (cb) {
+ cb.addEventListener('change', updateSelectedCount);
+ });
 
-        if (selectAllBtn) {
-            selectAllBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                checkboxes.forEach(function (cb) { cb.checked = true; });
-                updateSelectedCount();
-            });
-        }
+ if (selectAllBtn) {
+ selectAllBtn.addEventListener('click', function (e) {
+ e.preventDefault();
+ checkboxes.forEach(function (cb) { cb.checked = true; });
+ updateSelectedCount();
+ });
+ }
 
-        if (deselectAllBtn) {
-            deselectAllBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                checkboxes.forEach(function (cb) { cb.checked = false; });
-                updateSelectedCount();
-            });
-        }
+ if (deselectAllBtn) {
+ deselectAllBtn.addEventListener('click', function (e) {
+ e.preventDefault();
+ checkboxes.forEach(function (cb) { cb.checked = false; });
+ updateSelectedCount();
+ });
+ }
 
-        if (btnGerarNota) {
-            btnGerarNota.addEventListener('click', function () {
-                callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}");
-            });
-        }
+ if (btnGerarNota) {
+ btnGerarNota.addEventListener('click', function () {
+ callBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}");
+ });
+ }
 
-        if (btnGerarBoletos) {
-            btnGerarBoletos.addEventListener('click', function () {
-                callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}");
-            });
-        }
+ if (btnGerarBoletos) {
+ btnGerarBoletos.addEventListener('click', function () {
+ callBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}");
+ });
+ }
 
-        if (btnTransacionarCartao) {
-            btnTransacionarCartao.addEventListener('click', function () {
-                showToast('Informação', 'Funcionalidade de transação por cartão em desenvolvimento.', 'info');
-            });
-        }
+ if (btnTransacionarCartao) {
+ btnTransacionarCartao.addEventListener('click', function () {
+ showToast('Informação', 'Funcionalidade de transação por cartão em desenvolvimento.', 'info');
+ });
+ }
 
-        document.querySelectorAll('.email-template-option').forEach(function (option) {
-            option.addEventListener('click', function (e) {
-                e.preventDefault();
-                var templateId = this.getAttribute('data-template-id');
-                callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", { template_id: templateId });
-            });
-        });
+ document.querySelectorAll('.email-template-option').forEach(function (option) {
+ option.addEventListener('click', function (e) {
+ e.preventDefault();
+ var templateId = this.getAttribute('data-template-id');
+ callBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", { template_id: templateId });
+ });
+ });
 
-        updateSelectedCount();
-    });
+ updateSelectedCount();
+ });
 </script>
 {% endblock %}

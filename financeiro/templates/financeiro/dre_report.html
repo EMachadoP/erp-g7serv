@@ -4,154 +4,154 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-primary"><i class="bi bi-file-earmark-bar-graph me-2"></i>DRE - Demonstrativo de
-            Resultados</h2>
-        <div class="d-flex gap-2">
-            <form method="get" class="d-flex gap-2 align-items-end">
-                <div>
-                    <label class="form-label small mb-1">Início</label>
-                    <input type="date" name="start_date" value="{{ start_date }}" class="form-control form-control-sm">
-                </div>
-                <div>
-                    <label class="form-label small mb-1">Fim</label>
-                    <input type="date" name="end_date" value="{{ end_date }}" class="form-control form-control-sm">
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i class="bi bi-filter"></i> Filtrar
-                </button>
-            </form>
-            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-printer"></i> Imprimir
-            </button>
-        </div>
-    </div>
+ <div class="d-flex justify-content-between align-items-center mb-4">
+ <h2 class="fw-bold text-primary"><i class="bi bi-file-earmark-bar-graph me-2"></i>DRE - Demonstrativo de
+ Resultados</h2>
+ <div class="d-flex gap-2">
+ <form method="get" class="d-flex gap-2 align-items-end">
+ <div>
+ <label class="form-label small mb-1">Início</label>
+ <input type="date" name="start_date" value="{{ start_date }}" class="form-control form-control-sm">
+ </div>
+ <div>
+ <label class="form-label small mb-1">Fim</label>
+ <input type="date" name="end_date" value="{{ end_date }}" class="form-control form-control-sm">
+ </div>
+ <button type="submit" class="btn btn-primary btn-sm">
+ <i class="bi bi-filter"></i> Filtrar
+ </button>
+ </form>
+ <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+ <i class="bi bi-printer"></i> Imprimir
+ </button>
+ </div>
+ </div>
 
-    <!-- Resumo Card -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-success text-white">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase opacity-75 small">Total de Receitas</h6>
-                    <h3 class="fw-bold">R$ {{ total_receitas|floatformat:2 }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-danger text-white">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase opacity-75 small">Total de Despesas</h6>
-                    <h3 class="fw-bold">R$ {{ total_despesas|floatformat:2 }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div
-                class="card shadow-sm border-0 {% if resultado_liquido >= 0 %}bg-primary{% else %}bg-dark{% endif %} text-white">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase opacity-75 small">Resultado Líquido</h6>
-                    <h3 class="fw-bold">R$ {{ resultado_liquido|floatformat:2 }}</h3>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- Resumo Card -->
+ <div class="row mb-4">
+ <div class="col-md-4">
+ <div class="card shadow-sm border-0 bg-success text-white">
+ <div class="card-body">
+ <h6 class="card-title text-uppercase opacity-75 small">Total de Receitas</h6>
+ <h3 class="fw-bold">R$ {{ total_receitas|floatformat:2 }}</h3>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div class="card shadow-sm border-0 bg-danger text-white">
+ <div class="card-body">
+ <h6 class="card-title text-uppercase opacity-75 small">Total de Despesas</h6>
+ <h3 class="fw-bold">R$ {{ total_despesas|floatformat:2 }}</h3>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-4">
+ <div
+ class="card shadow-sm border-0 {% if resultado_liquido >= 0 %}bg-primary{% else %}bg-dark{% endif %} text-white">
+ <div class="card-body">
+ <h6 class="card-title text-uppercase opacity-75 small">Resultado Líquido</h6>
+ <h3 class="fw-bold">R$ {{ resultado_liquido|floatformat:2 }}</h3>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- DRE Table -->
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0 fw-bold">Detalhamento por Agrupador</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 70%">Agrupador DRE</th>
-                            <th class="text-end">Valor (R$)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="table-active">
-                            <td colspan="2"><i
-                                    class="bi bi-arrow-down-circle-fill text-success me-2"></i><strong>RECEITAS
-                                    OPERACIONAIS</strong></td>
-                        </tr>
-                        {% for item in receitas %}
-                        <tr>
-                            <td class="ps-4">{{ item.category__grupo_dre }}</td>
-                            <td class="text-end text-success fw-bold">{{ item.total|floatformat:2 }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="2" class="text-center py-3 text-muted italic">Nenhuma receita no período
-                                selecionado.</td>
-                        </tr>
-                        {% endfor %}
+ <!-- DRE Table -->
+ <div class="card shadow-sm border-0 mb-4">
+ <div class="card-header bg-white py-3">
+ <h5 class="mb-0 fw-bold">Detalhamento por Agrupador</h5>
+ </div>
+ <div class="card-body p-0">
+ <div class="table-responsive">
+ <table class="table table-hover align-middle mb-0">
+ <thead class="table-light">
+ <tr>
+ <th style="width: 70%">Agrupador DRE</th>
+ <th class="text-end">Valor (R$)</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr class="table-active">
+ <td colspan="2"><i
+ class="bi bi-arrow-down-circle-fill text-success me-2"></i><strong>RECEITAS
+ OPERACIONAIS</strong></td>
+ </tr>
+ {% for item in receitas %}
+ <tr>
+ <td class="ps-4">{{ item.category__grupo_dre }}</td>
+ <td class="text-end text-success fw-bold">{{ item.total|floatformat:2 }}</td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="2" class="text-center py-3 text-muted italic">Nenhuma receita no período
+ selecionado.</td>
+ </tr>
+ {% endfor %}
 
-                        <tr class="table-active">
-                            <td colspan="2"><i class="bi bi-arrow-up-circle-fill text-danger me-2"></i><strong>DESPESAS
-                                    OPERACIONAIS / CUSTOS</strong></td>
-                        </tr>
-                        {% for item in despesas %}
-                        <tr>
-                            <td class="ps-4">{{ item.category__grupo_dre }}</td>
-                            <td class="text-end text-danger fw-bold">({{ item.total|floatformat:2 }})</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="2" class="text-center py-3 text-muted italic">Nenhuma despesa no período
-                                selecionado.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot class="table-light">
-                        <tr>
-                            <th class="text-uppercase">Resultado do Exercício</th>
-                            <th
-                                class="text-end {% if resultado_liquido >= 0 %}text-primary{% else %}text-danger{% endif %} fs-5">
-                                R$ {{ resultado_liquido|floatformat:2 }}
-                            </th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
+ <tr class="table-active">
+ <td colspan="2"><i class="bi bi-arrow-up-circle-fill text-danger me-2"></i><strong>DESPESAS
+ OPERACIONAIS / CUSTOS</strong></td>
+ </tr>
+ {% for item in despesas %}
+ <tr>
+ <td class="ps-4">{{ item.category__grupo_dre }}</td>
+ <td class="text-end text-danger fw-bold">({{ item.total|floatformat:2 }})</td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="2" class="text-center py-3 text-muted italic">Nenhuma despesa no período
+ selecionado.</td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ <tfoot class="table-light">
+ <tr>
+ <th class="text-uppercase">Resultado do Exercício</th>
+ <th
+ class="text-end {% if resultado_liquido >= 0 %}text-primary{% else %}text-danger{% endif %} fs-5">
+ R$ {{ resultado_liquido|floatformat:2 }}
+ </th>
+ </tr>
+ </tfoot>
+ </table>
+ </div>
+ </div>
+ </div>
 
-    <div class="alert alert-info border-0 shadow-sm">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        <strong>Nota:</strong> Este relatório é gerado com base nas <strong>transações financeiras realizadas</strong>
-        (caixa) dentro do período selecionado.
-    </div>
+ <div class="alert alert-info border-0 shadow-sm">
+ <i class="bi bi-info-circle-fill me-2"></i>
+ <strong>Nota:</strong> Este relatório é gerado com base nas <strong>transações financeiras realizadas</strong>
+ (caixa) dentro do período selecionado.
+ </div>
 </div>
 
 <style>
-    @media print {
+ @media print {
 
-        .navbar,
-        #menu-toggle,
-        form,
-        .btn {
-            display: none !important;
-        }
+ .navbar,
+ #menu-toggle,
+ form,
+ .btn {
+ display: none !important;
+ }
 
-        #sidebar-wrapper {
-            display: none !important;
-        }
+ #sidebar-wrapper {
+ display: none !important;
+ }
 
-        #page-content-wrapper {
-            width: 100% !important;
-            padding: 0 !important;
-        }
+ #page-content-wrapper {
+ width: 100% !important;
+ padding: 0 !important;
+ }
 
-        .container {
-            max-width: 100% !important;
-        }
+ .container {
+ max-width: 100% !important;
+ }
 
-        .card {
-            border: 1px solid #dee2e6 !important;
-            box-shadow: none !important;
-        }
-    }
+ .card {
+ border: 1px solid #dee2e6 !important;
+ box-shadow: none !important;
+ }
+ }
 </style>
 {% endblock %}

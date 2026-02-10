@@ -1,30 +1,30 @@
 <tr class="category-row level-{{ level }} {% if category.parent %}parent-{{ category.parent.id }}{% endif %}"
-    data-category-id="{{ category.id }}" {% if category.parent %}style="display: none;" {% endif %}>
-    <td class="text-start ps-{{ level|add:1|add:1 }}">
-        {% if category.subcategories.exists %}
-        <i class="bi bi-plus-square expand-icon me-2 text-primary"></i>
-        {% else %}
-        <i class="bi bi-dot me-2 text-muted" style="width: 20px; display: inline-block;"></i>
-        {% endif %}
-        {{ category.nome }}
-    </td>
-    {% for month, values in category.budget_data.items %}
-    <td class="text-end">
-        <div class="d-flex flex-column align-items-end">
-            <input type="number" step="0.01" class="budget-input" value="{{ values.planned|stringformat:'.2f' }}"
-                data-category-id="{{ category.id }}" data-month="{{ month }}">
+ data-category-id="{{ category.id }}" {% if category.parent %}style="display: none;" {% endif %}>
+ <td class="text-start ps-{{ level|add:1|add:1 }}">
+ {% if category.subcategories.exists %}
+ <i class="bi bi-plus-square expand-icon me-2 text-primary"></i>
+ {% else %}
+ <i class="bi bi-dot me-2 text-muted" style="width: 20px; display: inline-block;"></i>
+ {% endif %}
+ {{ category.nome }}
+ </td>
+ {% for month, values in category.budget_data.items %}
+ <td class="text-end">
+ <div class="d-flex flex-column align-items-end">
+ <input type="number" step="0.01" class="budget-input" value="{{ values.planned|stringformat:'.2f' }}"
+ data-category-id="{{ category.id }}" data-month="{{ month }}">
 
-            {% if values.realized > 0 %}
-            <span class="realized-value">
-                R$ {{ values.realized|floatformat:2 }}
-                {% if values.realized > values.planned and values.planned > 0 %}
-                <i class="bi bi-exclamation-circle-fill text-danger" title="Orçamento Excedido"></i>
-                {% endif %}
-            </span>
-            {% endif %}
-        </div>
-    </td>
-    {% endfor %}
+ {% if values.realized > 0 %}
+ <span class="realized-value">
+ R$ {{ values.realized|floatformat:2 }}
+ {% if values.realized > values.planned and values.planned > 0 %}
+ <i class="bi bi-exclamation-circle-fill text-danger" title="Orçamento Excedido"></i>
+ {% endif %}
+ </span>
+ {% endif %}
+ </div>
+ </td>
+ {% endfor %}
 </tr>
 
 {% for sub in category.subcategories.all %}

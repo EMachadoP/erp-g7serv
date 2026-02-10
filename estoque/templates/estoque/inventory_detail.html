@@ -2,137 +2,137 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-    <div>
-        <h2 class="text-secondary">Balanço #{{ inventory.id }}</h2>
-        <p class="text-muted mb-0">{{ inventory.date|date:"d/m/Y" }} - {{ inventory.description|default:"Sem descrição" }}</p>
-    </div>
-    <div>
-        {% if inventory.status == 'DRAFT' %}
-        <button type="button" class="btn btn-success text-white" data-bs-toggle="modal" data-bs-target="#finishModal">
-            <i class="bi bi-check-lg"></i> Concluir Balanço
-        </button>
-        {% else %}
-        <span class="badge bg-success fs-6">Concluído</span>
-        {% endif %}
-    </div>
+ <div>
+ <h2 class="text-secondary">Balanço #{{ inventory.id }}</h2>
+ <p class="text-muted mb-0">{{ inventory.date|date:"d/m/Y" }} - {{ inventory.description|default:"Sem descrição" }}</p>
+ </div>
+ <div>
+ {% if inventory.status == 'DRAFT' %}
+ <button type="button" class="btn btn-success text-white" data-bs-toggle="modal" data-bs-target="#finishModal">
+ <i class="bi bi-check-lg"></i> Concluir Balanço
+ </button>
+ {% else %}
+ <span class="badge bg-success fs-6">Concluído</span>
+ {% endif %}
+ </div>
 </div>
 
 <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <form method="post" id="inventoryForm">
-            {% csrf_token %}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4">Produto</th>
-                            <th>SKU</th>
-                            <th>Local</th>
-                            <th class="text-center">Qtd. Sistema</th>
-                            <th class="text-center" style="width: 150px;">Qtd. Contada</th>
-                            <th class="text-center">Diferença</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in items %}
-                        <tr>
-                            <td class="ps-4 fw-bold text-primary">{{ item.product.name }}</td>
-                            <td>{{ item.product.sku|default:"-" }}</td>
-                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ item.location.name|default:"-" }}</span></td>
-                            <td class="text-center">{{ item.system_quantity }}</td>
-                            <td class="text-center">
-                                {% if inventory.status == 'DRAFT' %}
-                                <input type="number" name="count_{{ item.id }}"
-                                    class="form-control form-control-sm text-center count-input"
-                                    value="{{ item.counted_quantity|default_if_none:'' }}"
-                                    data-system="{{ item.system_quantity }}">
-                                {% else %}
-                                {{ item.counted_quantity|default:"-" }}
-                                {% endif %}
-                            </td>
-                            <td class="text-center diff-cell fw-bold">
-                                {% if item.counted_quantity is not None %}
-                                {{ item.counted_quantity|add:"-"|add:item.system_quantity }}
-                                {% else %}
-                                -
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+ <div class="card-body p-0">
+ <form method="post" id="inventoryForm">
+ {% csrf_token %}
+ <div class="table-responsive">
+ <table class="table table-hover align-middle mb-0">
+ <thead class="bg-light">
+ <tr>
+ <th class="ps-4">Produto</th>
+ <th>SKU</th>
+ <th>Local</th>
+ <th class="text-center">Qtd. Sistema</th>
+ <th class="text-center" style="width: 150px;">Qtd. Contada</th>
+ <th class="text-center">Diferença</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for item in items %}
+ <tr>
+ <td class="ps-4 fw-bold text-primary">{{ item.product.name }}</td>
+ <td>{{ item.product.sku|default:"-" }}</td>
+ <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ item.location.name|default:"-" }}</span></td>
+ <td class="text-center">{{ item.system_quantity }}</td>
+ <td class="text-center">
+ {% if inventory.status == 'DRAFT' %}
+ <input type="number" name="count_{{ item.id }}"
+ class="form-control form-control-sm text-center count-input"
+ value="{{ item.counted_quantity|default_if_none:'' }}"
+ data-system="{{ item.system_quantity }}">
+ {% else %}
+ {{ item.counted_quantity|default:"-" }}
+ {% endif %}
+ </td>
+ <td class="text-center diff-cell fw-bold">
+ {% if item.counted_quantity is not None %}
+ {{ item.counted_quantity|add:"-"|add:item.system_quantity }}
+ {% else %}
+ -
+ {% endif %}
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
 
-            {% if inventory.status == 'DRAFT' %}
-            <div class="card-footer bg-white py-3 text-end sticky-bottom">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Salvar Contagens
-                </button>
-            </div>
-            {% endif %}
-        </form>
-    </div>
+ {% if inventory.status == 'DRAFT' %}
+ <div class="card-footer bg-white py-3 text-end sticky-bottom">
+ <button type="submit" class="btn btn-primary">
+ <i class="bi bi-save"></i> Salvar Contagens
+ </button>
+ </div>
+ {% endif %}
+ </form>
+ </div>
 </div>
 
 <!-- Finish Modal -->
 <div class="modal fade" id="finishModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Concluir Balanço</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja concluir este balanço?</p>
-                <p class="text-danger"><small>Isso irá atualizar o estoque de todos os produtos com diferenças
-                        encontradas. Esta ação não pode ser desfeita.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="finish_inventory" value="true">
-                    <button type="submit" class="btn btn-success text-white">Confirmar e Atualizar Estoque</button>
-                </form>
-            </div>
-        </div>
-    </div>
+ <div class="modal-dialog">
+ <div class="modal-content">
+ <div class="modal-header">
+ <h5 class="modal-title">Concluir Balanço</h5>
+ <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+ </div>
+ <div class="modal-body">
+ <p>Tem certeza que deseja concluir este balanço?</p>
+ <p class="text-danger"><small>Isso irá atualizar o estoque de todos os produtos com diferenças
+ encontradas. Esta ação não pode ser desfeita.</small></p>
+ </div>
+ <div class="modal-footer">
+ <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+ <form method="post">
+ {% csrf_token %}
+ <input type="hidden" name="finish_inventory" value="true">
+ <button type="submit" class="btn btn-success text-white">Confirmar e Atualizar Estoque</button>
+ </form>
+ </div>
+ </div>
+ </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const inputs = document.querySelectorAll('.count-input');
+ document.addEventListener('DOMContentLoaded', function () {
+ const inputs = document.querySelectorAll('.count-input');
 
-        inputs.forEach(input => {
-            input.addEventListener('input', function () {
-                const row = this.closest('tr');
-                const systemQty = parseInt(this.dataset.system);
-                const countedQty = parseInt(this.value);
-                const diffCell = row.querySelector('.diff-cell');
+ inputs.forEach(input => {
+ input.addEventListener('input', function () {
+ const row = this.closest('tr');
+ const systemQty = parseInt(this.dataset.system);
+ const countedQty = parseInt(this.value);
+ const diffCell = row.querySelector('.diff-cell');
 
-                if (!isNaN(countedQty)) {
-                    const diff = countedQty - systemQty;
-                    diffCell.textContent = diff;
+ if (!isNaN(countedQty)) {
+ const diff = countedQty - systemQty;
+ diffCell.textContent = diff;
 
-                    if (diff > 0) {
-                        diffCell.className = 'text-center diff-cell fw-bold text-success';
-                        diffCell.textContent = '+' + diff;
-                    } else if (diff < 0) {
-                        diffCell.className = 'text-center diff-cell fw-bold text-danger';
-                    } else {
-                        diffCell.className = 'text-center diff-cell fw-bold text-muted';
-                    }
-                } else {
-                    diffCell.textContent = '-';
-                    diffCell.className = 'text-center diff-cell fw-bold';
-                }
-            });
+ if (diff > 0) {
+ diffCell.className = 'text-center diff-cell fw-bold text-success';
+ diffCell.textContent = '+' + diff;
+ } else if (diff < 0) {
+ diffCell.className = 'text-center diff-cell fw-bold text-danger';
+ } else {
+ diffCell.className = 'text-center diff-cell fw-bold text-muted';
+ }
+ } else {
+ diffCell.textContent = '-';
+ diffCell.className = 'text-center diff-cell fw-bold';
+ }
+ });
 
-            // Trigger input event on load to set initial colors
-            if (input.value) {
-                input.dispatchEvent(new Event('input'));
-            }
-        });
-    });
+ // Trigger input event on load to set initial colors
+ if (input.value) {
+ input.dispatchEvent(new Event('input'));
+ }
+ });
+ });
 </script>
 {% endblock %}

@@ -2,36 +2,36 @@
 
 {% block content %}
 <div class="row mt-4 justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3>Registrar Movimentação</h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="movement_type" class="form-label">Tipo</label>
-                        <select name="movement_type" id="movement_type" class="form-select" required>
-                            <option value="IN">Entrada</option>
-                            <option value="OUT">Saída</option>
-                        </select>
-                    </div>
+ <div class="col-md-8">
+ <div class="card">
+ <div class="card-header">
+ <h3>Registrar Movimentação</h3>
+ </div>
+ <div class="card-body">
+ <form method="post">
+ <div class="mb-3">
+ <label for="movement_type" class="form-label">Tipo</label>
+ <select name="movement_type" id="movement_type" class="form-select" required>
+ <option value="IN">Entrada</option>
+ <option value="OUT">Saída</option>
+ </select>
+ </div>
 
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Quantidade</label>
-                        <input type="number" name="quantity" id="quantity" class="form-control" min="1" required>
-                    </div>
+ <div class="mb-3">
+ <label for="quantity" class="form-label">Quantidade</label>
+ <input type="number" name="quantity" id="quantity" class="form-control" min="1" required>
+ </div>
 
-                    <div class="mb-3">
-                        <label for="reason" class="form-label">Motivo</label>
-                        <input type="text" name="reason" id="reason" class="form-control">
-                    </div>
+ <div class="mb-3">
+ <label for="reason" class="form-label">Motivo</label>
+ <input type="text" name="reason" id="reason" class="form-control">
+ </div>
 
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                    <a href="{% url 'estoque:product_list' %}" class="btn btn-secondary">Cancelar</a>
-                </form>
-            </div>
-        </div>
-    </div>
+ <button type="submit" class="btn btn-primary">Salvar</button>
+ <a href="{% url 'estoque:product_list' %}" class="btn btn-secondary">Cancelar</a>
+ </form>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

@@ -3,27 +3,27 @@
 {% block content %}
 <h1>Despesas</h1>
 <table class="table">
-    <thead>
-        <tr>
-            <th>Descrição</th>
-            <th>Valor</th>
-            <th>Vencimento</th>
-            <th>Paga</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for exp in expenses %}
-        <tr>
-            <td><a href="{% url 'financeiro:expense_detail' exp.id %}">{{ exp.description }}</a></td>
-            <td>R$ {{ exp.amount }}</td>
-            <td>{{ exp.due_date }}</td>
-            <td>{{ exp.paid|yesno:"Sim,Não" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">Nenhuma despesa encontrada.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+ <thead>
+ <tr>
+ <th>Descrição</th>
+ <th>Valor</th>
+ <th>Vencimento</th>
+ <th>Paga</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for exp in expenses %}
+ <tr>
+ <td><a href="{% url 'financeiro:expense_detail' exp.id %}">{{ exp.description }}</a></td>
+ <td>R$ {{ exp.amount }}</td>
+ <td>{{ exp.due_date }}</td>
+ <td>{{ exp.paid|yesno:"Sim,Não" }}</td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="4">Nenhuma despesa encontrada.</td>
+ </tr>
+ {% endfor %}
+ </tbody>
 </table>
 {% endblock %}

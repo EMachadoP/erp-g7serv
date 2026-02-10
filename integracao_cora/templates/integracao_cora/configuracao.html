@@ -3,120 +3,120 @@
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="bi bi-bank me-2"></i>Configuração Banco Cora</h4>
-                    <span class="badge {% if status == 'Conectado' %}bg-success{% else %}bg-danger{% endif %}">
-                        {{ status }}
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info border-0">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Para integrar com a Cora, você precisa do <strong>Client ID</strong> e <strong>Certificado
-                            Digital</strong>.
-                        <br>
-                        A autenticação utiliza mTLS com certificado digital.
-                    </div>
+ <div class="row">
+ <div class="col-lg-8 offset-lg-2">
+ <div class="card shadow-sm border-0 mb-4">
+ <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+ <h4 class="mb-0"><i class="bi bi-bank me-2"></i>Configuração Banco Cora</h4>
+ <span class="badge {% if status == 'Conectado' %}bg-success{% else %}bg-danger{% endif %}">
+ {{ status }}
+ </span>
+ </div>
+ <div class="card-body">
+ <div class="alert alert-info border-0">
+ <i class="bi bi-info-circle me-2"></i>
+ Para integrar com a Cora, você precisa do <strong>Client ID</strong> e <strong>Certificado
+ Digital</strong>.
+ <br>
+ A autenticação utiliza mTLS com certificado digital.
+ </div>
 
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
+ <form method="post" enctype="multipart/form-data">
+ {% csrf_token %}
 
-                        <!-- Seção: Credenciais de API -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="bi bi-key me-2"></i>Credenciais de API</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Client ID *</label>
-                                        {{ form.client_id }}
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Client Secret</label>
-                                        {{ form.client_secret }}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Certificado PEM</label>
-                                        {{ form.certificado_pem }}
-                                        {% if config.certificado_pem %}
-                                        <small class="text-success"><i class="bi bi-check-circle me-1"></i>Certificado
-                                            configurado</small>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Chave Privada</label>
-                                        {{ form.chave_privada }}
-                                        {% if config.chave_privada %}
-                                        <small class="text-success"><i class="bi bi-check-circle me-1"></i>Chave
-                                            configurada</small>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Ambiente</label>
-                                        {{ form.ambiente }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+ <!-- Seção: Credenciais de API -->
+ <div class="card mb-4">
+ <div class="card-header bg-light">
+ <h5 class="mb-0"><i class="bi bi-key me-2"></i>Credenciais de API</h5>
+ </div>
+ <div class="card-body">
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ <label class="form-label">Client ID *</label>
+ {{ form.client_id }}
+ </div>
+ <div class="col-md-6 mb-3">
+ <label class="form-label">Client Secret</label>
+ {{ form.client_secret }}
+ </div>
+ </div>
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ <label class="form-label">Certificado PEM</label>
+ {{ form.certificado_pem }}
+ {% if config.certificado_pem %}
+ <small class="text-success"><i class="bi bi-check-circle me-1"></i>Certificado
+ configurado</small>
+ {% endif %}
+ </div>
+ <div class="col-md-6 mb-3">
+ <label class="form-label">Chave Privada</label>
+ {{ form.chave_privada }}
+ {% if config.chave_privada %}
+ <small class="text-success"><i class="bi bi-check-circle me-1"></i>Chave
+ configurada</small>
+ {% endif %}
+ </div>
+ </div>
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ <label class="form-label">Ambiente</label>
+ {{ form.ambiente }}
+ </div>
+ </div>
+ </div>
+ </div>
 
-                        <!-- Seção: Configurações de Boleto -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="bi bi-upc-scan me-2"></i>Configurações de Boleto</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Taxa de Multa (%)</label>
-                                        {{ form.taxa_multa }}
-                                        <small class="text-muted">Percentual cobrado por atraso</small>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Taxa de Juros (% a.m.)</label>
-                                        {{ form.taxa_juros }}
-                                        <small class="text-muted">Percentual de juros ao mês</small>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Dias para Protesto</label>
-                                        {{ form.dias_protesto }}
-                                        <small class="text-muted">0 = sem protesto</small>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 mb-3">
-                                        <label class="form-label">Instruções do Boleto</label>
-                                        {{ form.instrucoes_boleto }}
-                                        <small class="text-muted">Texto que aparecerá no boleto para o pagador</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+ <!-- Seção: Configurações de Boleto -->
+ <div class="card mb-4">
+ <div class="card-header bg-light">
+ <h5 class="mb-0"><i class="bi bi-upc-scan me-2"></i>Configurações de Boleto</h5>
+ </div>
+ <div class="card-body">
+ <div class="row">
+ <div class="col-md-4 mb-3">
+ <label class="form-label">Taxa de Multa (%)</label>
+ {{ form.taxa_multa }}
+ <small class="text-muted">Percentual cobrado por atraso</small>
+ </div>
+ <div class="col-md-4 mb-3">
+ <label class="form-label">Taxa de Juros (% a.m.)</label>
+ {{ form.taxa_juros }}
+ <small class="text-muted">Percentual de juros ao mês</small>
+ </div>
+ <div class="col-md-4 mb-3">
+ <label class="form-label">Dias para Protesto</label>
+ {{ form.dias_protesto }}
+ <small class="text-muted">0 = sem protesto</small>
+ </div>
+ </div>
+ <div class="row">
+ <div class="col-12 mb-3">
+ <label class="form-label">Instruções do Boleto</label>
+ {{ form.instrucoes_boleto }}
+ <small class="text-muted">Texto que aparecerá no boleto para o pagador</small>
+ </div>
+ </div>
+ </div>
+ </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left me-2"></i>Voltar
-                            </a>
-                            <div class="d-flex gap-2">
-                                <button type="submit" name="save" class="btn btn-secondary">
-                                    <i class="bi bi-save me-2"></i>Salvar
-                                </button>
-                                <button type="submit" name="test_connection" class="btn btn-primary">
-                                    <i class="bi bi-plug me-2"></i>Salvar e Testar Conexão
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+ <div class="d-flex justify-content-between mt-4">
+ <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary">
+ <i class="bi bi-arrow-left me-2"></i>Voltar
+ </a>
+ <div class="d-flex gap-2">
+ <button type="submit" name="save" class="btn btn-secondary">
+ <i class="bi bi-save me-2"></i>Salvar
+ </button>
+ <button type="submit" name="test_connection" class="btn btn-primary">
+ <i class="bi bi-plug me-2"></i>Salvar e Testar Conexão
+ </button>
+ </div>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

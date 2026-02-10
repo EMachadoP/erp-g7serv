@@ -2,53 +2,53 @@
 
 {% block content %}
 <div class="container mt-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'financeiro:dashboard' %}">Início</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'financeiro:financial_category_list' %}">Categorias</a></li>
-            <li class="breadcrumb-item active">{{ title }}</li>
-        </ol>
-    </nav>
+ <nav aria-label="breadcrumb">
+ <ol class="breadcrumb">
+ <li class="breadcrumb-item"><a href="{% url 'financeiro:dashboard' %}">Início</a></li>
+ <li class="breadcrumb-item"><a href="{% url 'financeiro:financial_category_list' %}">Categorias</a></li>
+ <li class="breadcrumb-item active">{{ title }}</li>
+ </ol>
+ </nav>
 
-    <h2>{{ title }}</h2>
+ <h2>{{ title }}</h2>
 
-    <div class="card shadow-sm mt-4">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="{{ form.nome.id_for_label }}" class="form-label">Nome *</label>
-                        {{ form.nome }}
-                    </div>
-                    <div class="col-md-3">
-                        <label for="{{ form.tipo.id_for_label }}" class="form-label">Tipo *</label>
-                        {{ form.tipo }}
-                    </div>
-                    <div class="col-md-3">
-                        <label for="{{ form.parent.id_for_label }}" class="form-label">Categoria Pai</label>
-                        {{ form.parent }}
-                    </div>
-                </div>
+ <div class="card shadow-sm mt-4">
+ <div class="card-body">
+ <form method="post">
+ {% csrf_token %}
+ <div class="row g-3">
+ <div class="col-md-6">
+ <label for="{{ form.nome.id_for_label }}" class="form-label">Nome *</label>
+ {{ form.nome }}
+ </div>
+ <div class="col-md-3">
+ <label for="{{ form.tipo.id_for_label }}" class="form-label">Tipo *</label>
+ {{ form.tipo }}
+ </div>
+ <div class="col-md-3">
+ <label for="{{ form.parent.id_for_label }}" class="form-label">Categoria Pai</label>
+ {{ form.parent }}
+ </div>
+ </div>
 
-                <div class="row g-3 mt-2">
-                    <div class="col-md-6">
-                        <label for="{{ form.grupo_dre.id_for_label }}" class="form-label">Agrupador DRE</label>
-                        {{ form.grupo_dre }}
-                    </div>
-                    <div class="col-md-3">
-                        <label for="{{ form.ordem_exibicao.id_for_label }}" class="form-label">Ordem de Exibição</label>
-                        {{ form.ordem_exibicao }}
-                    </div>
-                </div>
+ <div class="row g-3 mt-2">
+ <div class="col-md-6">
+ <label for="{{ form.grupo_dre.id_for_label }}" class="form-label">Agrupador DRE</label>
+ {{ form.grupo_dre }}
+ </div>
+ <div class="col-md-3">
+ <label for="{{ form.ordem_exibicao.id_for_label }}" class="form-label">Ordem de Exibição</label>
+ {{ form.ordem_exibicao }}
+ </div>
+ </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{% url 'financeiro:financial_category_list' %}"
-                        class="btn btn-secondary me-md-2">Cancelar</a>
-                    <button type="submit" class="btn btn-success">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+ <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+ <a href="{% url 'financeiro:financial_category_list' %}"
+ class="btn btn-secondary me-md-2">Cancelar</a>
+ <button type="submit" class="btn btn-success">Salvar</button>
+ </div>
+ </form>
+ </div>
+ </div>
 </div>
 {% endblock %}

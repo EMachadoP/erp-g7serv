@@ -2,502 +2,502 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-10 mx-auto">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Iniciar Nova Importação</h5>
-            </div>
-            <div class="card-body">
-                <!-- Stepper -->
-                <div class="row mb-4">
-                    <div class="col text-center">
-                        <div class="step-circle bg-primary text-white mx-auto mb-2" id="step-1-circle">1</div>
-                        <small>Upload</small>
-                    </div>
-                    <div class="col text-center">
-                        <div class="step-circle bg-light text-muted mx-auto mb-2" id="step-2-circle">2</div>
-                        <small>Mapeamento</small>
-                    </div>
-                    <div class="col text-center">
-                        <div class="step-circle bg-light text-muted mx-auto mb-2" id="step-3-circle">3</div>
-                        <small>Preview</small>
-                    </div>
-                    <div class="col text-center">
-                        <div class="step-circle bg-light text-muted mx-auto mb-2" id="step-4-circle">4</div>
-                        <small>Conclusão</small>
-                    </div>
-                </div>
+ <div class="col-md-10 mx-auto">
+ <div class="card">
+ <div class="card-header bg-white">
+ <h5 class="mb-0">Iniciar Nova Importação</h5>
+ </div>
+ <div class="card-body">
+ <!-- Stepper -->
+ <div class="row mb-4">
+ <div class="col text-center">
+ <div class="step-circle bg-primary text-white mx-auto mb-2" id="step-1-circle">1</div>
+ <small>Upload</small>
+ </div>
+ <div class="col text-center">
+ <div class="step-circle bg-light text-muted mx-auto mb-2" id="step-2-circle">2</div>
+ <small>Mapeamento</small>
+ </div>
+ <div class="col text-center">
+ <div class="step-circle bg-light text-muted mx-auto mb-2" id="step-3-circle">3</div>
+ <small>Preview</small>
+ </div>
+ <div class="col text-center">
+ <div class="step-circle bg-light text-muted mx-auto mb-2" id="step-4-circle">4</div>
+ <small>Conclusão</small>
+ </div>
+ </div>
 
-                <hr>
+ <hr>
 
-                <!-- Step 1: Upload and Module Selection -->
-                <div id="step-1">
-                    <form id="upload-form">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <label class="form-label">O que você deseja importar?</label>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-contas_pagar">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-pagar" value="contas_pagar" required>
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-pagar">
-                                            <i class="bi bi-cash-coin text-success"></i> Contas a Pagar
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card"
-                                        id="card-contas_receber">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-receber" value="contas_receber">
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-receber">
-                                            <i class="bi bi-cash-stack text-info"></i> Contas a Receber
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-estoque">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-estoque" value="estoque">
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-estoque">
-                                            <i class="bi bi-box-seam text-warning"></i> Estoque / Inventário
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-os">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-os" value="os">
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-os">
-                                            <i class="bi bi-tools text-danger"></i> Ordens de Serviço
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-clientes">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-clientes" value="clientes">
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-clientes">
-                                            <i class="bi bi-people text-primary"></i> Clientes
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-orcamentos">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-orcamentos" value="orcamentos">
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-orcamentos">
-                                            <i class="bi bi-file-earmark-text text-secondary"></i> Orçamentos
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check card p-3 cursor-pointer module-card" id="card-contratos">
-                                        <input class="form-check-input d-none" type="radio" name="module_type"
-                                            id="mod-contratos" value="contratos">
-                                        <label class="form-check-label d-block cursor-pointer" for="mod-contratos">
-                                            <i class="bi bi-file-contract text-dark"></i> Contratos
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+ <!-- Step 1: Upload and Module Selection -->
+ <div id="step-1">
+ <form id="upload-form">
+ {% csrf_token %}
+ <div class="mb-4">
+ <label class="form-label">O que você deseja importar?</label>
+ <div class="row g-3">
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card" id="card-contas_pagar">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-pagar" value="contas_pagar" required>
+ <label class="form-check-label d-block cursor-pointer" for="mod-pagar">
+ <i class="bi bi-cash-coin text-success"></i> Contas a Pagar
+ </label>
+ </div>
+ </div>
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card"
+ id="card-contas_receber">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-receber" value="contas_receber">
+ <label class="form-check-label d-block cursor-pointer" for="mod-receber">
+ <i class="bi bi-cash-stack text-info"></i> Contas a Receber
+ </label>
+ </div>
+ </div>
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card" id="card-estoque">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-estoque" value="estoque">
+ <label class="form-check-label d-block cursor-pointer" for="mod-estoque">
+ <i class="bi bi-box-seam text-warning"></i> Estoque / Inventário
+ </label>
+ </div>
+ </div>
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card" id="card-os">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-os" value="os">
+ <label class="form-check-label d-block cursor-pointer" for="mod-os">
+ <i class="bi bi-tools text-danger"></i> Ordens de Serviço
+ </label>
+ </div>
+ </div>
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card" id="card-clientes">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-clientes" value="clientes">
+ <label class="form-check-label d-block cursor-pointer" for="mod-clientes">
+ <i class="bi bi-people text-primary"></i> Clientes
+ </label>
+ </div>
+ </div>
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card" id="card-orcamentos">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-orcamentos" value="orcamentos">
+ <label class="form-check-label d-block cursor-pointer" for="mod-orcamentos">
+ <i class="bi bi-file-earmark-text text-secondary"></i> Orçamentos
+ </label>
+ </div>
+ </div>
+ <div class="col-md-6">
+ <div class="form-check card p-3 cursor-pointer module-card" id="card-contratos">
+ <input class="form-check-input d-none" type="radio" name="module_type"
+ id="mod-contratos" value="contratos">
+ <label class="form-check-label d-block cursor-pointer" for="mod-contratos">
+ <i class="bi bi-file-contract text-dark"></i> Contratos
+ </label>
+ </div>
+ </div>
+ </div>
+ </div>
 
-                        <div class="mb-4">
-                            <label class="form-label">Selecione o arquivo (Excel ou CSV)</label>
-                            <input class="form-control" type="file" id="file" name="file" accept=".xlsx,.xls,.csv"
-                                required>
-                            <div class="form-text">Tamanho máximo: 10MB.</div>
-                        </div>
+ <div class="mb-4">
+ <label class="form-label">Selecione o arquivo (Excel ou CSV)</label>
+ <input class="form-control" type="file" id="file" name="file" accept=".xlsx,.xls,.csv"
+ required>
+ <div class="form-text">Tamanho máximo: 10MB.</div>
+ </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary" id="btn-upload">
-                                Próximo: Analisar Arquivo <i class="bi bi-arrow-right"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+ <div class="d-flex justify-content-end">
+ <button type="submit" class="btn btn-primary" id="btn-upload">
+ Próximo: Analisar Arquivo <i class="bi bi-arrow-right"></i>
+ </button>
+ </div>
+ </form>
+ </div>
 
-                <!-- Step 2: Mapping -->
-                <div id="step-2" class="d-none">
-                    <h6 class="mb-3">Mapeamento de Colunas</h6>
-                    <p class="text-muted small mb-4">
-                        Relacione as colunas da sua planilha com os campos do sistema.
-                        Itens em azul foram sugeridos automaticamente pela nossa IA.
-                    </p>
+ <!-- Step 2: Mapping -->
+ <div id="step-2" class="d-none">
+ <h6 class="mb-3">Mapeamento de Colunas</h6>
+ <p class="text-muted small mb-4">
+ Relacione as colunas da sua planilha com os campos do sistema.
+ Itens em azul foram sugeridos automaticamente pela nossa IA.
+ </p>
 
-                    <div class="table-responsive">
-                        <table class="table table-sm" id="mapping-table">
-                            <thead>
-                                <tr>
-                                    <th>Coluna na Planilha</th>
-                                    <th>Amostra de Dados</th>
-                                    <th>Campo no Sistema</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mapping-body">
-                                <!-- Preenchido via JS -->
-                            </tbody>
-                        </table>
-                    </div>
+ <div class="table-responsive">
+ <table class="table table-sm" id="mapping-table">
+ <thead>
+ <tr>
+ <th>Coluna na Planilha</th>
+ <th>Amostra de Dados</th>
+ <th>Campo no Sistema</th>
+ </tr>
+ </thead>
+ <tbody id="mapping-body">
+ <!-- Preenchido via JS -->
+ </tbody>
+ </table>
+ </div>
 
-                    <div class="mt-4 d-flex justify-content-between">
-                        <button class="btn btn-outline-secondary" onclick="showStep(1)">
-                            <i class="bi bi-arrow-left"></i> Voltar
-                        </button>
-                        <button class="btn btn-primary" id="btn-to-preview">
-                            Próximo: Visualizar Preview <i class="bi bi-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
+ <div class="mt-4 d-flex justify-content-between">
+ <button class="btn btn-outline-secondary" onclick="showStep(1)">
+ <i class="bi bi-arrow-left"></i> Voltar
+ </button>
+ <button class="btn btn-primary" id="btn-to-preview">
+ Próximo: Visualizar Preview <i class="bi bi-arrow-right"></i>
+ </button>
+ </div>
+ </div>
 
-                <!-- Step 3: Preview -->
-                <div id="step-3" class="d-none">
-                    <h6 class="mb-3">Preview da Importação</h6>
-                    <p class="text-muted small mb-4">
-                        Confira como os dados serão importados. Somente os primeiros 5 registros são mostrados aqui.
-                    </p>
+ <!-- Step 3: Preview -->
+ <div id="step-3" class="d-none">
+ <h6 class="mb-3">Preview da Importação</h6>
+ <p class="text-muted small mb-4">
+ Confira como os dados serão importados. Somente os primeiros 5 registros são mostrados aqui.
+ </p>
 
-                    <div class="table-responsive mb-4" style="max-height: 400px;">
-                        <table class="table table-sm table-bordered preview-table" id="preview-table">
-                            <thead id="preview-head"></thead>
-                            <tbody id="preview-body"></tbody>
-                        </table>
-                    </div>
+ <div class="table-responsive mb-4" style="max-height: 400px;">
+ <table class="table table-sm table-bordered preview-table" id="preview-table">
+ <thead id="preview-head"></thead>
+ <tbody id="preview-body"></tbody>
+ </table>
+ </div>
 
-                    <div class="alert alert-info py-2 small mb-4">
-                        <i class="bi bi-info-circle"></i>
-                        Total de registros detectados: <strong id="total-rows-info">0</strong>
-                    </div>
+ <div class="alert alert-info py-2 small mb-4">
+ <i class="bi bi-info-circle"></i>
+ Total de registros detectados: <strong id="total-rows-info">0</strong>
+ </div>
 
-                    <div class="mt-4 d-flex justify-content-between">
-                        <button class="btn btn-outline-secondary" onclick="showStep(2)">
-                            <i class="bi bi-arrow-left"></i> Voltar
-                        </button>
-                        <button class="btn btn-success" id="btn-import">
-                            <i class="bi bi-check-lg"></i> Confirmar e Importar
-                        </button>
-                    </div>
-                </div>
+ <div class="mt-4 d-flex justify-content-between">
+ <button class="btn btn-outline-secondary" onclick="showStep(2)">
+ <i class="bi bi-arrow-left"></i> Voltar
+ </button>
+ <button class="btn btn-success" id="btn-import">
+ <i class="bi bi-check-lg"></i> Confirmar e Importar
+ </button>
+ </div>
+ </div>
 
-                <!-- Step 4: Completion -->
-                <div id="step-4" class="d-none text-center py-5">
-                    <div id="import-loading">
-                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                        </div>
-                        <h5>Processando Importação...</h5>
-                        <p class="text-muted" id="import-progress-text">Iniciando processamento...</p>
-                        <div class="progress mt-3 mx-auto" style="width: 300px; height: 10px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                id="import-progress-bar" style="width: 0%"></div>
-                        </div>
-                    </div>
+ <!-- Step 4: Completion -->
+ <div id="step-4" class="d-none text-center py-5">
+ <div id="import-loading">
+ <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+ </div>
+ <h5>Processando Importação...</h5>
+ <p class="text-muted" id="import-progress-text">Iniciando processamento...</p>
+ <div class="progress mt-3 mx-auto" style="width: 300px; height: 10px;">
+ <div class="progress-bar progress-bar-striped progress-bar-animated"
+ id="import-progress-bar" style="width: 0%"></div>
+ </div>
+ </div>
 
-                    <div id="import-success" class="d-none">
-                        <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
-                        <h3 class="mb-3">Importação Concluída!</h3>
-                        <p class="text-muted mb-4" id="import-success-msg"></p>
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="{% url 'importador:history_page' %}" class="btn btn-primary">Ver Histórico</a>
-                            <a href="{% url 'importador:index' %}" class="btn btn-outline-secondary">Ir para Início</a>
-                        </div>
-                    </div>
+ <div id="import-success" class="d-none">
+ <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
+ <h3 class="mb-3">Importação Concluída!</h3>
+ <p class="text-muted mb-4" id="import-success-msg"></p>
+ <div class="d-flex justify-content-center gap-2">
+ <a href="{% url 'importador:history_page' %}" class="btn btn-primary">Ver Histórico</a>
+ <a href="{% url 'importador:index' %}" class="btn btn-outline-secondary">Ir para Início</a>
+ </div>
+ </div>
 
-                    <div id="import-error" class="d-none">
-                        <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
-                        <h3 class="mb-3">Erro na Importação</h3>
-                        <p class="text-muted mb-4" id="import-error-msg"></p>
-                        <button class="btn btn-primary" onclick="showStep(3)">Tentar Novamente</button>
-                    </div>
-                </div>
+ <div id="import-error" class="d-none">
+ <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
+ <h3 class="mb-3">Erro na Importação</h3>
+ <p class="text-muted mb-4" id="import-error-msg"></p>
+ <button class="btn btn-primary" onclick="showStep(3)">Tentar Novamente</button>
+ </div>
+ </div>
 
-            </div>
-        </div>
-    </div>
+ </div>
+ </div>
+ </div>
 </div>
 
 <style>
-    .step-circle {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        line-height: 30px;
-        font-weight: bold;
-    }
+ .step-circle {
+ width: 30px;
+ height: 30px;
+ border-radius: 50%;
+ line-height: 30px;
+ font-weight: bold;
+ }
 
-    .module-card:hover {
-        border-color: #0d6efd;
-        background-color: #f8f9ff;
-    }
+ .module-card:hover {
+ border-color: #0d6efd;
+ background-color: #f8f9ff;
+ }
 
-    .module-card.active {
-        border-color: #0d6efd;
-        background-color: #f8f9ff;
-        box-shadow: 0 0 0 2px rgba(13, 110, 253, .25);
-    }
+ .module-card.active {
+ border-color: #0d6efd;
+ background-color: #f8f9ff;
+ box-shadow: 0 0 0 2px rgba(13, 110, 253, .25);
+ }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    let uploadData = {};
-    let moduleFields = [];
-    let currentMapping = {};
+ let uploadData = {};
+ let moduleFields = [];
+ let currentMapping = {};
 
-    // Select module cards
-    document.querySelectorAll('.module-card').forEach(card => {
-        card.addEventListener('click', function () {
-            document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            this.querySelector('input').checked = true;
-        });
-    });
+ // Select module cards
+ document.querySelectorAll('.module-card').forEach(card => {
+ card.addEventListener('click', function () {
+ document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
+ this.classList.add('active');
+ this.querySelector('input').checked = true;
+ });
+ });
 
-    // Step navigation
-    function showStep(step) {
-        document.querySelectorAll('[id^="step-"]').forEach(s => {
-            if (s.id.startsWith('step-') && s.id.endsWith('-circle') === false) {
-                s.classList.add('d-none');
-            }
-        });
-        document.getElementById(`step-${step}`).classList.remove('d-none');
+ // Step navigation
+ function showStep(step) {
+ document.querySelectorAll('[id^="step-"]').forEach(s => {
+ if (s.id.startsWith('step-') && s.id.endsWith('-circle') === false) {
+ s.classList.add('d-none');
+ }
+ });
+ document.getElementById(`step-${step}`).classList.remove('d-none');
 
-        // Update circles
-        for (let i = 1; i <= 4; i++) {
-            const circle = document.getElementById(`step-${i}-circle`);
-            if (i < step) {
-                circle.classList.remove('bg-primary', 'bg-light', 'text-muted');
-                circle.classList.add('bg-success', 'text-white');
-                circle.innerHTML = '<i class="bi bi-check"></i>';
-            } else if (i === step) {
-                circle.classList.remove('bg-success', 'bg-light', 'text-muted');
-                circle.classList.add('bg-primary', 'text-white');
-                circle.innerHTML = i;
-            } else {
-                circle.classList.remove('bg-primary', 'bg-success', 'text-white');
-                circle.classList.add('bg-light', 'text-muted');
-                circle.innerHTML = i;
-            }
-        }
-    }
+ // Update circles
+ for (let i = 1; i <= 4; i++) {
+ const circle = document.getElementById(`step-${i}-circle`);
+ if (i < step) {
+ circle.classList.remove('bg-primary', 'bg-light', 'text-muted');
+ circle.classList.add('bg-success', 'text-white');
+ circle.innerHTML = '<i class="bi bi-check"></i>';
+ } else if (i === step) {
+ circle.classList.remove('bg-success', 'bg-light', 'text-muted');
+ circle.classList.add('bg-primary', 'text-white');
+ circle.innerHTML = i;
+ } else {
+ circle.classList.remove('bg-primary', 'bg-success', 'text-white');
+ circle.classList.add('bg-light', 'text-muted');
+ circle.innerHTML = i;
+ }
+ }
+ }
 
-    // Step 1: Upload
-    document.getElementById('upload-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const btn = document.getElementById('btn-upload');
-        const formData = new FormData(this);
+ // Step 1: Upload
+ document.getElementById('upload-form').addEventListener('submit', async function (e) {
+ e.preventDefault();
+ const btn = document.getElementById('btn-upload');
+ const formData = new FormData(this);
 
-        Utils.showLoading(btn, 'Analisando...');
+ Utils.showLoading(btn, 'Analisando...');
 
-        try {
-            const response = await fetch("{% url 'importador:api_upload' %}", {
-                method: 'POST',
-                body: formData
-            });
+ try {
+ const response = await fetch("{% url 'importador:api_upload' %}", {
+ method: 'POST',
+ body: formData
+ });
 
-            const result = await response.json();
-            if (result.success) {
-                uploadData = result;
+ const result = await response.json();
+ if (result.success) {
+ uploadData = result;
 
-                // Se for processamento especial (clientes/contratos), abrir preview direto
-                if (result.special_processing) {
-                    if (result.preview_type === 'clientes') {
-                        showClientesPreview(result);
-                    } else if (result.preview_type === 'contratos') {
-                        showContratosPreview(result);
-                    }
-                    return;
-                }
+ // Se for processamento especial (clientes/contratos), abrir preview direto
+ if (result.special_processing) {
+ if (result.preview_type === 'clientes') {
+ showClientesPreview(result);
+ } else if (result.preview_type === 'contratos') {
+ showContratosPreview(result);
+ }
+ return;
+ }
 
-                // Fetch module fields
-                const fieldsResp = await fetch(`{% url 'importador:api_fields' 'MODULE_TYPE' %}`.replace('MODULE_TYPE', uploadData.module_type));
-                const fieldsResult = await fieldsResp.json();
-                moduleFields = fieldsResult.fields;
+ // Fetch module fields
+ const fieldsResp = await fetch(`{% url 'importador:api_fields' 'MODULE_TYPE' %}`.replace('MODULE_TYPE', uploadData.module_type));
+ const fieldsResult = await fieldsResp.json();
+ moduleFields = fieldsResult.fields;
 
-                renderMappingTable();
-                showStep(2);
-            } else {
-                alert('Erro: ' + (result.detail || 'Desconhecido'));
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erro ao enviar arquivo: ' + error.message);
-        } finally {
-            Utils.hideLoading(btn);
-        }
-    });
+ renderMappingTable();
+ showStep(2);
+ } else {
+ alert('Erro: ' + (result.detail || 'Desconhecido'));
+ }
+ } catch (error) {
+ console.error(error);
+ alert('Erro ao enviar arquivo: ' + error.message);
+ } finally {
+ Utils.hideLoading(btn);
+ }
+ });
 
-    function renderMappingTable() {
-        const tbody = document.getElementById('mapping-body');
-        tbody.innerHTML = '';
+ function renderMappingTable() {
+ const tbody = document.getElementById('mapping-body');
+ tbody.innerHTML = '';
 
-        const sourceColumns = uploadData.analysis.columns;
-        const suggestions = uploadData.analysis.mapping_suggestions.suggestions;
+ const sourceColumns = uploadData.analysis.columns;
+ const suggestions = uploadData.analysis.mapping_suggestions.suggestions;
 
-        sourceColumns.forEach(col => {
-            const tr = document.createElement('tr');
-            const suggestion = suggestions[col.name];
+ sourceColumns.forEach(col => {
+ const tr = document.createElement('tr');
+ const suggestion = suggestions[col.name];
 
-            let optionsHtml = '<option value="">(Não importar)</option>';
-            moduleFields.forEach(f => {
-                const selected = suggestion && suggestion.field === f.field_name ? 'selected' : '';
-                optionsHtml += `<option value="${f.field_name}" ${selected}>${f.field_label}</option>`;
-            });
+ let optionsHtml = '<option value="">(Não importar)</option>';
+ moduleFields.forEach(f => {
+ const selected = suggestion && suggestion.field === f.field_name ? 'selected' : '';
+ optionsHtml += `<option value="${f.field_name}" ${selected}>${f.field_label}</option>`;
+ });
 
-            tr.innerHTML = `
-                <td><code>${col.name}</code></td>
-                <td><small class="text-muted">${col.sample_values.join(', ') || '-'}</small></td>
-                <td>
-                    <select class="form-select form-select-sm mapping-select ${suggestion ? 'border-primary' : ''}" 
-                            data-source="${col.name}">
-                        ${optionsHtml}
-                    </select>
-                    ${suggestion ? `<small class="text-primary"><i class="bi bi-magic"></i> Sugerido</small>` : ''}
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+ tr.innerHTML = `
+ <td><code>${col.name}</code></td>
+ <td><small class="text-muted">${col.sample_values.join(', ') || '-'}</small></td>
+ <td>
+ <select class="form-select form-select-sm mapping-select ${suggestion ? 'border-primary' : ''}" 
+ data-source="${col.name}">
+ ${optionsHtml}
+ </select>
+ ${suggestion ? `<small class="text-primary"><i class="bi bi-magic"></i> Sugerido</small>` : ''}
+ </td>
+ `;
+ tbody.appendChild(tr);
+ });
+ }
 
-    // Step 2: To Preview
-    document.getElementById('btn-to-preview').addEventListener('click', async function () {
-        const btn = this;
-        currentMapping = {};
+ // Step 2: To Preview
+ document.getElementById('btn-to-preview').addEventListener('click', async function () {
+ const btn = this;
+ currentMapping = {};
 
-        document.querySelectorAll('.mapping-select').forEach(sel => {
-            if (sel.value) {
-                currentMapping[sel.dataset.source] = sel.value;
-            }
-        });
+ document.querySelectorAll('.mapping-select').forEach(sel => {
+ if (sel.value) {
+ currentMapping[sel.dataset.source] = sel.value;
+ }
+ });
 
-        if (Object.keys(currentMapping).length === 0) {
-            alert('Por favor, mapeie pelo menos uma coluna.');
-            return;
-        }
+ if (Object.keys(currentMapping).length === 0) {
+ alert('Por favor, mapeie pelo menos uma coluna.');
+ return;
+ }
 
-        Utils.showLoading(btn, 'Gerando Preview...');
+ Utils.showLoading(btn, 'Gerando Preview...');
 
-        try {
-            const response = await fetch("{% url 'importador:api_preview' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    file_path: uploadData.file_path,
-                    template_id: null, // Todo: handle if using template
-                    mapping: currentMapping, // We'll need to adapt the API to accept mapping directly or create a temp template
-                    module_type: uploadData.module_type
-                })
-            });
+ try {
+ const response = await fetch("{% url 'importador:api_preview' %}", {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+ },
+ body: JSON.stringify({
+ file_path: uploadData.file_path,
+ template_id: null, // Todo: handle if using template
+ mapping: currentMapping, // We'll need to adapt the API to accept mapping directly or create a temp template
+ module_type: uploadData.module_type
+ })
+ });
 
-            // Since our actual api_preview takes template_id, let's create a temporary template 
-            // OR better, update the API to accept direct mapping.
-            // For now, let's assume we create a quick template or use a simulation.
+ // Since our actual api_preview takes template_id, let's create a temporary template 
+ // OR better, update the API to accept direct mapping.
+ // For now, let's assume we create a quick template or use a simulation.
 
-            // Simulação do preview(já que a API real precisa de template_id)
-            // Na versão real, enviaríamos o mapeamento para uma rota de pre - visualização
+ // Simulação do preview(já que a API real precisa de template_id)
+ // Na versão real, enviaríamos o mapeamento para uma rota de pre - visualização
 
-            // Mock preview for demo if API fails
-            renderPreviewTable(uploadData.analysis.preview, Object.keys(currentMapping));
-            document.getElementById('total-rows-info').innerText = uploadData.analysis.row_count;
-            showStep(3);
+ // Mock preview for demo if API fails
+ renderPreviewTable(uploadData.analysis.preview, Object.keys(currentMapping));
+ document.getElementById('total-rows-info').innerText = uploadData.analysis.row_count;
+ showStep(3);
 
-        } catch (error) {
-            alert('Erro ao gerar preview: ' + error.message);
-        } finally {
-            Utils.hideLoading(btn);
-        }
-    });
+ } catch (error) {
+ alert('Erro ao gerar preview: ' + error.message);
+ } finally {
+ Utils.hideLoading(btn);
+ }
+ });
 
-    function renderPreviewTable(data, columnsToShow) {
-        const head = document.getElementById('preview-head');
-        const body = document.getElementById('preview-body');
+ function renderPreviewTable(data, columnsToShow) {
+ const head = document.getElementById('preview-head');
+ const body = document.getElementById('preview-body');
 
-        head.innerHTML = '';
-        body.innerHTML = '';
+ head.innerHTML = '';
+ body.innerHTML = '';
 
-        if (!data || data.length === 0) return;
+ if (!data || data.length === 0) return;
 
-        // Headers
-        const trHead = document.createElement('tr');
-        columnsToShow.forEach(col => {
-            const th = document.createElement('th');
-            const field = moduleFields.find(f => f.field_name === currentMapping[col]);
-            th.innerText = field ? field.field_label : col;
-            trHead.appendChild(th);
-        });
-        head.appendChild(trHead);
+ // Headers
+ const trHead = document.createElement('tr');
+ columnsToShow.forEach(col => {
+ const th = document.createElement('th');
+ const field = moduleFields.find(f => f.field_name === currentMapping[col]);
+ th.innerText = field ? field.field_label : col;
+ trHead.appendChild(th);
+ });
+ head.appendChild(trHead);
 
-        // Rows
-        data.forEach(row => {
-            const tr = document.createElement('tr');
-            columnsToShow.forEach(col => {
-                const td = document.createElement('td');
-                td.innerText = row[col] || '';
-                tr.appendChild(td);
-            });
-            body.appendChild(tr);
-        });
-    }
+ // Rows
+ data.forEach(row => {
+ const tr = document.createElement('tr');
+ columnsToShow.forEach(col => {
+ const td = document.createElement('td');
+ td.innerText = row[col] || '';
+ tr.appendChild(td);
+ });
+ body.appendChild(tr);
+ });
+ }
 
-    // Step 3: Execute Import
-    document.getElementById('btn-import').addEventListener('click', async function () {
-        const btn = this;
-        showStep(4);
+ // Step 3: Execute Import
+ document.getElementById('btn-import').addEventListener('click', async function () {
+ const btn = this;
+ showStep(4);
 
-        try {
-            // Primeiro salvamos o template (opcional, mas bom para histórico)
-            const templResp = await fetch("{% url 'importador:api_templates' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    name: `Importação ${new Date().toLocaleString()}`,
-                    module_type: uploadData.module_type,
-                    mapping: currentMapping
-                })
-            });
+ try {
+ // Primeiro salvamos o template (opcional, mas bom para histórico)
+ const templResp = await fetch("{% url 'importador:api_templates' %}", {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+ },
+ body: JSON.stringify({
+ name: `Importação ${new Date().toLocaleString()}`,
+ module_type: uploadData.module_type,
+ mapping: currentMapping
+ })
+ });
 
-            const templResult = await templResp.json();
+ const templResult = await templResp.json();
 
-            // Agora executamos
-            const response = await fetch("{% url 'importador:api_import' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    template_id: templResult.template.id,
-                    file_path: uploadData.file_path
-                })
-            });
+ // Agora executamos
+ const response = await fetch("{% url 'importador:api_import' %}", {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+ },
+ body: JSON.stringify({
+ template_id: templResult.template.id,
+ file_path: uploadData.file_path
+ })
+ });
 
-            const result = await response.json();
+ const result = await response.json();
 
-            setTimeout(() => {
-                document.getElementById('import-loading').classList.add('d-none');
-                if (result.success) {
-                    document.getElementById('import-success').classList.remove('d-none');
-                    document.getElementById('import-success-msg').innerText =
-                        `Sucesso! Foram importados ${result.result.inserted_rows} registros do módulo ${uploadData.module_type}.`;
-                } else {
-                    document.getElementById('import-error').classList.remove('d-none');
-                    document.getElementById('import-error-msg').innerText = result.detail || result.message;
-                }
-            }, 1500);
+ setTimeout(() => {
+ document.getElementById('import-loading').classList.add('d-none');
+ if (result.success) {
+ document.getElementById('import-success').classList.remove('d-none');
+ document.getElementById('import-success-msg').innerText =
+ `Sucesso! Foram importados ${result.result.inserted_rows} registros do módulo ${uploadData.module_type}.`;
+ } else {
+ document.getElementById('import-error').classList.remove('d-none');
+ document.getElementById('import-error-msg').innerText = result.detail || result.message;
+ }
+ }, 1500);
 
-        } catch (error) {
-            document.getElementById('import-loading').classList.add('d-none');
-            document.getElementById('import-error').classList.remove('d-none');
-            document.getElementById('import-error-msg').innerText = error.message;
-        }
-    });
+ } catch (error) {
+ document.getElementById('import-loading').classList.add('d-none');
+ document.getElementById('import-error').classList.remove('d-none');
+ document.getElementById('import-error-msg').innerText = error.message;
+ }
+ });
 
 </script>
 {% endblock %}

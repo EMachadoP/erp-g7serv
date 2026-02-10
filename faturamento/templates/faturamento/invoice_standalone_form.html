@@ -3,241 +3,241 @@
 {% block title %}Novo Faturamento Avulso | G7Serv{% endblock %}
 {% block content %}
 <div class="row mt-4 justify-content-center">
-    <div class="col-md-10">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
-                <h4 class="mb-0 text-primary">Faturamento Avulso</h4>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-4">
-                    Use esta tela para gerar faturas que não estão vinculadas a contratos.
-                </p>
-                <form method="post" class="needs-validation" novalidate>
-                    {% csrf_token %}
+ <div class="col-md-10">
+ <div class="card shadow-sm border-0">
+ <div class="card-header bg-white py-3">
+ <h4 class="mb-0 text-primary">Faturamento Avulso</h4>
+ </div>
+ <div class="card-body">
+ <p class="text-muted mb-4">
+ Use esta tela para gerar faturas que não estão vinculadas a contratos.
+ </p>
+ <form method="post" class="needs-validation" novalidate>
+ {% csrf_token %}
 
-                    {% if form.errors or formset.errors %}
-                    <div class="alert alert-danger shadow-sm border-start border-4 border-danger">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
-                            <div>
-                                <h6 class="alert-heading fw-bold mb-1">Verifique os campos abaixo:</h6>
-                                <ul class="mb-0 small">
-                                    {% for field in form %}
-                                    {% for error in field.errors %}
-                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                                    {% endfor %}
-                                    {% endfor %}
-                                    {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
-                                    {% endfor %}
-                                    {% if formset.errors %}
-                                    <li>Há erros nos itens da fatura. Por favor, revise a descrição e valores.</li>
-                                    {% endif %}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="row g-3">
-                        <div class="col-md-12">
-                            <label class="form-label fw-bold small text-uppercase">Grupo de Faturamento</label>
-                            {{ form.billing_group }}
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold small text-uppercase">Cliente</label>
-                            {{ form.client }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small text-uppercase">Data de Emissão</label>
-                            {{ form.issue_date }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small text-uppercase">Data de Vencimento</label>
-                            {{ form.due_date }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small text-uppercase">Valor (R$)</label>
-                            {{ form.amount }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase">Status</label>
-                            {{ form.status }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase">Forma de Pagamento</label>
-                            {{ form.payment_method }}
-                        </div>
-                    </div>
+ {% if form.errors or formset.errors %}
+ <div class="alert alert-danger shadow-sm border-start border-4 border-danger">
+ <div class="d-flex align-items-center">
+ <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+ <div>
+ <h6 class="alert-heading fw-bold mb-1">Verifique os campos abaixo:</h6>
+ <ul class="mb-0 small">
+ {% for field in form %}
+ {% for error in field.errors %}
+ <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+ {% endfor %}
+ {% endfor %}
+ {% for error in form.non_field_errors %}
+ <li>{{ error }}</li>
+ {% endfor %}
+ {% if formset.errors %}
+ <li>Há erros nos itens da fatura. Por favor, revise a descrição e valores.</li>
+ {% endif %}
+ </ul>
+ </div>
+ </div>
+ </div>
+ {% endif %}
+ <div class="row g-3">
+ <div class="col-md-12">
+ <label class="form-label fw-bold small text-uppercase">Grupo de Faturamento</label>
+ {{ form.billing_group }}
+ </div>
+ <div class="col-12">
+ <label class="form-label fw-bold small text-uppercase">Cliente</label>
+ {{ form.client }}
+ </div>
+ <div class="col-md-4">
+ <label class="form-label fw-bold small text-uppercase">Data de Emissão</label>
+ {{ form.issue_date }}
+ </div>
+ <div class="col-md-4">
+ <label class="form-label fw-bold small text-uppercase">Data de Vencimento</label>
+ {{ form.due_date }}
+ </div>
+ <div class="col-md-4">
+ <label class="form-label fw-bold small text-uppercase">Valor (R$)</label>
+ {{ form.amount }}
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-bold small text-uppercase">Status</label>
+ {{ form.status }}
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-bold small text-uppercase">Forma de Pagamento</label>
+ {{ form.payment_method }}
+ </div>
+ </div>
 
-                    <!-- Itemized Billing Section -->
-                    <div class="mt-5">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0 text-secondary fw-bold">Itens da Fatura (Serviços / Produtos)</h5>
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
-                                <i class="bi bi-plus-lg"></i> Adicionar Item
-                            </button>
-                        </div>
+ <!-- Itemized Billing Section -->
+ <div class="mt-5">
+ <div class="d-flex justify-content-between align-items-center mb-3">
+ <h5 class="mb-0 text-secondary fw-bold">Itens da Fatura (Serviços / Produtos)</h5>
+ <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+ <i class="bi bi-plus-lg"></i> Adicionar Item
+ </button>
+ </div>
 
-                        <div class="table-responsive">
-                            {{ formset.management_form }}
-                            <table class="table table-hover align-middle border-top" id="items-table">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width: 15%;">Tipo</th>
-                                        <th style="width: 35%;">Descrição / Item</th>
-                                        <th style="width: 10%;">Qtd.</th>
-                                        <th style="width: 15%;">V. Unitário (R$)</th>
-                                        <th style="width: 15%;">V. Total (R$)</th>
-                                        <th style="width: 10%;">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="form-set-container">
-                                    {% for item_form in formset %}
-                                    <tr class="formset-row">
-                                        {% for hidden in item_form.hidden_fields %}
-                                        {{ hidden }}
-                                        {% endfor %}
-                                        <td>{{ item_form.item_type }}</td>
-                                        <td>{{ item_form.description }}</td>
-                                        <td>{{ item_form.quantity }}</td>
-                                        <td>{{ item_form.unit_price }}</td>
-                                        <td class="total-row-price fw-bold text-dark">R$ 0,00</td>
-                                        <td class="text-center">
-                                            {% if formset.can_delete %}
-                                            <div class="d-none">{{ item_form.DELETE }}</div>
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-item">
-                                                Remover
-                                            </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                                <tfoot>
-                                    <tr class="table-light border-top-0">
-                                        <td colspan="4" class="text-end fw-bold py-3 text-uppercase small">Soma dos
-                                            Itens:</td>
-                                        <td colspan="2" class="fw-bold py-3 text-primary fs-5" id="grand-total">R$ 0,00
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
+ <div class="table-responsive">
+ {{ formset.management_form }}
+ <table class="table table-hover align-middle border-top" id="items-table">
+ <thead class="table-light">
+ <tr>
+ <th style="width: 15%;">Tipo</th>
+ <th style="width: 35%;">Descrição / Item</th>
+ <th style="width: 10%;">Qtd.</th>
+ <th style="width: 15%;">V. Unitário (R$)</th>
+ <th style="width: 15%;">V. Total (R$)</th>
+ <th style="width: 10%;">Ações</th>
+ </tr>
+ </thead>
+ <tbody id="form-set-container">
+ {% for item_form in formset %}
+ <tr class="formset-row">
+ {% for hidden in item_form.hidden_fields %}
+ {{ hidden }}
+ {% endfor %}
+ <td>{{ item_form.item_type }}</td>
+ <td>{{ item_form.description }}</td>
+ <td>{{ item_form.quantity }}</td>
+ <td>{{ item_form.unit_price }}</td>
+ <td class="total-row-price fw-bold text-dark">R$ 0,00</td>
+ <td class="text-center">
+ {% if formset.can_delete %}
+ <div class="d-none">{{ item_form.DELETE }}</div>
+ <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+ Remover
+ </button>
+ {% endif %}
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ <tfoot>
+ <tr class="table-light border-top-0">
+ <td colspan="4" class="text-end fw-bold py-3 text-uppercase small">Soma dos
+ Itens:</td>
+ <td colspan="2" class="fw-bold py-3 text-primary fs-5" id="grand-total">R$ 0,00
+ </td>
+ </tr>
+ </tfoot>
+ </table>
+ </div>
 
-                        <div id="empty-row" class="d-none">
-                            <table class="table">
-                                <tr class="formset-row">
-                                    <td>{{ formset.empty_form.item_type }}</td>
-                                    <td>{{ formset.empty_form.description }}</td>
-                                    <td>{{ formset.empty_form.quantity }}</td>
-                                    <td>{{ formset.empty_form.unit_price }}</td>
-                                    <td class="total-row-price fw-bold text-dark">R$ 0,00</td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item">
-                                            Remover
-                                        </button>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="mt-4 d-flex justify-content-between">
-                        <a href="{% url 'faturamento:list' %}" class="btn btn-secondary">
-                            Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-primary px-4">
-                            Salvar Fatura Avulsa
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+ <div id="empty-row" class="d-none">
+ <table class="table">
+ <tr class="formset-row">
+ <td>{{ formset.empty_form.item_type }}</td>
+ <td>{{ formset.empty_form.description }}</td>
+ <td>{{ formset.empty_form.quantity }}</td>
+ <td>{{ formset.empty_form.unit_price }}</td>
+ <td class="total-row-price fw-bold text-dark">R$ 0,00</td>
+ <td class="text-center">
+ <button type="button" class="btn btn-sm btn-outline-danger remove-item">
+ Remover
+ </button>
+ </td>
+ </tr>
+ </table>
+ </div>
+ </div>
+ <div class="mt-4 d-flex justify-content-between">
+ <a href="{% url 'faturamento:list' %}" class="btn btn-secondary">
+ Cancelar
+ </a>
+ <button type="submit" class="btn btn-primary px-4">
+ Salvar Fatura Avulsa
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    $(document).ready(function () {
-        if ($.fn.select2) {
-            $('.select2').select2({
-                theme: 'bootstrap-5',
-                width: '100%',
-                placeholder: 'Selecione...'
-            });
-        }
+ $(document).ready(function () {
+ if ($.fn.select2) {
+ $('.select2').select2({
+ theme: 'bootstrap-5',
+ width: '100%',
+ placeholder: 'Selecione...'
+ });
+ }
 
-        const formsetContainer = document.getElementById('form-set-container');
-        const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
-        const grandTotalSpan = document.getElementById('grand-total');
-        const mainAmountInput = document.querySelector('input[name="amount"]');
+ const formsetContainer = document.getElementById('form-set-container');
+ const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+ const grandTotalSpan = document.getElementById('grand-total');
+ const mainAmountInput = document.querySelector('input[name="amount"]');
 
-        function calculateTotals(isInitial = false) {
-            let grandTotal = 0;
-            const rows = document.querySelectorAll('.formset-row');
+ function calculateTotals(isInitial = false) {
+ let grandTotal = 0;
+ const rows = document.querySelectorAll('.formset-row');
 
-            rows.forEach(row => {
-                if (row.style.display === 'none') return;
+ rows.forEach(row => {
+ if (row.style.display === 'none') return;
 
-                const qty = parseFloat(row.querySelector('.quantity').value) || 0;
-                const price = parseFloat(row.querySelector('.unit-price').value) || 0;
-                const total = qty * price;
+ const qty = parseFloat(row.querySelector('.quantity').value) || 0;
+ const price = parseFloat(row.querySelector('.unit-price').value) || 0;
+ const total = qty * price;
 
-                row.querySelector('.total-row-price').innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                grandTotal += total;
-            });
+ row.querySelector('.total-row-price').innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+ grandTotal += total;
+ });
 
-            grandTotalSpan.innerText = `R$ ${grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+ grandTotalSpan.innerText = `R$ ${grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-            // Sync with main amount field
-            if (mainAmountInput) {
-                // If it's the initial load and grandTotal is 0, don't overwrite an existing value
-                if (isInitial && grandTotal === 0 && parseFloat(mainAmountInput.value) > 0) {
-                    // Update grandTotalSpan to match mainAmountInput
-                    const initialAmount = parseFloat(mainAmountInput.value);
-                    grandTotalSpan.innerText = `R$ ${initialAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                } else {
-                    mainAmountInput.value = grandTotal.toFixed(2);
-                }
-            }
-        }
+ // Sync with main amount field
+ if (mainAmountInput) {
+ // If it's the initial load and grandTotal is 0, don't overwrite an existing value
+ if (isInitial && grandTotal === 0 && parseFloat(mainAmountInput.value) > 0) {
+ // Update grandTotalSpan to match mainAmountInput
+ const initialAmount = parseFloat(mainAmountInput.value);
+ grandTotalSpan.innerText = `R$ ${initialAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+ } else {
+ mainAmountInput.value = grandTotal.toFixed(2);
+ }
+ }
+ }
 
-        // Event delegation for changes
-        formsetContainer.addEventListener('input', function (e) {
-            if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
-                calculateTotals();
-            }
-        });
+ // Event delegation for changes
+ formsetContainer.addEventListener('input', function (e) {
+ if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
+ calculateTotals();
+ }
+ });
 
-        // Add new item
-        document.getElementById('add-item').addEventListener('click', function () {
-            const formCount = parseInt(totalFormsInput.value);
-            const emptyTemplate = document.querySelector('#empty-row tbody').innerHTML;
-            const newFormHtml = emptyTemplate.replace(/__prefix__/g, formCount);
+ // Add new item
+ document.getElementById('add-item').addEventListener('click', function () {
+ const formCount = parseInt(totalFormsInput.value);
+ const emptyTemplate = document.querySelector('#empty-row tbody').innerHTML;
+ const newFormHtml = emptyTemplate.replace(/__prefix__/g, formCount);
 
-            formsetContainer.insertAdjacentHTML('beforeend', newFormHtml);
-            totalFormsInput.value = formCount + 1;
-            calculateTotals();
-        });
+ formsetContainer.insertAdjacentHTML('beforeend', newFormHtml);
+ totalFormsInput.value = formCount + 1;
+ calculateTotals();
+ });
 
-        // Remove item
-        formsetContainer.addEventListener('click', function (e) {
-            if (e.target.classList.contains('remove-item')) {
-                const row = e.target.closest('.formset-row');
-                const deleteInput = row.querySelector('input[name*="DELETE"]');
+ // Remove item
+ formsetContainer.addEventListener('click', function (e) {
+ if (e.target.classList.contains('remove-item')) {
+ const row = e.target.closest('.formset-row');
+ const deleteInput = row.querySelector('input[name*="DELETE"]');
 
-                if (deleteInput) {
-                    deleteInput.value = 'on';
-                    row.style.display = 'none';
-                } else {
-                    row.remove();
-                }
-                calculateTotals();
-            }
-        });
+ if (deleteInput) {
+ deleteInput.value = 'on';
+ row.style.display = 'none';
+ } else {
+ row.remove();
+ }
+ calculateTotals();
+ }
+ });
 
-        // Initial calculation
-        calculateTotals(true);
-    });
+ // Initial calculation
+ calculateTotals(true);
+ });
 </script>
 {% endblock %}

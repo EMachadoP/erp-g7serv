@@ -2,42 +2,42 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-    <h2>Conciliação Bancária</h2>
-    <a href="#" class="btn btn-primary">Nova Transação</a>
+ <h2>Conciliação Bancária</h2>
+ <a href="#" class="btn btn-primary">Nova Transação</a>
 </div>
 
 <table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Data</th>
-            <th>Descrição</th>
-            <th>Tipo</th>
-            <th>Valor</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in reconciliations %}
-        <tr>
-            <td>{{ item.date }}</td>
-            <td>{{ item.description }}</td>
-            <td>
-                {% if item.transaction_type == 'CREDIT' %}
-                <span class="badge bg-success">Crédito</span>
-                {% else %}
-                <span class="badge bg-danger">Débito</span>
-                {% endif %}
-            </td>
-            <td>R$ {{ item.amount }}</td>
-            <td>
-                <a href="{% url 'financeiro:reconciliation_detail' item.id %}" class="btn btn-sm btn-info">Detalhes</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">Nenhuma transação registrada.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+ <thead>
+ <tr>
+ <th>Data</th>
+ <th>Descrição</th>
+ <th>Tipo</th>
+ <th>Valor</th>
+ <th>Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for item in reconciliations %}
+ <tr>
+ <td>{{ item.date }}</td>
+ <td>{{ item.description }}</td>
+ <td>
+ {% if item.transaction_type == 'CREDIT' %}
+ <span class="badge bg-success">Crédito</span>
+ {% else %}
+ <span class="badge bg-danger">Débito</span>
+ {% endif %}
+ </td>
+ <td>R$ {{ item.amount }}</td>
+ <td>
+ <a href="{% url 'financeiro:reconciliation_detail' item.id %}" class="btn btn-sm btn-info">Detalhes</a>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="5" class="text-center">Nenhuma transação registrada.</td>
+ </tr>
+ {% endfor %}
+ </tbody>
 </table>
 {% endblock %}

@@ -2,121 +2,121 @@
 <html>
 
 <head>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+ <style>
+ body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ line-height: 1.6;
+ color: #333;
+ margin: 0;
+ padding: 0;
+ }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-            border: 1px solid #e0e6ed;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
+ .container {
+ width: 100%;
+ max-width: 600px;
+ margin: 20px auto;
+ border: 1px solid #e0e6ed;
+ border-radius: 12px;
+ overflow: hidden;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+ }
 
-        .header {
-            background-color: #0046ad;
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
+ .header {
+ background-color: #0046ad;
+ color: white;
+ padding: 30px 20px;
+ text-align: center;
+ }
 
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            letter-spacing: 1px;
-        }
+ .header h1 {
+ margin: 0;
+ font-size: 24px;
+ letter-spacing: 1px;
+ }
 
-        .content {
-            padding: 30px;
-            background-color: #ffffff;
-        }
+ .content {
+ padding: 30px;
+ background-color: #ffffff;
+ }
 
-        .details {
-            background: #f8fbff;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 25px 0;
-            border: 1px solid #eef2f8;
-        }
+ .details {
+ background: #f8fbff;
+ padding: 20px;
+ border-radius: 8px;
+ margin: 25px 0;
+ border: 1px solid #eef2f8;
+ }
 
-        .details p {
-            margin: 8px 0;
-            font-size: 15px;
-        }
+ .details p {
+ margin: 8px 0;
+ font-size: 15px;
+ }
 
-        .btn-container {
-            text-align: center;
-            margin: 30px 0;
-        }
+ .btn-container {
+ text-align: center;
+ margin: 30px 0;
+ }
 
-        .btn {
-            display: inline-block;
-            padding: 14px 30px;
-            background-color: #0046ad;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
+ .btn {
+ display: inline-block;
+ padding: 14px 30px;
+ background-color: #0046ad;
+ color: #ffffff !important;
+ text-decoration: none;
+ border-radius: 6px;
+ font-weight: 600;
+ font-size: 16px;
+ transition: background 0.3s;
+ }
 
-        .footer {
-            font-size: 12px;
-            color: #94a3b8;
-            text-align: center;
-            padding: 20px;
-            background-color: #f1f5f9;
-        }
-    </style>
+ .footer {
+ font-size: 12px;
+ color: #94a3b8;
+ text-align: center;
+ padding: 20px;
+ background-color: #f1f5f9;
+ }
+ </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>FATURA DISPONÍVEL</h1>
-        </div>
-        <div class="content">
-            <p style="font-size: 18px;">Olá, <strong>{{ client_name }}</strong>,</p>
-            <p>Informamos que a sua fatura referente ao serviço de <strong>{{ competence }}</strong> já está disponível.
-            </p>
+ <div class="container">
+ <div class="header">
+ <h1>FATURA DISPONÍVEL</h1>
+ </div>
+ <div class="content">
+ <p style="font-size: 18px;">Olá, <strong>{{ client_name }}</strong>,</p>
+ <p>Informamos que a sua fatura referente ao serviço de <strong>{{ competence }}</strong> já está disponível.
+ </p>
 
-            <div class="details">
-                <p><strong>Valor Total:</strong> R$ {{ amount }}</p>
-                <p><strong>Data de Vencimento:</strong> {{ due_date }}</p>
-                <p><strong>Número da Fatura:</strong> {{ invoice.number }}</p>
-            </div>
+ <div class="details">
+ <p><strong>Valor Total:</strong> R$ {{ amount }}</p>
+ <p><strong>Data de Vencimento:</strong> {{ due_date }}</p>
+ <p><strong>Número da Fatura:</strong> {{ invoice.number }}</p>
+ </div>
 
-            <p style="color: #64748b; font-size: 14px;">Utilize o botão abaixo para visualizar o boleto bancário:</p>
+ <p style="color: #64748b; font-size: 14px;">Utilize o botão abaixo para visualizar o boleto bancário:</p>
 
-            <div class="btn-container">
-                <a href="{{ boleto_url }}" class="btn">Visualizar Boleto</a>
-            </div>
+ <div class="btn-container">
+ <a href="{{ boleto_url }}" class="btn">Visualizar Boleto</a>
+ </div>
 
-            <p style="font-size: 14px;">Em anexo a este e-mail, você também encontrará dois arquivos PDF:</p>
-            <ul style="font-size: 14px; color: #64748b;">
-                <li>O boleto bancário para pagamento</li>
-                <li>O demonstrativo detalhado da fatura</li>
-            </ul>
+ <p style="font-size: 14px;">Em anexo a este e-mail, você também encontrará dois arquivos PDF:</p>
+ <ul style="font-size: 14px; color: #64748b;">
+ <li>O boleto bancário para pagamento</li>
+ <li>O demonstrativo detalhado da fatura</li>
+ </ul>
 
-            <p style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                Atenciosamente,<br>
-                <strong>G7Serv Administradora</strong><br>
-                <span style="font-size: 12px; color: #94a3b8;">Suporte: 81 3019-5654</span>
-            </p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático. Por favor, não responda a esta mensagem.</p>
-        </div>
-    </div>
+ <p style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+ Atenciosamente,<br>
+ <strong>G7Serv Administradora</strong><br>
+ <span style="font-size: 12px; color: #94a3b8;">Suporte: 81 3019-5654</span>
+ </p>
+ </div>
+ <div class="footer">
+ <p>Este é um e-mail automático. Por favor, não responda a esta mensagem.</p>
+ </div>
+ </div>
 </body>
 
 </html>

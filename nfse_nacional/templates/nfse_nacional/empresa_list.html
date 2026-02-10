@@ -4,62 +4,62 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="text-primary"><i class="bi bi-building me-2"></i>Empresas Emissoras</h2>
-                <p class="text-muted">Gerencie as empresas configuradas para emissão de NFS-e.</p>
-            </div>
-            <a href="{% url 'nfse_nacional:empresa_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-2"></i>Nova Empresa
-            </a>
-        </div>
-    </div>
+ <div class="row mb-4">
+ <div class="col-12 d-flex justify-content-between align-items-center">
+ <div>
+ <h2 class="text-primary"><i class="bi bi-building me-2"></i>Empresas Emissoras</h2>
+ <p class="text-muted">Gerencie as empresas configuradas para emissão de NFS-e.</p>
+ </div>
+ <a href="{% url 'nfse_nacional:empresa_create' %}" class="btn btn-primary">
+ <i class="bi bi-plus-circle me-2"></i>Nova Empresa
+ </a>
+ </div>
+ </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class=\"table table-premium-responsive\">
-                <table class=\"table table-premium table-hover mb-0\">
-                    <thead class=\"table table-premium-light\">
-                        <tr>
-                            <th>Razão Social</th>
-                            <th>CNPJ</th>
-                            <th>Inscrição Municipal</th>
-                            <th>Ambiente</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for empresa in empresas %}
-                        <tr>
-                            <td>{{ empresa.razao_social }}</td>
-                            <td>{{ empresa.cnpj }}</td>
-                            <td>{{ empresa.inscricao_municipal }}</td>
-                            <td>
-                                {% if empresa.ambiente == 1 %}
-                                <span class="badge bg-success">Produção</span>
-                                {% else %}
-                                <span class="badge bg-warning text-dark">Homologação</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="{% url 'nfse_nacional:empresa_update' empresa.pk %}"
-                                    class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">
-                                Nenhuma empresa cadastrada.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+ <div class="card shadow-sm">
+ <div class="card-body p-0">
+ <div class="table table-responsive">
+ <table class="table table-premium table-hover mb-0">
+ <thead class="table table-premium-light">
+ <tr>
+ <th>Razão Social</th>
+ <th>CNPJ</th>
+ <th>Inscrição Municipal</th>
+ <th>Ambiente</th>
+ <th>Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for empresa in empresas %}
+ <tr>
+ <td>{{ empresa.razao_social }}</td>
+ <td>{{ empresa.cnpj }}</td>
+ <td>{{ empresa.inscricao_municipal }}</td>
+ <td>
+ {% if empresa.ambiente == 1 %}
+ <span class="badge bg-success">Produção</span>
+ {% else %}
+ <span class="badge bg-warning text-dark">Homologação</span>
+ {% endif %}
+ </td>
+ <td>
+ <a href="{% url 'nfse_nacional:empresa_update' empresa.pk %}"
+ class="btn btn-sm btn-outline-primary">
+ <i class="bi bi-pencil"></i>
+ </a>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="5" class="text-center py-4 text-muted">
+ Nenhuma empresa cadastrada.
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

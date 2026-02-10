@@ -2,325 +2,324 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <style>
-        @page {
-            size: a4 portrait;
-            margin: 1cm;
-        }
+ <meta charset="utf-8">
+ <style>
+ @page {
+ size: a4 portrait;
+ margin: 1cm;
+ }
 
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 9px;
-            color: #000;
-            line-height: 1.2;
-            margin: 0;
-            padding: 0;
-        }
+ body {
+ font-family: Arial, sans-serif;
+ font-size: 9px;
+ color: #000;
+ line-height: 1.2;
+ margin: 0;
+ padding: 0;
+ }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 5px;
-            table-layout: fixed;
-        }
+ table {
+ width: 100%;
+ border-collapse: collapse;
+ margin-bottom: 5px;
+ table-layout: fixed;
+ }
 
-        th,
-        td {
-            border: 1px solid #000;
-            padding: 4px;
-            vertical-align: top;
-            text-align: left;
-        }
+ th,
+ td {
+ border: 1px solid #000;
+ padding: 4px;
+ vertical-align: top;
+ text-align: left;
+ }
 
-        .no-border td {
-            border: none;
-        }
+ .no-border td {
+ border: none;
+ }
 
-        .header-box {
-            background-color: #fff;
-        }
+ .header-box {
+ background-color: #fff;
+ }
 
-        .section-header {
-            background-color: #e0e0e0;
-            font-weight: bold;
-            text-align: center;
-            text-transform: uppercase;
-        }
+ .section-header {
+ background-color: #e0e0e0;
+ font-weight: bold;
+ text-align: center;
+ text-transform: uppercase;
+ }
 
-        .label {
-            font-size: 7px;
-            font-weight: normal;
-            display: block;
-            margin-bottom: 2px;
-            color: #333;
-        }
+ .label {
+ font-size: 7px;
+ font-weight: normal;
+ display: block;
+ margin-bottom: 2px;
+ color: #333;
+ }
 
-        .value {
-            font-size: 9px;
-            font-weight: bold;
-        }
+ .value {
+ font-size: 9px;
+ font-weight: bold;
+ }
 
-        .text-right {
-            text-align: right;
-        }
+ .text-right {
+ text-align: right;
+ }
 
-        .text-center {
-            text-align: center;
-        }
+ .text-center {
+ text-align: center;
+ }
 
-        .company-header {
-            font-size: 11px;
-            font-weight: bold;
-        }
+ .company-header {
+ font-size: 11px;
+ font-weight: bold;
+ }
 
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: right;
-            font-size: 8px;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-        }
+ .footer {
+ position: fixed;
+ bottom: 0;
+ width: 100%;
+ text-align: right;
+ font-size: 8px;
+ border-top: 1px solid #000;
+ padding-top: 5px;
+ }
 
-        .main-container {
-            border: 1px solid #000;
-            padding: 1px;
-        }
-    </style>
+ .main-container {
+ border: 1px solid #000;
+ padding: 1px;
+ }
+ </style>
 </head>
 
 <body>
-    <div class="main-container">
-        <table>
-            <tr>
-                <td style="width: 70%;" class="header-box">
-                    <div class="company-header">{{ company.name|default:"G7 Serv" }}</div>
-                    <br>
-                    <table class="no-border" style="margin-bottom: 0;">
-                        <tr>
-                            <td>
-                                <span class="label">CNPJ</span>
-                                <span class="value">{{ company.cnpj|default:"-" }}</span>
-                            </td>
-                            <td>
-                                <span class="label">Telefone</span>
-                                <span class="value">{{ company.phone|default:"(81) 3019-5654" }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <span class="label">E-mail</span>
-                                <span class="value">{{ company.email|default:"comercial@g7serv.com.br" }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <span class="label">Endereço</span>
-                                <span class="value">
-                                    {{ company.address|default:"Rua Dois de Fevereiro, 237 - Vasco da Gama, 52280572" }}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-                <td style="width: 30%; padding: 0;">
-                    <table style="margin-bottom: 0;">
-                        <tr>
-                            <td class="text-center">
-                                <span class="label">Fatura Nº</span>
-                                <span class="value">{{ invoice.number }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-center">
-                                <span class="label">Data de Emissão</span>
-                                <span class="value">{{ invoice.issue_date|date:"d/m/Y" }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-center">
-                                <span class="label">Status</span>
-                                <span class="value">{{ invoice.get_status_display }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-center" style="background-color: #f5f5f5;">
-                                <span class="label">Valor Líquido</span>
-                                <span class="value" style="font-size: 11px;">R$ {{ invoice.amount }}</span>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+ <div class="main-container">
+ <table>
+ <tr>
+ <td style="width: 70%;" class="header-box">
+ <div class="company-header">{{ company.name|default:"G7 Serv" }}</div>
+ <br>
+ <table class="no-border" style="margin-bottom: 0;">
+ <tr>
+ <td>
+ <span class="label">CNPJ</span>
+ <span class="value">{{ company.cnpj|default:"-" }}</span>
+ </td>
+ <td>
+ <span class="label">Telefone</span>
+ <span class="value">{{ company.phone|default:"(81) 3019-5654" }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td colspan="2">
+ <span class="label">E-mail</span>
+ <span class="value">{{ company.email|default:"comercial@g7serv.com.br" }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td colspan="2">
+ <span class="label">Endereço</span>
+ <span class="value">
+ {{ company.address|default:"Rua Dois de Fevereiro, 237 - Vasco da Gama, 52280572" }}
+ </span>
+ </td>
+ </tr>
+ </table>
+ </td>
+ <td style="width: 30%; padding: 0;">
+ <table style="margin-bottom: 0;">
+ <tr>
+ <td class="text-center">
+ <span class="label">Fatura Nº</span>
+ <span class="value">{{ invoice.number }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td class="text-center">
+ <span class="label">Data de Emissão</span>
+ <span class="value">{{ invoice.issue_date|date:"d/m/Y" }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td class="text-center">
+ <span class="label">Status</span>
+ <span class="value">{{ invoice.get_status_display }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td class="text-center" style="background-color: #f5f5f5;">
+ <span class="label">Valor Líquido</span>
+ <span class="value" style="font-size: 11px;">R$ {{ invoice.amount }}</span>
+ </td>
+ </tr>
+ </table>
+ </td>
+ </tr>
+ </table>
 
-        <table>
-            <tr>
-                <td style="width: 70%;">
-                    <span class="label">Cliente</span>
-                    <span class="value">{{ invoice.client.name }}</span>
-                </td>
-                <td style="width: 30%;">
-                    <span class="label">CPF/CNPJ</span>
-                    <span class="value">{{ invoice.client.document }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td style="width: 40%;">
-                    <span class="label">Fone</span>
-                    <span class="value">{{ invoice.client.phone|default:"Não Informado" }}</span>
-                </td>
-                <td style="width: 60%;">
-                    <span class="label">E-mail</span>
-                    <span class="value">{{ invoice.client.email|default:"Não Informado" }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <span class="label">Endereço</span>
-                    <span class="value">
-                        {{ invoice.client.address|default:"" }}, {{ invoice.client.number|default:"" }}
-                        - {{ invoice.client.neighborhood|default:"" }}, {{ invoice.client.zip_code|default:"" }}
-                    </span>
-                </td>
-            </tr>
-        </table>
+ <table>
+ <tr>
+ <td style="width: 70%;">
+ <span class="label">Cliente</span>
+ <span class="value">{{ invoice.client.name }}</span>
+ </td>
+ <td style="width: 30%;">
+ <span class="label">CPF/CNPJ</span>
+ <span class="value">{{ invoice.client.document }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td style="width: 40%;">
+ <span class="label">Fone</span>
+ <span class="value">{{ invoice.client.phone|default:"Não Informado" }}</span>
+ </td>
+ <td style="width: 60%;">
+ <span class="label">E-mail</span>
+ <span class="value">{{ invoice.client.email|default:"Não Informado" }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td colspan="2">
+ <span class="label">Endereço</span>
+ <span class="value">
+ {{ invoice.client.address|default:"" }}, {{ invoice.client.number|default:"" }}
+ - {{ invoice.client.neighborhood|default:"" }}, {{ invoice.client.zip_code|default:"" }}
+ </span>
+ </td>
+ </tr>
+ </table>
 
-        <table>
-            <tr>
-                <td colspan="5" class="section-header">Dados da Operação</td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <span class="label">Operação de Faturamento</span>
-                    <span class="value">
-                        {% if invoice.contract %}Contratos{% else %}Avulso{% endif %}
-                    </span>
-                </td>
-                <td colspan="2">
-                    <span class="label">Forma de Pagamento</span>
-                    <span class="value">{{ invoice.get_payment_method_display }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td><span class="label">Total Bruto</span><span class="value">R$ {{ invoice.amount }}</span></td>
-                <td><span class="label">Descontos</span><span class="value">R$ 0,00</span></td>
-                <td><span class="label">Tributos</span><span class="value">R$ 0,00</span></td>
-                <td><span class="label">Acréscimos</span><span class="value">R$ 0,00</span></td>
-                <td style="background-color: #f5f5f5;">
-                    <span class="label">Total Líquido</span>
-                    <span class="value">R$ {{ invoice.amount }}</span>
-                </td>
-            </tr>
-        </table>
+ <table>
+ <tr>
+ <td colspan="5" class="section-header">Dados da Operação</td>
+ </tr>
+ <tr>
+ <td colspan="3">
+ <span class="label">Operação de Faturamento</span>
+ <span class="value">
+ {% if invoice.contract %}Contratos{% else %}Avulso{% endif %}
+ </span>
+ </td>
+ <td colspan="2">
+ <span class="label">Forma de Pagamento</span>
+ <span class="value">{{ invoice.get_payment_method_display }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td><span class="label">Total Bruto</span><span class="value">R$ {{ invoice.amount }}</span></td>
+ <td><span class="label">Descontos</span><span class="value">R$ 0,00</span></td>
+ <td><span class="label">Tributos</span><span class="value">R$ 0,00</span></td>
+ <td><span class="label">Acréscimos</span><span class="value">R$ 0,00</span></td>
+ <td style="background-color: #f5f5f5;">
+ <span class="label">Total Líquido</span>
+ <span class="value">R$ {{ invoice.amount }}</span>
+ </td>
+ </tr>
+ </table>
 
-        <table>
-            <tr>
-                <td colspan="5" class="section-header">Dados do Contrato</td>
-            </tr>
-            <tr>
-                <td style="width: 25%;">
-                    <span class="label">Contrato Nº</span>
-                    <span class="value">{{ invoice.contract.id|default:"-" }}</span>
-                </td>
-                <td style="width: 35%;">
-                    <span class="label">Status</span>
-                    <span class="value">
-                        {% if invoice.status == 'PD' %}Pendente{% elif invoice.status == 'PG' %}Paga{% else %}{{
-                        invoice.get_status_display }}{% endif %}
-                    </span>
-                </td>
-                <td colspan="3">
-                    <span class="label">Grupo</span>
-                    <span class="value">{{ invoice.billing_group.name|default:"Locação" }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td><span class="label">Total Bruto</span><span class="value">R$ {{ invoice.amount }}</span></td>
-                <td><span class="label">Bonificações</span><span class="value">R$ 0,00</span></td>
-                <td><span class="label">Despesas</span><span class="value">R$ 0,00</span></td>
-                <td><span class="label">Pro-Rata</span><span class="value">R$ 0,00</span></td>
-                <td style="background-color: #f5f5f5;">
-                    <span class="label">Total Líquido</span>
-                    <span class="value">R$ {{ invoice.amount }}</span>
-                </td>
-            </tr>
-        </table>
+ <table>
+ <tr>
+ <td colspan="5" class="section-header">Dados do Contrato</td>
+ </tr>
+ <tr>
+ <td style="width: 25%;">
+ <span class="label">Contrato Nº</span>
+ <span class="value">{{ invoice.contract.id|default:"-" }}</span>
+ </td>
+ <td style="width: 35%;">
+ <span class="label">Status</span>
+ <span class="value">
+ {% if invoice.status == 'PD' %}Pendente{% elif invoice.status == 'PG' %}Paga{% else %}{{ invoice.get_status_display }}{% endif %}
+ </span>
+ </td>
+ <td colspan="3">
+ <span class="label">Grupo</span>
+ <span class="value">{{ invoice.billing_group.name|default:"Locação" }}</span>
+ </td>
+ </tr>
+ <tr>
+ <td><span class="label">Total Bruto</span><span class="value">R$ {{ invoice.amount }}</span></td>
+ <td><span class="label">Bonificações</span><span class="value">R$ 0,00</span></td>
+ <td><span class="label">Despesas</span><span class="value">R$ 0,00</span></td>
+ <td><span class="label">Pro-Rata</span><span class="value">R$ 0,00</span></td>
+ <td style="background-color: #f5f5f5;">
+ <span class="label">Total Líquido</span>
+ <span class="value">R$ {{ invoice.amount }}</span>
+ </td>
+ </tr>
+ </table>
 
-        <table>
-            <tr>
-                <td colspan="4" class="section-header">Dados Financeiros</td>
-            </tr>
-            <tr>
-                <th><span class="label">Parcela</span></th>
-                <th><span class="label">Vencimento</span></th>
-                <th><span class="label">Pagamento</span></th>
-                <th><span class="label">Valor</span></th>
-            </tr>
-            <tr>
-                <td>1/1</td>
-                <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
-                <td>-</td>
-                <td>R$ {{ invoice.amount }}</td>
-            </tr>
-            <tr>
-                <td colspan="2" rowspan="2" style="border: none;"></td>
-                <td style="background-color: #f5f5f5;">
-                    <span class="label">A Receber</span>
-                    <span class="value">R$ {{ invoice.amount }}</span>
-                </td>
-                <td style="background-color: #f5f5f5;">
-                    <span class="label">Recebido</span>
-                    <span class="value">R$ 0,00</span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="background-color: #f5f5f5; text-align: center;">
-                    <span class="label">Valor Total</span>
-                    <span class="value">R$ {{ invoice.amount }}</span>
-                </td>
-            </tr>
-        </table>
+ <table>
+ <tr>
+ <td colspan="4" class="section-header">Dados Financeiros</td>
+ </tr>
+ <tr>
+ <th><span class="label">Parcela</span></th>
+ <th><span class="label">Vencimento</span></th>
+ <th><span class="label">Pagamento</span></th>
+ <th><span class="label">Valor</span></th>
+ </tr>
+ <tr>
+ <td>1/1</td>
+ <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
+ <td>-</td>
+ <td>R$ {{ invoice.amount }}</td>
+ </tr>
+ <tr>
+ <td colspan="2" rowspan="2" style="border: none;"></td>
+ <td style="background-color: #f5f5f5;">
+ <span class="label">A Receber</span>
+ <span class="value">R$ {{ invoice.amount }}</span>
+ </td>
+ <td style="background-color: #f5f5f5;">
+ <span class="label">Recebido</span>
+ <span class="value">R$ 0,00</span>
+ </td>
+ </tr>
+ <tr>
+ <td colspan="2" style="background-color: #f5f5f5; text-align: center;">
+ <span class="label">Valor Total</span>
+ <span class="value">R$ {{ invoice.amount }}</span>
+ </td>
+ </tr>
+ </table>
 
-        <table>
-            <tr>
-                <td colspan="5" class="section-header">Serviços</td>
-            </tr>
-            <tr>
-                <th style="width: 45%;">Serviço</th>
-                <th style="width: 15%;">Locação</th>
-                <th style="width: 10%;">Qtde.</th>
-                <th style="width: 15%;">Unitário</th>
-                <th style="width: 15%;">Total</th>
-            </tr>
-            {% for item in invoice.items.all %}
-            <tr>
-                <td><strong>{{ item.description }}{% if item.item_type == 'SERVICE' %} *{% endif %}</strong></td>
-                <td>
-                    {% if invoice.billing_group.name == 'Locação' %}
-                    {% if item.item_type == 'SERVICE' %}Sim{% else %}Não{% endif %}
-                    {% else %}Não{% endif %}
-                </td>
-                <td>{{ item.quantity }}</td>
-                <td>R$ {{ item.unit_price }}</td>
-                <td>R$ {{ item.total_price }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td><strong>{{ invoice.billing_group.name|default:"Serviços" }} *</strong></td>
-                <td>
-                    {% if invoice.billing_group.name == 'Locação' %}Sim{% else %}Não{% endif %}
-                </td>
-                <td>1</td>
-                <td>R$ {{ invoice.amount }}</td>
-                <td>R$ {{ invoice.amount }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-    <div class="footer">Página 1/1</div>
+ <table>
+ <tr>
+ <td colspan="5" class="section-header">Serviços</td>
+ </tr>
+ <tr>
+ <th style="width: 45%;">Serviço</th>
+ <th style="width: 15%;">Locação</th>
+ <th style="width: 10%;">Qtde.</th>
+ <th style="width: 15%;">Unitário</th>
+ <th style="width: 15%;">Total</th>
+ </tr>
+ {% for item in invoice.items.all %}
+ <tr>
+ <td><strong>{{ item.description }}{% if item.item_type == 'SERVICE' %} *{% endif %}</strong></td>
+ <td>
+ {% if invoice.billing_group.name == 'Locação' %}
+ {% if item.item_type == 'SERVICE' %}Sim{% else %}Não{% endif %}
+ {% else %}Não{% endif %}
+ </td>
+ <td>{{ item.quantity }}</td>
+ <td>R$ {{ item.unit_price }}</td>
+ <td>R$ {{ item.total_price }}</td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td><strong>{{ invoice.billing_group.name|default:"Serviços" }} *</strong></td>
+ <td>
+ {% if invoice.billing_group.name == 'Locação' %}Sim{% else %}Não{% endif %}
+ </td>
+ <td>1</td>
+ <td>R$ {{ invoice.amount }}</td>
+ <td>R$ {{ invoice.amount }}</td>
+ </tr>
+ {% endfor %}
+ </table>
+ </div>
+ <div class="footer">Página 1/1</div>
 </body>
 
 </html>

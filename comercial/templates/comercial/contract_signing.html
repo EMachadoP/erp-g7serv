@@ -2,212 +2,212 @@
 <html lang="pt-br">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assinar Contrato - {{ contract.client.name }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Sacramento&display=swap"
-        rel="stylesheet">
-    <style>
-        .contract-content {
-            border: 1px solid #ddd;
-            padding: 2rem;
-            background: #fff;
-            margin-bottom: 2rem;
-            min-height: 500px;
-        }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Assinar Contrato - {{ contract.client.name }}</title>
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+ <link
+ href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Sacramento&display=swap"
+ rel="stylesheet">
+ <style>
+ .contract-content {
+ border: 1px solid #ddd;
+ padding: 2rem;
+ background: #fff;
+ margin-bottom: 2rem;
+ min-height: 500px;
+ }
 
-        #signature-pad {
-            border: 1px solid #000;
-            background-color: #f8f9fa;
-            cursor: crosshair;
-        }
+ #signature-pad {
+ border: 1px solid #000;
+ background-color: #f8f9fa;
+ cursor: crosshair;
+ }
 
-        .signature-type-option {
-            font-size: 1.5rem;
-            padding: 10px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            margin-bottom: 5px;
-        }
+ .signature-type-option {
+ font-size: 1.5rem;
+ padding: 10px;
+ cursor: pointer;
+ border: 1px solid #ddd;
+ margin-bottom: 5px;
+ }
 
-        .signature-type-option:hover,
-        .signature-type-option.selected {
-            background-color: #e9ecef;
-            border-color: #0d6efd;
-        }
-    </style>
+ .signature-type-option:hover,
+ .signature-type-option.selected {
+ background-color: #e9ecef;
+ border-color: #0d6efd;
+ }
+ </style>
 </head>
 
 <body class="bg-light">
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="text-center mb-4">
-                    {% if contract.billing_group.company_settings.logo %}
-                    <img src="{{ contract.billing_group.company_settings.logo.url }}" alt="Logo" height="60">
-                    {% else %}
-                    <h2>Contrato de Prestação de Serviços</h2>
-                    {% endif %}
-                </div>
+ <div class="container py-5">
+ <div class="row justify-content-center">
+ <div class="col-lg-8">
+ <div class="text-center mb-4">
+ {% if contract.billing_group.company_settings.logo %}
+ <img src="{{ contract.billing_group.company_settings.logo.url }}" alt="Logo" height="60">
+ {% else %}
+ <h2>Contrato de Prestação de Serviços</h2>
+ {% endif %}
+ </div>
 
-                <div class="contract-content shadow-sm">
-                    {{ content|safe }}
-                </div>
+ <div class="contract-content shadow-sm">
+ {{ content|safe }}
+ </div>
 
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h4 class="card-title mb-4">Assinatura Digital</h4>
+ <div class="card shadow-sm">
+ <div class="card-body">
+ <h4 class="card-title mb-4">Assinatura Digital</h4>
 
-                        <ul class="nav nav-tabs mb-3" id="signatureTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="draw-tab" data-bs-toggle="tab"
-                                    data-bs-target="#draw" type="button" role="tab">Desenhar</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="type-tab" data-bs-toggle="tab" data-bs-target="#type"
-                                    type="button" role="tab">Digitar</button>
-                            </li>
-                        </ul>
+ <ul class="nav nav-tabs mb-3" id="signatureTab" role="tablist">
+ <li class="nav-item" role="presentation">
+ <button class="nav-link active" id="draw-tab" data-bs-toggle="tab"
+ data-bs-target="#draw" type="button" role="tab">Desenhar</button>
+ </li>
+ <li class="nav-item" role="presentation">
+ <button class="nav-link" id="type-tab" data-bs-toggle="tab" data-bs-target="#type"
+ type="button" role="tab">Digitar</button>
+ </li>
+ </ul>
 
-                        <div class="tab-content" id="signatureTabContent">
-                            <!-- Draw Tab -->
-                            <div class="tab-pane fade show active" id="draw" role="tabpanel">
-                                <div class="text-center">
-                                    <canvas id="signature-pad" width="500" height="200" class="img-fluid"></canvas>
-                                    <div class="mt-2">
-                                        <button type="button" class="btn btn-secondary btn-sm"
-                                            id="clear-pad">Limpar</button>
-                                    </div>
-                                </div>
-                            </div>
+ <div class="tab-content" id="signatureTabContent">
+ <!-- Draw Tab -->
+ <div class="tab-pane fade show active" id="draw" role="tabpanel">
+ <div class="text-center">
+ <canvas id="signature-pad" width="500" height="200" class="img-fluid"></canvas>
+ <div class="mt-2">
+ <button type="button" class="btn btn-secondary btn-sm"
+ id="clear-pad">Limpar</button>
+ </div>
+ </div>
+ </div>
 
-                            <!-- Type Tab -->
-                            <div class="tab-pane fade" id="type" role="tabpanel">
-                                <div class="mb-3">
-                                    <label for="signerName" class="form-label">Digite seu nome completo</label>
-                                    <input type="text" class="form-control" id="signerName" placeholder="Seu Nome">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Escolha o estilo:</label>
-                                    <div class="d-grid gap-2">
-                                        <div class="signature-type-option"
-                                            style="font-family: 'Dancing Script', cursive;"
-                                            data-font="'Dancing Script', cursive">Assinatura Exemplo 1</div>
-                                        <div class="signature-type-option" style="font-family: 'Great Vibes', cursive;"
-                                            data-font="'Great Vibes', cursive">Assinatura Exemplo 2</div>
-                                        <div class="signature-type-option" style="font-family: 'Sacramento', cursive;"
-                                            data-font="'Sacramento', cursive">Assinatura Exemplo 3</div>
-                                    </div>
-                                </div>
-                                <div class="text-center mt-3 p-3 border bg-white" id="typed-preview-container"
-                                    style="display:none;">
-                                    <canvas id="typed-canvas" width="500" height="150"></canvas>
-                                </div>
-                            </div>
-                        </div>
+ <!-- Type Tab -->
+ <div class="tab-pane fade" id="type" role="tabpanel">
+ <div class="mb-3">
+ <label for="signerName" class="form-label">Digite seu nome completo</label>
+ <input type="text" class="form-control" id="signerName" placeholder="Seu Nome">
+ </div>
+ <div class="mb-3">
+ <label class="form-label">Escolha o estilo:</label>
+ <div class="d-grid gap-2">
+ <div class="signature-type-option"
+ style="font-family: 'Dancing Script', cursive;"
+ data-font="'Dancing Script', cursive">Assinatura Exemplo 1</div>
+ <div class="signature-type-option" style="font-family: 'Great Vibes', cursive;"
+ data-font="'Great Vibes', cursive">Assinatura Exemplo 2</div>
+ <div class="signature-type-option" style="font-family: 'Sacramento', cursive;"
+ data-font="'Sacramento', cursive">Assinatura Exemplo 3</div>
+ </div>
+ </div>
+ <div class="text-center mt-3 p-3 border bg-white" id="typed-preview-container"
+ style="display:none;">
+ <canvas id="typed-canvas" width="500" height="150"></canvas>
+ </div>
+ </div>
+ </div>
 
-                        <form method="POST" class="mt-4" id="signature-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="signature_data" id="signature_data">
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg" id="submit-signature">Assinar
-                                    Contrato</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+ <form method="POST" class="mt-4" id="signature-form">
+ {% csrf_token %}
+ <input type="hidden" name="signature_data" id="signature_data">
+ <div class="d-grid">
+ <button type="submit" class="btn btn-primary btn-lg" id="submit-signature">Assinar
+ Contrato</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    <script>
-        // Draw Signature
-        const canvas = document.getElementById('signature-pad');
-        const signaturePad = new SignaturePad(canvas);
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+ <script>
+ // Draw Signature
+ const canvas = document.getElementById('signature-pad');
+ const signaturePad = new SignaturePad(canvas);
 
-        document.getElementById('clear-pad').addEventListener('click', () => {
-            signaturePad.clear();
-        });
+ document.getElementById('clear-pad').addEventListener('click', () => {
+ signaturePad.clear();
+ });
 
-        // Resize canvas correctly
-        function resizeCanvas() {
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio;
-            canvas.height = canvas.offsetHeight * ratio;
-            canvas.getContext("2d").scale(ratio, ratio);
-            signaturePad.clear();
-        }
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
-
-
-        // Typed Signature Logic
-        const signerNameInput = document.getElementById('signerName');
-        const typeOptions = document.querySelectorAll('.signature-type-option');
-        const typedCanvas = document.getElementById('typed-canvas');
-        const typedCtx = typedCanvas.getContext('2d');
-        let selectedFont = "'Dancing Script', cursive";
-
-        signerNameInput.addEventListener('input', updateTypedPreview);
-
-        typeOptions.forEach(option => {
-            option.addEventListener('click', function () {
-                typeOptions.forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedFont = this.getAttribute('data-font');
-                updateTypedPreview();
-            });
-        });
-
-        function updateTypedPreview() {
-            const text = signerNameInput.value;
-            if (!text) return;
-
-            document.getElementById('typed-preview-container').style.display = 'block';
-
-            // Clear canvas
-            typedCtx.fillStyle = "#ffffff";
-            typedCtx.fillRect(0, 0, typedCanvas.width, typedCanvas.height);
-
-            // Draw text
-            typedCtx.font = "40px " + selectedFont;
-            typedCtx.fillStyle = "black";
-            typedCtx.textAlign = "center";
-            typedCtx.textBaseline = "middle";
-            typedCtx.fillText(text, typedCanvas.width / 2, typedCanvas.height / 2);
-        }
+ // Resize canvas correctly
+ function resizeCanvas() {
+ const ratio = Math.max(window.devicePixelRatio || 1, 1);
+ canvas.width = canvas.offsetWidth * ratio;
+ canvas.height = canvas.offsetHeight * ratio;
+ canvas.getContext("2d").scale(ratio, ratio);
+ signaturePad.clear();
+ }
+ window.addEventListener("resize", resizeCanvas);
+ resizeCanvas();
 
 
-        // Submit Form
-        document.getElementById('submit-signature').addEventListener('click', function (e) {
-            e.preventDefault();
+ // Typed Signature Logic
+ const signerNameInput = document.getElementById('signerName');
+ const typeOptions = document.querySelectorAll('.signature-type-option');
+ const typedCanvas = document.getElementById('typed-canvas');
+ const typedCtx = typedCanvas.getContext('2d');
+ let selectedFont = "'Dancing Script', cursive";
 
-            const activeTab = document.querySelector('.nav-link.active').getAttribute('id');
-            let dataUrl;
+ signerNameInput.addEventListener('input', updateTypedPreview);
 
-            if (activeTab === 'draw-tab') {
-                if (signaturePad.isEmpty()) {
-                    alert("Por favor, desenhe sua assinatura.");
-                    return;
-                }
-                dataUrl = signaturePad.toDataURL();
-            } else {
-                if (!signerNameInput.value) {
-                    alert("Por favor, digite seu nome.");
-                    return;
-                }
-                dataUrl = typedCanvas.toDataURL();
-            }
+ typeOptions.forEach(option => {
+ option.addEventListener('click', function () {
+ typeOptions.forEach(opt => opt.classList.remove('selected'));
+ this.classList.add('selected');
+ selectedFont = this.getAttribute('data-font');
+ updateTypedPreview();
+ });
+ });
 
-            document.getElementById('signature_data').value = dataUrl;
-            document.getElementById('signature-form').submit();
-        });
-    </script>
+ function updateTypedPreview() {
+ const text = signerNameInput.value;
+ if (!text) return;
+
+ document.getElementById('typed-preview-container').style.display = 'block';
+
+ // Clear canvas
+ typedCtx.fillStyle = "#ffffff";
+ typedCtx.fillRect(0, 0, typedCanvas.width, typedCanvas.height);
+
+ // Draw text
+ typedCtx.font = "40px " + selectedFont;
+ typedCtx.fillStyle = "black";
+ typedCtx.textAlign = "center";
+ typedCtx.textBaseline = "middle";
+ typedCtx.fillText(text, typedCanvas.width / 2, typedCanvas.height / 2);
+ }
+
+
+ // Submit Form
+ document.getElementById('submit-signature').addEventListener('click', function (e) {
+ e.preventDefault();
+
+ const activeTab = document.querySelector('.nav-link.active').getAttribute('id');
+ let dataUrl;
+
+ if (activeTab === 'draw-tab') {
+ if (signaturePad.isEmpty()) {
+ alert("Por favor, desenhe sua assinatura.");
+ return;
+ }
+ dataUrl = signaturePad.toDataURL();
+ } else {
+ if (!signerNameInput.value) {
+ alert("Por favor, digite seu nome.");
+ return;
+ }
+ dataUrl = typedCanvas.toDataURL();
+ }
+
+ document.getElementById('signature_data').value = dataUrl;
+ document.getElementById('signature-form').submit();
+ });
+ </script>
 
 </body>
 

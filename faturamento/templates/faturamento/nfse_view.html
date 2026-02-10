@@ -5,209 +5,207 @@
 
 {% block extra_css %}
 <style>
-    .nfse-container {
-        max-width: 900px;
-        margin: 2rem auto;
-        background: white;
-        padding: 3rem;
-        border-radius: 20px;
-        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e2e8f0;
-    }
+ .nfse-container {
+ max-width: 900px;
+ margin: 2rem auto;
+ background: white;
+ padding: 3rem;
+ border-radius: 20px;
+ box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
+ border: 1px solid #e2e8f0;
+ }
 
-    .nfse-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 2px solid #f1f5f9;
-        padding-bottom: 2rem;
-        margin-bottom: 2rem;
-    }
+ .nfse-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border-bottom: 2px solid #f1f5f9;
+ padding-bottom: 2rem;
+ margin-bottom: 2rem;
+ }
 
-    .nfse-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #64748b;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
+ .nfse-label {
+ font-size: 0.75rem;
+ text-transform: uppercase;
+ letter-spacing: 0.05em;
+ color: #64748b;
+ font-weight: 600;
+ margin-bottom: 0.25rem;
+ }
 
-    .nfse-value {
-        font-size: 1rem;
-        color: #1e293b;
-        font-weight: 500;
-    }
+ .nfse-value {
+ font-size: 1rem;
+ color: #1e293b;
+ font-weight: 500;
+ }
 
-    .nfse-badge {
-        padding: 6px 16px;
-        border-radius: 99px;
-        font-weight: 600;
-        font-size: 0.875rem;
-        background: #dcfce7;
-        color: #15803d;
-    }
+ .nfse-badge {
+ padding: 6px 16px;
+ border-radius: 99px;
+ font-weight: 600;
+ font-size: 0.875rem;
+ background: #dcfce7;
+ color: #15803d;
+ }
 
-    .section-title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: #475569;
-        text-transform: uppercase;
-        border-left: 4px solid #3b82f6;
-        padding-left: 1rem;
-        margin: 2rem 0 1.5rem;
-    }
+ .section-title {
+ font-size: 0.875rem;
+ font-weight: 700;
+ color: #475569;
+ text-transform: uppercase;
+ border-left: 4px solid #3b82f6;
+ padding-left: 1rem;
+ margin: 2rem 0 1.5rem;
+ }
 
-    .service-box {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-    }
+ .service-box {
+ background: #f8fafc;
+ padding: 1.5rem;
+ border-radius: 12px;
+ border: 1px solid #e2e8f0;
+ }
 
-    @media print {
-        .btn-print-group {
-            display: none;
-        }
+ @media print {
+ .btn-print-group {
+ display: none;
+ }
 
-        .nfse-container {
-            box-shadow: none;
-            margin: 0;
-            padding: 1rem;
-            max-width: 100%;
-        }
+ .nfse-container {
+ box-shadow: none;
+ margin: 0;
+ padding: 1rem;
+ max-width: 100%;
+ }
 
-        body {
-            background: white;
-        }
-    }
+ body {
+ background: white;
+ }
+ }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container pb-5">
-    <div class="d-flex justify-content-between align-items-center mt-4 mb-3 btn-print-group">
-        <a href="{% url 'nfse_nacional:nfse_list' %}" class="btn btn-light rounded-pill px-4">
-            <i class="bi bi-arrow-left me-2"></i>Voltar para Lista
-        </a>
-        <div class="d-flex gap-2">
-            <a href="{% url 'nfse_nacional:nfse_xml' nfse.id %}" class="btn btn-outline-primary rounded-pill px-4">
-                <i class="bi bi-file-earmark-code me-2"></i>Baixar XML
-            </a>
-            <button onclick="window.print()" class="btn btn-primary rounded-pill px-4 shadow">
-                <i class="bi bi-printer me-2"></i>Imprimir
-            </button>
-        </div>
-    </div>
+ <div class="d-flex justify-content-between align-items-center mt-4 mb-3 btn-print-group">
+ <a href="{% url 'nfse_nacional:nfse_list' %}" class="btn btn-light rounded-pill px-4">
+ <i class="bi bi-arrow-left me-2"></i>Voltar para Lista
+ </a>
+ <div class="d-flex gap-2">
+ <a href="{% url 'nfse_nacional:nfse_xml' nfse.id %}" class="btn btn-outline-primary rounded-pill px-4">
+ <i class="bi bi-file-earmark-code me-2"></i>Baixar XML
+ </a>
+ <button onclick="window.print()" class="btn btn-primary rounded-pill px-4 shadow">
+ <i class="bi bi-printer me-2"></i>Imprimir
+ </button>
+ </div>
+ </div>
 
-    <div class="nfse-container animate__animated animate__fadeIn">
-        <!-- Cabeçalho -->
-        <div class="nfse-header">
-            <div>
-                <h4 class="fw-bold mb-1 text-primary">NFS-e Nacional</h4>
-                <p class="text-muted mb-0 small">Nota Fiscal de Serviço Eletrônica de Padrão Nacional</p>
-            </div>
-            <div class="text-end">
-                <span class="nfse-badge"><i class="bi bi-check-circle-fill me-2"></i>AUTORIZADA</span>
-                <div class="mt-2 small text-muted">Emissão: {{ nfse.data_emissao|date:"d/m/Y H:i" }}</div>
-            </div>
-        </div>
+ <div class="nfse-container animate__animated animate__fadeIn">
+ <!-- Cabeçalho -->
+ <div class="nfse-header">
+ <div>
+ <h4 class="fw-bold mb-1 text-primary">NFS-e Nacional</h4>
+ <p class="text-muted mb-0 small">Nota Fiscal de Serviço Eletrônica de Padrão Nacional</p>
+ </div>
+ <div class="text-end">
+ <span class="nfse-badge"><i class="bi bi-check-circle-fill me-2"></i>AUTORIZADA</span>
+ <div class="mt-2 small text-muted">Emissão: {{ nfse.data_emissao|date:"d/m/Y H:i" }}</div>
+ </div>
+ </div>
 
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="nfse-label">Número DPS</div>
-                <div class="nfse-value">{{ nfse.numero_dps|stringformat:"05d" }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="nfse-label">Série</div>
-                <div class="nfse-value">{{ nfse.serie_dps }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="nfse-label">Ambiente</div>
-                <div class="nfse-value">{{ nfse.get_ambiente_display|default:"Homologação" }}</div>
-            </div>
-            <div class="col-12">
-                <div class="nfse-label">Chave de Acesso</div>
-                <div class="nfse-value font-monospace small bg-light p-2 rounded">{{
-                    nfse.chave_acesso|default:"Aguardando Sincronização" }}</div>
-            </div>
-        </div>
+ <div class="row g-4">
+ <div class="col-md-4">
+ <div class="nfse-label">Número DPS</div>
+ <div class="nfse-value">{{ nfse.numero_dps|stringformat:"05d" }}</div>
+ </div>
+ <div class="col-md-4">
+ <div class="nfse-label">Série</div>
+ <div class="nfse-value">{{ nfse.serie_dps }}</div>
+ </div>
+ <div class="col-md-4">
+ <div class="nfse-label">Ambiente</div>
+ <div class="nfse-value">{{ nfse.get_ambiente_display|default:"Homologação" }}</div>
+ </div>
+ <div class="col-12">
+ <div class="nfse-label">Chave de Acesso</div>
+ <div class="nfse-value font-monospace small bg-light p-2 rounded">{{ nfse.chave_acesso|default:"Aguardando Sincronização" }}</div>
+ </div>
+ </div>
 
-        <!-- Prestador -->
-        <div class="section-title">Prestador de Serviços</div>
-        <div class="row g-3">
-            <div class="col-md-8">
-                <div class="nfse-label">Razão Social</div>
-                <div class="nfse-value">{{ nfse.empresa.razao_social }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="nfse-label">CNPJ</div>
-                <div class="nfse-value">{{ nfse.empresa.cnpj }}</div>
-            </div>
-            <div class="col-12">
-                <div class="nfse-label">Endereço</div>
-                <div class="nfse-value">Recife - PE (IBGE: {{ nfse.empresa.codigo_mun_ibge }})</div>
-            </div>
-        </div>
+ <!-- Prestador -->
+ <div class="section-title">Prestador de Serviços</div>
+ <div class="row g-3">
+ <div class="col-md-8">
+ <div class="nfse-label">Razão Social</div>
+ <div class="nfse-value">{{ nfse.empresa.razao_social }}</div>
+ </div>
+ <div class="col-md-4">
+ <div class="nfse-label">CNPJ</div>
+ <div class="nfse-value">{{ nfse.empresa.cnpj }}</div>
+ </div>
+ <div class="col-12">
+ <div class="nfse-label">Endereço</div>
+ <div class="nfse-value">Recife - PE (IBGE: {{ nfse.empresa.codigo_mun_ibge }})</div>
+ </div>
+ </div>
 
-        <!-- Tomador -->
-        <div class="section-title">Tomador de Serviços</div>
-        <div class="row g-3">
-            <div class="col-md-8">
-                <div class="nfse-label">Nome / Razão Social</div>
-                <div class="nfse-value">{{ nfse.cliente.name }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="nfse-label">CPF/CNPJ</div>
-                <div class="nfse-value">{{ nfse.cliente.document|default:"Não Informado" }}</div>
-            </div>
-            <div class="col-12">
-                <div class="nfse-label">E-mail</div>
-                <div class="nfse-value">{{ nfse.cliente.email|default:"--" }}</div>
-            </div>
-        </div>
+ <!-- Tomador -->
+ <div class="section-title">Tomador de Serviços</div>
+ <div class="row g-3">
+ <div class="col-md-8">
+ <div class="nfse-label">Nome / Razão Social</div>
+ <div class="nfse-value">{{ nfse.cliente.name }}</div>
+ </div>
+ <div class="col-md-4">
+ <div class="nfse-label">CPF/CNPJ</div>
+ <div class="nfse-value">{{ nfse.cliente.document|default:"Não Informado" }}</div>
+ </div>
+ <div class="col-12">
+ <div class="nfse-label">E-mail</div>
+ <div class="nfse-value">{{ nfse.cliente.email|default:"--" }}</div>
+ </div>
+ </div>
 
-        <!-- Serviços -->
-        <div class="section-title">Detalhamento dos Serviços</div>
-        <div class="service-box">
-            <div class="nfse-label">Descrição</div>
-            <div class="nfse-value mb-3" style="white-space: pre-wrap;">{{
-                nfse.descricao_servico|default:nfse.servico.description }}</div>
+ <!-- Serviços -->
+ <div class="section-title">Detalhamento dos Serviços</div>
+ <div class="service-box">
+ <div class="nfse-label">Descrição</div>
+ <div class="nfse-value mb-3" style="white-space: pre-wrap;">{{ nfse.descricao_servico|default:nfse.servico.description }}</div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="nfse-label">Código Nacional (NBS)</div>
-                    <div class="nfse-value small">{{ nfse.servico.codigo_tributacao_nacional }}</div>
-                </div>
-                <div class="col-md-6">
-                    <div class="nfse-label">Tributação Municipal</div>
-                    <div class="nfse-value small">{{ nfse.servico.codigo_tributacao_municipal }}</div>
-                </div>
-            </div>
-        </div>
+ <div class="row g-3">
+ <div class="col-md-6">
+ <div class="nfse-label">Código Nacional (NBS)</div>
+ <div class="nfse-value small">{{ nfse.servico.codigo_tributacao_nacional }}</div>
+ </div>
+ <div class="col-md-6">
+ <div class="nfse-label">Tributação Municipal</div>
+ <div class="nfse-value small">{{ nfse.servico.codigo_tributacao_municipal }}</div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Valores -->
-        <div class="section-title">Valores e Impostos</div>
-        <div class="row g-4 bg-light p-3 rounded-4">
-            <div class="col-md-4">
-                <div class="nfse-label">Valor do Serviço</div>
-                <div class="nfse-value fw-bold fs-5">R$ {{ nfse.valor_servico|floatformat:2|intcomma }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="nfse-label">Base de Cálculo</div>
-                <div class="nfse-value">R$ {{ nfse.valor_servico|floatformat:2|intcomma }}</div>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="nfse-label">Valor Líquido</div>
-                <div class="nfse-value fw-bold text-primary fs-4">R$ {{ nfse.valor_servico|floatformat:2|intcomma }}
-                </div>
-            </div>
-        </div>
+ <!-- Valores -->
+ <div class="section-title">Valores e Impostos</div>
+ <div class="row g-4 bg-light p-3 rounded-4">
+ <div class="col-md-4">
+ <div class="nfse-label">Valor do Serviço</div>
+ <div class="nfse-value fw-bold fs-5">R$ {{ nfse.valor_servico|floatformat:2|intcomma }}</div>
+ </div>
+ <div class="col-md-4">
+ <div class="nfse-label">Base de Cálculo</div>
+ <div class="nfse-value">R$ {{ nfse.valor_servico|floatformat:2|intcomma }}</div>
+ </div>
+ <div class="col-md-4 text-end">
+ <div class="nfse-label">Valor Líquido</div>
+ <div class="nfse-value fw-bold text-primary fs-4">R$ {{ nfse.valor_servico|floatformat:2|intcomma }}
+ </div>
+ </div>
+ </div>
 
-        <div class="mt-5 text-center text-muted small border-top pt-3">
-            Este documento é uma representação simplificada da NFS-e Nacional.<br>
-            A validade jurídica é garantida pelo arquivo digital (XML) assinado com Certificado A1.
-        </div>
-    </div>
+ <div class="mt-5 text-center text-muted small border-top pt-3">
+ Este documento é uma representação simplificada da NFS-e Nacional.<br>
+ A validade jurídica é garantida pelo arquivo digital (XML) assinado com Certificado A1.
+ </div>
+ </div>
 </div>
 {% endblock %}

@@ -2,304 +2,302 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-md-6">
-        <h2>Contas a Receber</h2>
-    </div>
-    <div class="col-md-6 text-end d-flex justify-content-end gap-2">
-        {% if user.is_superuser %}
-        <a href="{% url 'financeiro:sync_receivables' %}" class="btn btn-outline-primary fw-bold"
-            title="Sincronizar faturas faltando">
-            <i class="bi bi-arrow-repeat me-2"></i>Sincronizar
-        </a>
-        {% endif %}
-        <a href="{% url 'financeiro:account_receivable_create' %}" class="btn btn-success text-white fw-bold">
-            <i class="bi bi-plus-lg me-2"></i>Nova Conta a Receber
-        </a>
-    </div>
+ <div class="col-md-6">
+ <h2>Contas a Receber</h2>
+ </div>
+ <div class="col-md-6 text-end d-flex justify-content-end gap-2">
+ {% if user.is_superuser %}
+ <a href="{% url 'financeiro:sync_receivables' %}" class="btn btn-outline-primary fw-bold"
+ title="Sincronizar faturas faltando">
+ <i class="bi bi-arrow-repeat me-2"></i>Sincronizar
+ </a>
+ {% endif %}
+ <a href="{% url 'financeiro:account_receivable_create' %}" class="btn btn-success text-white fw-bold">
+ <i class="bi bi-plus-lg me-2"></i>Nova Conta a Receber
+ </a>
+ </div>
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3">
-            <div class="col-md-3">
-                <label for="q" class="form-label">Buscar / Pesquisar</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Cliente, descrição..."
-                        value="{{ search_query }}">
-                </div>
-            </div>
-            <div class="col-md-2">
-                <label for="status" class="form-label">Status</label>
-                <select name="status" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendente</option>
-                    <option value="RECEIVED" {% if status_filter=='RECEIVED' %}selected{% endif %}>Recebido</option>
-                    <option value="OVERDUE" {% if status_filter=='OVERDUE' %}selected{% endif %}>Vencido</option>
-                    <option value="CANCELLED" {% if status_filter=='CANCELLED' %}selected{% endif %}>Cancelado</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label for="start_date" class="form-label">Vencimento Início</label>
-                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
-            </div>
-            <div class="col-md-2">
-                <label for="end_date" class="form-label">Vencimento Fim</label>
-                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
-            </div>
-            <div class="col-md-3 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-filter me-2"></i>Filtrar
-                </button>
-                <a href="{% url 'financeiro:account_receivable_list' %}" class="btn btn-outline-secondary"
-                    title="Limpar Filtros">
-                    <i class="bi bi-x-circle"></i>
-                </a>
-            </div>
-        </form>
-    </div>
+ <div class="card-body">
+ <form method="get" class="row g-3">
+ <div class="col-md-3">
+ <label for="q" class="form-label">Buscar / Pesquisar</label>
+ <div class="input-group">
+ <span class="input-group-text"><i class="bi bi-search"></i></span>
+ <input type="text" name="q" class="form-control" placeholder="Cliente, descrição..."
+ value="{{ search_query }}">
+ </div>
+ </div>
+ <div class="col-md-2">
+ <label for="status" class="form-label">Status</label>
+ <select name="status" class="form-select">
+ <option value="">Todos</option>
+ <option value="PENDING" {% if status_filter=='PENDING' %}selected{% endif %}>Pendente</option>
+ <option value="RECEIVED" {% if status_filter=='RECEIVED' %}selected{% endif %}>Recebido</option>
+ <option value="OVERDUE" {% if status_filter=='OVERDUE' %}selected{% endif %}>Vencido</option>
+ <option value="CANCELLED" {% if status_filter=='CANCELLED' %}selected{% endif %}>Cancelado</option>
+ </select>
+ </div>
+ <div class="col-md-2">
+ <label for="start_date" class="form-label">Vencimento Início</label>
+ <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+ </div>
+ <div class="col-md-2">
+ <label for="end_date" class="form-label">Vencimento Fim</label>
+ <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+ </div>
+ <div class="col-md-3 d-flex align-items-end gap-2">
+ <button type="submit" class="btn btn-primary w-100">
+ <i class="bi bi-filter me-2"></i>Filtrar
+ </button>
+ <a href="{% url 'financeiro:account_receivable_list' %}" class="btn btn-outline-secondary"
+ title="Limpar Filtros">
+ <i class="bi bi-x-circle"></i>
+ </a>
+ </div>
+ </form>
+ </div>
 </div>
 
 <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class=\"table table-premium-responsive\">
-            <table class=\"table table-premium table-hover align-middle mb-0 text-nowrap\">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4" style="width: 40px;">
-                            <input type="checkbox" class="form-check-input" id="selectAll">
-                        </th>
-                        <th style="width: 120px;">Vencimento</th>
-                        <th>Descrição</th>
-                        <th>Cliente</th>
-                        <th>Categoria</th>
-                        <th class="text-end" style="width: 150px;">Valor</th>
-                        <th class="text-center" style="width: 120px;">Status</th>
-                        <th class="text-end pe-4" style="width: 80px;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for receivable in receivables %}
-                    <tr data-receivable-id="{{ receivable.id }}">
-                        <td class="ps-4">
-                            <input type="checkbox" class="form-check-input select-receivable"
-                                value="{{ receivable.id }}">
-                        </td>
-                        <td>{{ receivable.due_date|date:"d/m/Y" }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="fw-bold me-2">{{ receivable.description }}</div>
-                                {% if receivable.total_installments > 1 %}
-                                <span class="badge bg-primary rounded-pill small" title="Parcela">
-                                    {{ receivable.current_installment }}/{{ receivable.total_installments }}
-                                </span>
-                                {% endif %}
-                            </div>
-                            {% if receivable.document_number %}
-                            <small class="text-muted">Doc: {{ receivable.document_number }}</small>
-                            {% endif %}
-                        </td>
-                        <td>{{ receivable.client.name|default:"-" }}</td>
-                        <td><span class="badge bg-light text-dark border fw-normal">{{
-                                receivable.category.nome|default:"-" }}</span></td>
-                        <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
-                        <td class="text-center">
-                            {% if receivable.status == 'PENDING' %}
-                            <span class="badge bg-warning text-dark px-3">Pendente</span>
-                            {% elif receivable.status == 'RECEIVED' %}
-                            <span class="badge bg-success px-3">Recebido</span>
-                            {% elif receivable.status == 'OVERDUE' %}
-                            <span class="badge bg-danger px-3">Vencido</span>
-                            {% else %}
-                            <span class="badge bg-secondary px-3">{{ receivable.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end pe-4">
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-white border shadow-sm" type="button"
-                                    data-bs-toggle=\"dropdown\" data-bs-boundary=\"viewport\" aria-expanded="false">
-                                    <i class="bi bi-gear-fill text-secondary"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    <li><a class="dropdown-item"
-                                            href="{% url 'financeiro:account_receivable_detail' receivable.id %}"><i
-                                                class="bi bi-eye me-2"></i>Detalhes</a></li>
-                                    {% if receivable.status == 'PENDING' and not receivable.cora_id %}
-                                    <li><a class="dropdown-item text-primary"
-                                            href="{% url 'financeiro:account_receivable_detail' receivable.id %}"><i
-                                                class="bi bi-lightning-fill me-2"></i>Configurar Cora</a></li>
-                                    {% endif %}
-                                    <li><a class="dropdown-item"
-                                            href="{% url 'financeiro:account_receivable_update' receivable.id %}"><i
-                                                class="bi bi-pencil me-2"></i>Editar</a>
-                                    </li>
-                                    {% if receivable.status != 'RECEIVED' %}
-                                    <li>
-                                        <form action="{% url 'financeiro:account_receivable_receive' receivable.id %}"
-                                            method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item text-success"
-                                                onclick="return confirm('Confirmar recebimento?')">
-                                                <i class="bi bi-check-circle me-2"></i>Receber
-                                            </button>
-                                        </form>
-                                    </li>
-                                    {% endif %}
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <form action="{% url 'financeiro:account_receivable_cancel' receivable.id %}"
-                                            method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="dropdown-item text-danger"
-                                                onclick="return confirm('Cancelar esta conta?')">
-                                                <i class="bi bi-x-circle me-2"></i>Cancelar
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                            Nenhuma conta a receber encontrada.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+ <div class="card-body p-0">
+ <div class="table table-responsive">
+ <table class="table table-premium table-hover align-middle mb-0 text-nowrap">
+ <thead class="bg-light">
+ <tr>
+ <th class="ps-4" style="width: 40px;">
+ <input type="checkbox" class="form-check-input" id="selectAll">
+ </th>
+ <th style="width: 120px;">Vencimento</th>
+ <th>Descrição</th>
+ <th>Cliente</th>
+ <th>Categoria</th>
+ <th class="text-end" style="width: 150px;">Valor</th>
+ <th class="text-center" style="width: 120px;">Status</th>
+ <th class="text-end pe-4" style="width: 80px;">Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for receivable in receivables %}
+ <tr data-receivable-id="{{ receivable.id }}">
+ <td class="ps-4">
+ <input type="checkbox" class="form-check-input select-receivable"
+ value="{{ receivable.id }}">
+ </td>
+ <td>{{ receivable.due_date|date:"d/m/Y" }}</td>
+ <td>
+ <div class="d-flex align-items-center">
+ <div class="fw-bold me-2">{{ receivable.description }}</div>
+ {% if receivable.total_installments > 1 %}
+ <span class="badge bg-primary rounded-pill small" title="Parcela">
+ {{ receivable.current_installment }}/{{ receivable.total_installments }}
+ </span>
+ {% endif %}
+ </div>
+ {% if receivable.document_number %}
+ <small class="text-muted">Doc: {{ receivable.document_number }}</small>
+ {% endif %}
+ </td>
+ <td>{{ receivable.client.name|default:"-" }}</td>
+ <td><span class="badge bg-light text-dark border fw-normal">{{ receivable.category.nome|default:"-" }}</span></td>
+ <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
+ <td class="text-center">
+ {% if receivable.status == 'PENDING' %}
+ <span class="badge bg-warning text-dark px-3">Pendente</span>
+ {% elif receivable.status == 'RECEIVED' %}
+ <span class="badge bg-success px-3">Recebido</span>
+ {% elif receivable.status == 'OVERDUE' %}
+ <span class="badge bg-danger px-3">Vencido</span>
+ {% else %}
+ <span class="badge bg-secondary px-3">{{ receivable.get_status_display }}</span>
+ {% endif %}
+ </td>
+ <td class="text-end pe-4">
+ <div class="dropdown">
+ <button class="btn btn-sm btn-white border shadow-sm" type="button"
+ data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+ <i class="bi bi-gear-fill text-secondary"></i>
+ </button>
+ <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+ <li><a class="dropdown-item"
+ href="{% url 'financeiro:account_receivable_detail' receivable.id %}"><i
+ class="bi bi-eye me-2"></i>Detalhes</a></li>
+ {% if receivable.status == 'PENDING' and not receivable.cora_id %}
+ <li><a class="dropdown-item text-primary"
+ href="{% url 'financeiro:account_receivable_detail' receivable.id %}"><i
+ class="bi bi-lightning-fill me-2"></i>Configurar Cora</a></li>
+ {% endif %}
+ <li><a class="dropdown-item"
+ href="{% url 'financeiro:account_receivable_update' receivable.id %}"><i
+ class="bi bi-pencil me-2"></i>Editar</a>
+ </li>
+ {% if receivable.status != 'RECEIVED' %}
+ <li>
+ <form action="{% url 'financeiro:account_receivable_receive' receivable.id %}"
+ method="post" class="d-inline">
+ {% csrf_token %}
+ <button type="submit" class="dropdown-item text-success"
+ onclick="return confirm('Confirmar recebimento?')">
+ <i class="bi bi-check-circle me-2"></i>Receber
+ </button>
+ </form>
+ </li>
+ {% endif %}
+ <li>
+ <hr class="dropdown-divider">
+ </li>
+ <li>
+ <form action="{% url 'financeiro:account_receivable_cancel' receivable.id %}"
+ method="post" class="d-inline">
+ {% csrf_token %}
+ <button type="submit" class="dropdown-item text-danger"
+ onclick="return confirm('Cancelar esta conta?')">
+ <i class="bi bi-x-circle me-2"></i>Cancelar
+ </button>
+ </form>
+ </li>
+ </ul>
+ </div>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="7" class="text-center py-5 text-muted">
+ <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+ Nenhuma conta a receber encontrada.
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
 </div>
 
 <!-- Barra de Ações em Massa (Fixa no rodapé quando selecionado) -->
 <div id="bulkActionsBar" class="bg-white border-top shadow p-3 fixed-bottom d-none">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
-        <div>
-            <span class="fw-bold me-3"><span id="selectedCount">0</span> itens selecionados</span>
-            <button class="btn btn-outline-secondary btn-sm" id="clearSelection">Limpar</button>
-        </div>
-        <div class="d-flex gap-2">
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle=\"dropdown\" data-bs-boundary=\"viewport\"
-                    aria-expanded="false">
-                    <i class="bi bi-envelope me-2"></i>Enviar E-mail
-                </button>
-                <ul class="dropdown-menu shadow-sm">
-                    <li>
-                        <h6 class="dropdown-header">Escolha o Template</h6>
-                    </li>
-                    {% for template in email_templates %}
-                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{
-                            template.name }}</a></li>
-                    {% empty %}
-                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="">Padrão (Boleto+NF)</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <button class="btn btn-success btn-sm" id="bulkBoletoBtn"><i class="bi bi-qr-code me-2"></i>Gerar Boletos
-                Cora</button>
-        </div>
-    </div>
+ <div class="container-fluid d-flex align-items-center justify-content-between">
+ <div>
+ <span class="fw-bold me-3"><span id="selectedCount">0</span> itens selecionados</span>
+ <button class="btn btn-outline-secondary btn-sm" id="clearSelection">Limpar</button>
+ </div>
+ <div class="d-flex gap-2">
+ <div class="btn-group">
+ <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="viewport"
+ aria-expanded="false">
+ <i class="bi bi-envelope me-2"></i>Enviar E-mail
+ </button>
+ <ul class="dropdown-menu shadow-sm">
+ <li>
+ <h6 class="dropdown-header">Escolha o Template</h6>
+ </li>
+ {% for template in email_templates %}
+ <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{ template.name }}</a></li>
+ {% empty %}
+ <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="">Padrão (Boleto+NF)</a></li>
+ {% endfor %}
+ </ul>
+ </div>
+ <button class="btn btn-success btn-sm" id="bulkBoletoBtn"><i class="bi bi-qr-code me-2"></i>Gerar Boletos
+ Cora</button>
+ </div>
+ </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.select-receivable');
-        const bulkBar = document.getElementById('bulkActionsBar');
-        const countDisplay = document.getElementById('selectedCount');
-        const clearBtn = document.getElementById('clearSelection');
-        const bulkBoletoBtn = document.getElementById('bulkBoletoBtn');
+ document.addEventListener('DOMContentLoaded', function () {
+ const selectAll = document.getElementById('selectAll');
+ const checkboxes = document.querySelectorAll('.select-receivable');
+ const bulkBar = document.getElementById('bulkActionsBar');
+ const countDisplay = document.getElementById('selectedCount');
+ const clearBtn = document.getElementById('clearSelection');
+ const bulkBoletoBtn = document.getElementById('bulkBoletoBtn');
 
-        function updateBar() {
-            const selectedCount = document.querySelectorAll('.select-receivable:checked').length;
-            countDisplay.textContent = selectedCount;
-            if (selectedCount > 0) {
-                bulkBar.classList.remove('d-none');
-            } else {
-                bulkBar.classList.add('d-none');
-            }
-        }
+ function updateBar() {
+ const selectedCount = document.querySelectorAll('.select-receivable:checked').length;
+ countDisplay.textContent = selectedCount;
+ if (selectedCount > 0) {
+ bulkBar.classList.remove('d-none');
+ } else {
+ bulkBar.classList.add('d-none');
+ }
+ }
 
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-            updateBar();
-        });
+ selectAll.addEventListener('change', function () {
+ checkboxes.forEach(cb => cb.checked = selectAll.checked);
+ updateBar();
+ });
 
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateBar);
-        });
+ checkboxes.forEach(cb => {
+ cb.addEventListener('change', updateBar);
+ });
 
-        clearBtn.addEventListener('click', function () {
-            checkboxes.forEach(cb => cb.checked = false);
-            selectAll.checked = false;
-            updateBar();
-        });
+ clearBtn.addEventListener('click', function () {
+ checkboxes.forEach(cb => cb.checked = false);
+ selectAll.checked = false;
+ updateBar();
+ });
 
-        // Bulk Boleto
-        bulkBoletoBtn.addEventListener('click', function () {
-            const selected = Array.from(document.querySelectorAll('.select-receivable:checked')).map(cb => cb.value);
-            if (!confirm(`Gerar boletos Cora para ${selected.length} itens?`)) return;
+ // Bulk Boleto
+ bulkBoletoBtn.addEventListener('click', function () {
+ const selected = Array.from(document.querySelectorAll('.select-receivable:checked')).map(cb => cb.value);
+ if (!confirm(`Gerar boletos Cora para ${selected.length} itens?`)) return;
 
-            bulkBoletoBtn.disabled = true;
-            bulkBoletoBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando...';
+ bulkBoletoBtn.disabled = true;
+ bulkBoletoBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando...';
 
-            fetch('{% url "financeiro:bulk_generate_boletos" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ receivable_ids: selected })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    location.reload();
-                })
-                .catch(err => {
-                    alert('Erro ao gerar boletos');
-                    bulkBoletoBtn.disabled = false;
-                    bulkBoletoBtn.innerHTML = '<i class="bi bi-qr-code me-2"></i>Gerar Boletos Cora';
-                });
-        });
+ fetch('{% url "financeiro:bulk_generate_boletos" %}', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': '{{ csrf_token }}'
+ },
+ body: JSON.stringify({ receivable_ids: selected })
+ })
+ .then(response => response.json())
+ .then(data => {
+ alert(data.message);
+ location.reload();
+ })
+ .catch(err => {
+ alert('Erro ao gerar boletos');
+ bulkBoletoBtn.disabled = false;
+ bulkBoletoBtn.innerHTML = '<i class="bi bi-qr-code me-2"></i>Gerar Boletos Cora';
+ });
+ });
 
-        // Bulk Email
-        document.querySelectorAll('.bulk-email-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const templateId = this.dataset.templateId;
-                const selected = Array.from(document.querySelectorAll('.select-receivable:checked')).map(cb => cb.value);
+ // Bulk Email
+ document.querySelectorAll('.bulk-email-btn').forEach(btn => {
+ btn.addEventListener('click', function (e) {
+ e.preventDefault();
+ const templateId = this.dataset.templateId;
+ const selected = Array.from(document.querySelectorAll('.select-receivable:checked')).map(cb => cb.value);
 
-                if (!confirm(`Enviar e-mails para ${selected.length} clientes?`)) return;
+ if (!confirm(`Enviar e-mails para ${selected.length} clientes?`)) return;
 
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+ const originalHtml = btn.innerHTML;
+ btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
 
-                fetch('{% url "financeiro:bulk_send_emails" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({ receivable_ids: selected, template_id: templateId })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        location.reload();
-                    })
-                    .catch(err => {
-                        alert('Erro ao enviar e-mails');
-                        btn.innerHTML = originalHtml;
-                    });
-            });
-        });
-    });
+ fetch('{% url "financeiro:bulk_send_emails" %}', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-CSRFToken': '{{ csrf_token }}'
+ },
+ body: JSON.stringify({ receivable_ids: selected, template_id: templateId })
+ })
+ .then(response => response.json())
+ .then(data => {
+ alert(data.message);
+ location.reload();
+ })
+ .catch(err => {
+ alert('Erro ao enviar e-mails');
+ btn.innerHTML = originalHtml;
+ });
+ });
+ });
+ });
 </script>
 {% endblock %}

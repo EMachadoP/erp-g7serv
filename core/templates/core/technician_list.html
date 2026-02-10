@@ -2,63 +2,63 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-md-8">
-        <h2><i class="fas fa-users-cog me-2"></i>Técnicos</h2>
-    </div>
-    <div class="col-md-4 text-end">
-        <a href="{% url 'core:technician_create' %}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Novo Técnico
-        </a>
-    </div>
+ <div class="col-md-8">
+ <h2><i class="fas fa-users-cog me-2"></i>Técnicos</h2>
+ </div>
+ <div class="col-md-4 text-end">
+ <a href="{% url 'core:technician_create' %}" class="btn btn-primary">
+ <i class="fas fa-plus me-1"></i> Novo Técnico
+ </a>
+ </div>
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-body">
-        <div class=\"table table-premium-responsive\">
-            <table class=\"table table-premium table-hover align-middle\">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Usuário</th>
-                        <th>Telefone</th>
-                        <th>Cor / Status</th>
-                        <th class="text-end">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tech in technicians %}
-                    <tr>
-                        <td>
-                            <div class="fw-bold">{{ tech.user.get_full_name }}</div>
-                            <div class="small text-muted">{{ tech.user.email }}</div>
-                        </td>
-                        <td>{{ tech.user.username }}</td>
-                        <td>{{ tech.phone|default:"-" }}</td>
-                        <td>
-                            <span class="badge rounded-pill"
-                                style="background-color: {{ tech.calendar_color }}; color: #fff;">
-                                Agenda
-                            </span>
-                            {% if tech.active %}
-                            <span class="badge bg-success">Ativo</span>
-                            {% else %}
-                            <span class="badge bg-danger">Inativo</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            <a href="{% url 'core:technician_update' tech.pk %}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i> Editar
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4">Nenhum técnico cadastrado.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+ <div class="card-body">
+ <div class="table table-responsive">
+ <table class="table table-premium table-hover align-middle">
+ <thead>
+ <tr>
+ <th>Nome</th>
+ <th>Usuário</th>
+ <th>Telefone</th>
+ <th>Cor / Status</th>
+ <th class="text-end">Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for tech in technicians %}
+ <tr>
+ <td>
+ <div class="fw-bold">{{ tech.user.get_full_name }}</div>
+ <div class="small text-muted">{{ tech.user.email }}</div>
+ </td>
+ <td>{{ tech.user.username }}</td>
+ <td>{{ tech.phone|default:"-" }}</td>
+ <td>
+ <span class="badge rounded-pill"
+ style="background-color: {{ tech.calendar_color }}; color: #fff;">
+ Agenda
+ </span>
+ {% if tech.active %}
+ <span class="badge bg-success">Ativo</span>
+ {% else %}
+ <span class="badge bg-danger">Inativo</span>
+ {% endif %}
+ </td>
+ <td class="text-end">
+ <a href="{% url 'core:technician_update' tech.pk %}" class="btn btn-sm btn-outline-primary">
+ <i class="fas fa-edit"></i> Editar
+ </a>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="5" class="text-center py-4">Nenhum técnico cadastrado.</td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
 </div>
 {% endblock %}

@@ -2,15 +2,15 @@
 
 {% block content %}
 <div class="card mt-4">
-    <div class="card-header bg-success text-white">
-        <h3>Detalhes da Receita</h3>
-    </div>
-    <div class="card-body">
-        <h5 class="card-title">{{ revenue.description }}</h5>
-        <p class="card-text"><strong>Valor:</strong> R$ {{ revenue.amount }}</p>
-        <p class="card-text"><strong>Data Recebimento:</strong> {{ revenue.received_date }}</p>
-        <p class="card-text"><strong>Origem:</strong> {{ revenue.source }}</p>
-        <a href="{% url 'financeiro:revenue_list' %}" class="btn btn-secondary">Voltar</a>
-    </div>
+ <div class="card-header bg-success text-white">
+ <h3>Detalhes da Receita</h3>
+ </div>
+ <div class="card-body">
+ <h5 class="card-title">{{ revenue.description }}</h5>
+ <p class="card-text"><strong>Valor:</strong> R$ {{ revenue.amount }}</p>
+ <p class="card-text"><strong>Data Recebimento:</strong> {{ revenue.received_date }}</p>
+ <p class="card-text"><strong>Origem:</strong> {{ revenue.source }}</p>
+ <a href="{% url 'financeiro:revenue_list' %}" class="btn btn-secondary">Voltar</a>
+ </div>
 </div>
 {% endblock %}

@@ -4,59 +4,57 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-tools me-2"></i>Diagnóstico de Conexão NFS-e</h4>
-        </div>
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card p-3 bg-light">
-                        <small class="text-muted">OPENSSL_CONF</small>
-                        <div class="fw-bold text-truncate">{{ openssl_conf }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 bg-light">
-                        <small class="text-muted">Lib Version</small>
-                        <div class="fw-bold text-truncate" title="{{ openssl_version_lib }}">{{
-                            openssl_version_lib|truncatechars:20 }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 bg-light">
-                        <small class="text-muted">SSL Version</small>
-                        <div class="fw-bold text-truncate" title="{{ openssl_version_ssl }}">{{
-                            openssl_version_ssl|truncatechars:20 }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 bg-light">
-                        <small class="text-muted">Suporte SHA1</small>
-                        <div class="fw-bold">{{ sha1_support }}</div>
-                    </div>
-                </div>
-            </div>
+ <div class="card">
+ <div class="card-header bg-primary text-white">
+ <h4 class="mb-0"><i class="bi bi-tools me-2"></i>Diagnóstico de Conexão NFS-e</h4>
+ </div>
+ <div class="card-body">
+ <div class="row mb-4">
+ <div class="col-md-3">
+ <div class="card p-3 bg-light">
+ <small class="text-muted">OPENSSL_CONF</small>
+ <div class="fw-bold text-truncate">{{ openssl_conf }}</div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="card p-3 bg-light">
+ <small class="text-muted">Lib Version</small>
+ <div class="fw-bold text-truncate" title="{{ openssl_version_lib }}">{{ openssl_version_lib|truncatechars:20 }}</div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="card p-3 bg-light">
+ <small class="text-muted">SSL Version</small>
+ <div class="fw-bold text-truncate" title="{{ openssl_version_ssl }}">{{ openssl_version_ssl|truncatechars:20 }}</div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="card p-3 bg-light">
+ <small class="text-muted">Suporte SHA1</small>
+ <div class="fw-bold">{{ sha1_support }}</div>
+ </div>
+ </div>
+ </div>
 
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>
-                Este diagnóstico testa a leitura do certificado, a conexão com a API Nacional e assina um XML de teste.
-            </div>
+ <div class="alert alert-info">
+ <i class="bi bi-info-circle me-2"></i>
+ Este diagnóstico testa a leitura do certificado, a conexão com a API Nacional e assina um XML de teste.
+ </div>
 
-            <h5 class="mt-4">Resultado do Teste:</h5>
-            <div class="bg-dark text-light p-3 rounded" style="max-height: 500px; overflow-y: auto;">
-                <pre class="mb-0" style="white-space: pre-wrap;">{{ output }}</pre>
-            </div>
+ <h5 class="mt-4">Resultado do Teste:</h5>
+ <div class="bg-dark text-light p-3 rounded" style="max-height: 500px; overflow-y: auto;">
+ <pre class="mb-0" style="white-space: pre-wrap;">{{ output }}</pre>
+ </div>
 
-            <div class="mt-4">
-                <a href="{% url 'financeiro:dashboard' %}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-2"></i>Voltar
-                </a>
-                <button onclick="location.reload()" class="btn btn-primary">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Rodar Novamente
-                </button>
-            </div>
-        </div>
-    </div>
+ <div class="mt-4">
+ <a href="{% url 'financeiro:dashboard' %}" class="btn btn-secondary">
+ <i class="bi bi-arrow-left me-2"></i>Voltar
+ </a>
+ <button onclick="location.reload()" class="btn btn-primary">
+ <i class="bi bi-arrow-clockwise me-2"></i>Rodar Novamente
+ </button>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

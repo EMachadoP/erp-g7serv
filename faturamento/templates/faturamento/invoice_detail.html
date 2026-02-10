@@ -2,26 +2,26 @@
 
 {% block content %}
 <div class="card mt-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h3>Fatura #{{ invoice.number }}</h3>
-        <span class="badge bg-light text-dark">{{ invoice.get_status_display }}</span>
-    </div>
-    <div class="card-body">
-        <h5 class="card-title">Grupo: {{ invoice.billing_group.name }}</h5>
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <p><strong>Emissão:</strong> {{ invoice.issue_date|date:"d/m/Y" }}</p>
-                <p><strong>Vencimento:</strong> {{ invoice.due_date|date:"d/m/Y" }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Valor:</strong> R$ {{ invoice.amount }}</p>
-            </div>
-        </div>
+ <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+ <h3>Fatura #{{ invoice.number }}</h3>
+ <span class="badge bg-light text-dark">{{ invoice.get_status_display }}</span>
+ </div>
+ <div class="card-body">
+ <h5 class="card-title">Grupo: {{ invoice.billing_group.name }}</h5>
+ <div class="row mt-3">
+ <div class="col-md-6">
+ <p><strong>Emissão:</strong> {{ invoice.issue_date|date:"d/m/Y" }}</p>
+ <p><strong>Vencimento:</strong> {{ invoice.due_date|date:"d/m/Y" }}</p>
+ </div>
+ <div class="col-md-6">
+ <p><strong>Valor:</strong> R$ {{ invoice.amount }}</p>
+ </div>
+ </div>
 
-        <div class="mt-4">
-            <a href="{% url 'faturamento:list' %}" class="btn btn-secondary">Voltar</a>
-            <a href="{% url 'faturamento:update' invoice.id %}" class="btn btn-warning">Editar</a>
-        </div>
-    </div>
+ <div class="mt-4">
+ <a href="{% url 'faturamento:list' %}" class="btn btn-secondary">Voltar</a>
+ <a href="{% url 'faturamento:update' invoice.id %}" class="btn btn-warning">Editar</a>
+ </div>
+ </div>
 </div>
 {% endblock %}

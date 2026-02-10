@@ -2,200 +2,200 @@
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Detalhes da Conta a Receber</h2>
-            <div>
-                <a href="{% url 'financeiro:account_receivable_list' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i>Voltar
-                </a>
-            </div>
-        </div>
+ <div class="col-md-10">
+ <div class="d-flex justify-content-between align-items-center mb-4">
+ <h2>Detalhes da Conta a Receber</h2>
+ <div>
+ <a href="{% url 'financeiro:account_receivable_list' %}" class="btn btn-outline-secondary">
+ <i class="bi bi-arrow-left me-2"></i>Voltar
+ </a>
+ </div>
+ </div>
 
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 text-muted">Informações Principais</h5>
-                    {% if receivable.status == 'PENDING' %}
-                    <span class="badge bg-warning text-dark px-3 py-2">Pendente</span>
-                    {% elif receivable.status == 'RECEIVED' %}
-                    <span class="badge bg-success px-3 py-2">Recebido</span>
-                    {% elif receivable.status == 'OVERDUE' %}
-                    <span class="badge bg-danger px-3 py-2">Vencido</span>
-                    {% elif receivable.status == 'CANCELLED' %}
-                    <span class="badge bg-secondary px-3 py-2">Cancelado</span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <label class="text-muted small text-uppercase">Descrição</label>
-                        <p class="fs-5 fw-bold mb-0">{{ receivable.description }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="text-muted small text-uppercase">Valor</label>
-                        <p class="fs-5 fw-bold mb-0">R$ {{ receivable.amount }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="text-muted small text-uppercase">Vencimento</label>
-                        <p class="fs-5 mb-0">{{ receivable.due_date|date:"d/m/Y" }}</p>
-                    </div>
+ <div class="card border-0 shadow-sm mb-4">
+ <div class="card-header bg-white py-3">
+ <div class="d-flex justify-content-between align-items-center">
+ <h5 class="mb-0 text-muted">Informações Principais</h5>
+ {% if receivable.status == 'PENDING' %}
+ <span class="badge bg-warning text-dark px-3 py-2">Pendente</span>
+ {% elif receivable.status == 'RECEIVED' %}
+ <span class="badge bg-success px-3 py-2">Recebido</span>
+ {% elif receivable.status == 'OVERDUE' %}
+ <span class="badge bg-danger px-3 py-2">Vencido</span>
+ {% elif receivable.status == 'CANCELLED' %}
+ <span class="badge bg-secondary px-3 py-2">Cancelado</span>
+ {% endif %}
+ </div>
+ </div>
+ <div class="card-body">
+ <div class="row g-4">
+ <div class="col-md-6">
+ <label class="text-muted small text-uppercase">Descrição</label>
+ <p class="fs-5 fw-bold mb-0">{{ receivable.description }}</p>
+ </div>
+ <div class="col-md-3">
+ <label class="text-muted small text-uppercase">Valor</label>
+ <p class="fs-5 fw-bold mb-0">R$ {{ receivable.amount }}</p>
+ </div>
+ <div class="col-md-3">
+ <label class="text-muted small text-uppercase">Vencimento</label>
+ <p class="fs-5 mb-0">{{ receivable.due_date|date:"d/m/Y" }}</p>
+ </div>
 
-                    <div class="col-md-6">
-                        <label class="text-muted small text-uppercase">Cliente</label>
-                        <p class="mb-0">{{ receivable.client.name|default:"-" }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-muted small text-uppercase">Categoria</label>
-                        <p class="mb-0">{{ receivable.category.nome|default:"-" }}</p>
-                    </div>
+ <div class="col-md-6">
+ <label class="text-muted small text-uppercase">Cliente</label>
+ <p class="mb-0">{{ receivable.client.name|default:"-" }}</p>
+ </div>
+ <div class="col-md-6">
+ <label class="text-muted small text-uppercase">Categoria</label>
+ <p class="mb-0">{{ receivable.category.nome|default:"-" }}</p>
+ </div>
 
-                    {% if receivable.notes %}
-                    <div class="col-12">
-                        <label class="text-muted small text-uppercase">Observações</label>
-                        <p class="mb-0 bg-light p-3 rounded">{{ receivable.notes }}</p>
-                    </div>
-                    {% endif %}
-                </div>
+ {% if receivable.notes %}
+ <div class="col-12">
+ <label class="text-muted small text-uppercase">Observações</label>
+ <p class="mb-0 bg-light p-3 rounded">{{ receivable.notes }}</p>
+ </div>
+ {% endif %}
+ </div>
 
-                {% if not receivable.cora_id and receivable.status in 'PENDING,OVERDUE' %}
-                <div class="mt-4 pt-3 border-top">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-primary"></i>Configurações para o
-                        Boleto Cora</h6>
-                    <form action="{% url 'financeiro:account_receivable_update' receivable.id %}" method="post">
-                        {% csrf_token %}
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label small text-uppercase text-muted">Vencimento</label>
-                                <input type="date" name="due_date" class="form-control form-control-sm"
-                                    value="{{ receivable.due_date|date:'Y-m-d' }}">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small text-uppercase text-muted">Referência / NF</label>
-                                <input type="text" name="external_reference" class="form-control form-control-sm"
-                                    value="{{ receivable.external_reference|default:'' }}" placeholder="Ex: NF 123">
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label small text-uppercase text-muted">Multa (R$)</label>
-                                <input type="number" step="0.01" name="fine_amount" class="form-control form-control-sm"
-                                    value="{{ receivable.fine_amount|stringformat:'.2f' }}">
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label small text-uppercase text-muted">Juros (%)</label>
-                                <input type="number" step="0.01" name="interest_percent"
-                                    class="form-control form-control-sm"
-                                    value="{{ receivable.interest_percent|stringformat:'.2f' }}">
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <input type="hidden" name="description" value="{{ receivable.description }}">
-                                <input type="hidden" name="amount" value="{{ receivable.amount }}">
-                                <input type="hidden" name="client" value="{{ receivable.client.id }}">
-                                <input type="hidden" name="status" value="{{ receivable.status }}">
-                                <input type="hidden" name="next"
-                                    value="{% url 'financeiro:account_receivable_detail' receivable.id %}">
-                                <button type="submit" class="btn btn-sm btn-primary w-100 shadow-sm">
-                                    <i class="bi bi-save me-1"></i>Salvar
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mt-2 text-muted small">
-                            <i class="bi bi-info-circle me-1"></i>Ajuste estas informações antes de clicar no botão azul
-                            de emissão abaixo.
-                        </div>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
+ {% if not receivable.cora_id and receivable.status in 'PENDING,OVERDUE' %}
+ <div class="mt-4 pt-3 border-top">
+ <h6 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-primary"></i>Configurações para o
+ Boleto Cora</h6>
+ <form action="{% url 'financeiro:account_receivable_update' receivable.id %}" method="post">
+ {% csrf_token %}
+ <div class="row g-3">
+ <div class="col-md-3">
+ <label class="form-label small text-uppercase text-muted">Vencimento</label>
+ <input type="date" name="due_date" class="form-control form-control-sm"
+ value="{{ receivable.due_date|date:'Y-m-d' }}">
+ </div>
+ <div class="col-md-3">
+ <label class="form-label small text-uppercase text-muted">Referência / NF</label>
+ <input type="text" name="external_reference" class="form-control form-control-sm"
+ value="{{ receivable.external_reference|default:'' }}" placeholder="Ex: NF 123">
+ </div>
+ <div class="col-md-2">
+ <label class="form-label small text-uppercase text-muted">Multa (R$)</label>
+ <input type="number" step="0.01" name="fine_amount" class="form-control form-control-sm"
+ value="{{ receivable.fine_amount|stringformat:'.2f' }}">
+ </div>
+ <div class="col-md-2">
+ <label class="form-label small text-uppercase text-muted">Juros (%)</label>
+ <input type="number" step="0.01" name="interest_percent"
+ class="form-control form-control-sm"
+ value="{{ receivable.interest_percent|stringformat:'.2f' }}">
+ </div>
+ <div class="col-md-2 d-flex align-items-end">
+ <input type="hidden" name="description" value="{{ receivable.description }}">
+ <input type="hidden" name="amount" value="{{ receivable.amount }}">
+ <input type="hidden" name="client" value="{{ receivable.client.id }}">
+ <input type="hidden" name="status" value="{{ receivable.status }}">
+ <input type="hidden" name="next"
+ value="{% url 'financeiro:account_receivable_detail' receivable.id %}">
+ <button type="submit" class="btn btn-sm btn-primary w-100 shadow-sm">
+ <i class="bi bi-save me-1"></i>Salvar
+ </button>
+ </div>
+ </div>
+ <div class="mt-2 text-muted small">
+ <i class="bi bi-info-circle me-1"></i>Ajuste estas informações antes de clicar no botão azul
+ de emissão abaixo.
+ </div>
+ </form>
+ </div>
+ {% endif %}
+ </div>
 
-            {% if receivable.status == 'PENDING' or receivable.status == 'OVERDUE' %}
-            <div class="card-footer bg-white py-3">
-                <div class="d-flex gap-2 align-items-center">
-                    <form action="{% url 'financeiro:account_receivable_receive' receivable.id %}" method="post"
-                        onsubmit="return confirm('Confirmar recebimento desta conta?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success text-white fw-bold shadow-sm">
-                            <i class="bi bi-check-circle me-2"></i>Realizar Recebimento
-                        </button>
-                    </form>
+ {% if receivable.status == 'PENDING' or receivable.status == 'OVERDUE' %}
+ <div class="card-footer bg-white py-3">
+ <div class="d-flex gap-2 align-items-center">
+ <form action="{% url 'financeiro:account_receivable_receive' receivable.id %}" method="post"
+ onsubmit="return confirm('Confirmar recebimento desta conta?');">
+ {% csrf_token %}
+ <button type="submit" class="btn btn-success text-white fw-bold shadow-sm">
+ <i class="bi bi-check-circle me-2"></i>Realizar Recebimento
+ </button>
+ </form>
 
-                    {% if not receivable.cora_id %}
-                    <form action="{% url 'financeiro:emitir_boleto_cora' receivable.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-primary shadow-sm">
-                            <i class="bi bi-lightning-fill me-2"></i>Emitir Boleto/Pix Cora
-                        </button>
-                    </form>
-                    {% endif %}
+ {% if not receivable.cora_id %}
+ <form action="{% url 'financeiro:emitir_boleto_cora' receivable.id %}" method="post">
+ {% csrf_token %}
+ <button type="submit" class="btn btn-outline-primary shadow-sm">
+ <i class="bi bi-lightning-fill me-2"></i>Emitir Boleto/Pix Cora
+ </button>
+ </form>
+ {% endif %}
 
-                    <form action="{% url 'financeiro:account_receivable_cancel' receivable.id %}" method="post"
-                        onsubmit="return confirm('Tem certeza que deseja cancelar esta conta?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-danger shadow-sm">
-                            <i class="bi bi-x-circle me-2"></i>Cancelar Conta
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
+ <form action="{% url 'financeiro:account_receivable_cancel' receivable.id %}" method="post"
+ onsubmit="return confirm('Tem certeza que deseja cancelar esta conta?');">
+ {% csrf_token %}
+ <button type="submit" class="btn btn-outline-danger shadow-sm">
+ <i class="bi bi-x-circle me-2"></i>Cancelar Conta
+ </button>
+ </form>
+ </div>
+ </div>
+ {% endif %}
 
-            {% if receivable.cora_id %}
-            <div class="card-footer bg-light border-top py-3">
-                <h6 class="fw-bold mb-3"><i class="bi bi-bank me-2 text-primary"></i>Integração Cora (Emitido)</h6>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="text-muted small">ID Cora</label>
-                        <p class="font-monospace small">{{ receivable.cora_id }}</p>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="d-flex gap-2">
-                            {% if receivable.cora_pdf_url %}
-                            <a href="{{ receivable.cora_pdf_url }}" target="_blank" class="btn btn-sm btn-primary">
-                                <i class="bi bi-file-earmark-pdf me-1"></i>Ver Boleto (PDF)
-                            </a>
-                            {% endif %}
-                            <button class="btn btn-sm btn-outline-dark"
-                                onclick="navigator.clipboard.writeText('{{ receivable.cora_copy_paste }}').then(() => alert('Copiado!'))">
-                                <i class="bi bi-clipboard me-1"></i>Copiar Linha/Pix
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-        </div>
+ {% if receivable.cora_id %}
+ <div class="card-footer bg-light border-top py-3">
+ <h6 class="fw-bold mb-3"><i class="bi bi-bank me-2 text-primary"></i>Integração Cora (Emitido)</h6>
+ <div class="row">
+ <div class="col-md-4">
+ <label class="text-muted small">ID Cora</label>
+ <p class="font-monospace small">{{ receivable.cora_id }}</p>
+ </div>
+ <div class="col-md-8">
+ <div class="d-flex gap-2">
+ {% if receivable.cora_pdf_url %}
+ <a href="{{ receivable.cora_pdf_url }}" target="_blank" class="btn btn-sm btn-primary">
+ <i class="bi bi-file-earmark-pdf me-1"></i>Ver Boleto (PDF)
+ </a>
+ {% endif %}
+ <button class="btn btn-sm btn-outline-dark"
+ onclick="navigator.clipboard.writeText('{{ receivable.cora_copy_paste }}').then(() => alert('Copiado!'))">
+ <i class="bi bi-clipboard me-1"></i>Copiar Linha/Pix
+ </button>
+ </div>
+ </div>
+ </div>
+ </div>
+ {% endif %}
+ </div>
 
-        <!-- History / Timeline (Placeholder for now) -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0 text-muted">Histórico</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item px-0">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <i class="bi bi-clock text-muted me-2"></i>
-                                <span class="fw-bold">Criado em</span>
-                            </div>
-                            <span class="text-muted">{{ receivable.created_at|date:"d/m/Y H:i" }}</span>
-                        </div>
-                    </li>
-                    {% if receivable.receipt_date %}
-                    <li class="list-group-item px-0">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                <span class="fw-bold text-success">Recebido em</span>
-                            </div>
-                            <span class="text-success">{{ receivable.receipt_date|date:"d/m/Y" }}</span>
-                        </div>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+ <!-- History / Timeline (Placeholder for now) -->
+ <div class="card border-0 shadow-sm">
+ <div class="card-header bg-white py-3">
+ <h5 class="mb-0 text-muted">Histórico</h5>
+ </div>
+ <div class="card-body">
+ <ul class="list-group list-group-flush">
+ <li class="list-group-item px-0">
+ <div class="d-flex justify-content-between">
+ <div>
+ <i class="bi bi-clock text-muted me-2"></i>
+ <span class="fw-bold">Criado em</span>
+ </div>
+ <span class="text-muted">{{ receivable.created_at|date:"d/m/Y H:i" }}</span>
+ </div>
+ </li>
+ {% if receivable.receipt_date %}
+ <li class="list-group-item px-0">
+ <div class="d-flex justify-content-between">
+ <div>
+ <i class="bi bi-check-circle text-success me-2"></i>
+ <span class="fw-bold text-success">Recebido em</span>
+ </div>
+ <span class="text-success">{{ receivable.receipt_date|date:"d/m/Y" }}</span>
+ </div>
+ </li>
+ {% endif %}
+ </ul>
+ </div>
+ </div>
 
-    </div>
+ </div>
 </div>
 {% endblock %}

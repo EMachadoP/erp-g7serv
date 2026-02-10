@@ -2,25 +2,25 @@
 
 {% block content %}
 <div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-danger text-white">
-                <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Exclusão</h4>
-            </div>
-            <div class="card-body text-center p-5">
-                <h5 class="mb-4">Tem certeza que deseja excluir o cliente?</h5>
-                <p class="lead fw-bold text-primary mb-4">{{ client.name }}</p>
-                <p class="text-muted mb-4">Esta ação não poderá ser desfeita.</p>
+ <div class="col-md-6">
+ <div class="card shadow">
+ <div class="card-header bg-danger text-white">
+ <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Exclusão</h4>
+ </div>
+ <div class="card-body text-center p-5">
+ <h5 class="mb-4">Tem certeza que deseja excluir o cliente?</h5>
+ <p class="lead fw-bold text-primary mb-4">{{ client.name }}</p>
+ <p class="text-muted mb-4">Esta ação não poderá ser desfeita.</p>
 
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-grid gap-2 d-md-block">
-                        <a href="{% url 'comercial:client_list' %}" class="btn btn-secondary px-4">Cancelar</a>
-                        <button type="submit" class="btn btn-danger px-4">Sim, Excluir</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+ <form method="post">
+ {% csrf_token %}
+ <div class="d-grid gap-2 d-md-block">
+ <a href="{% url 'comercial:client_list' %}" class="btn btn-secondary px-4">Cancelar</a>
+ <button type="submit" class="btn btn-danger px-4">Sim, Excluir</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

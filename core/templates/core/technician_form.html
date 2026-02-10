@@ -3,62 +3,62 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">{{ title }}</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
+ <div class="col-md-8">
+ <div class="card shadow-sm">
+ <div class="card-header bg-primary text-white">
+ <h4 class="mb-0">{{ title }}</h4>
+ </div>
+ <div class="card-body">
+ <form method="post">
+ {% csrf_token %}
 
-                    <h5 class="mb-3 text-secondary">Dados do Usuário de Acesso</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.first_name|as_crispy_field }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.last_name|as_crispy_field }}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.email|as_crispy_field }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.phone|as_crispy_field }}
-                        </div>
-                    </div>
+ <h5 class="mb-3 text-secondary">Dados do Usuário de Acesso</h5>
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ {{ form.first_name|as_crispy_field }}
+ </div>
+ <div class="col-md-6 mb-3">
+ {{ form.last_name|as_crispy_field }}
+ </div>
+ </div>
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ {{ form.email|as_crispy_field }}
+ </div>
+ <div class="col-md-6 mb-3">
+ {{ form.phone|as_crispy_field }}
+ </div>
+ </div>
 
-                    <hr>
-                    <h5 class="mb-3 text-secondary">Credenciais</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.username|as_crispy_field }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.password|as_crispy_field }}
-                        </div>
-                    </div>
+ <hr>
+ <h5 class="mb-3 text-secondary">Credenciais</h5>
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ {{ form.username|as_crispy_field }}
+ </div>
+ <div class="col-md-6 mb-3">
+ {{ form.password|as_crispy_field }}
+ </div>
+ </div>
 
-                    <hr>
-                    <h5 class="mb-3 text-secondary">Configurações</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.calendar_color|as_crispy_field }}
-                        </div>
-                        <div class="col-md-6 mb-3 d-flex align-items-center">
-                            {{ form.active|as_crispy_field }}
-                        </div>
-                    </div>
+ <hr>
+ <h5 class="mb-3 text-secondary">Configurações</h5>
+ <div class="row">
+ <div class="col-md-6 mb-3">
+ {{ form.calendar_color|as_crispy_field }}
+ </div>
+ <div class="col-md-6 mb-3 d-flex align-items-center">
+ {{ form.active|as_crispy_field }}
+ </div>
+ </div>
 
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a href="{% url 'core:technician_list' %}" class="btn btn-secondary me-2">Cancelar</a>
-                        <button type="submit" class="btn btn-success">Salvar Técnico</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+ <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+ <a href="{% url 'core:technician_list' %}" class="btn btn-secondary me-2">Cancelar</a>
+ <button type="submit" class="btn btn-success">Salvar Técnico</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

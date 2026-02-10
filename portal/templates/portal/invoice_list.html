@@ -2,33 +2,32 @@
 {% block content %}
 <h2>Minhas Faturas</h2>
 <table class="table table-striped mt-3">
-    <thead>
-        <tr>
-            <th>Número</th>
-            <th>Vencimento</th>
-            <th>Valor</th>
-            <th>Status</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for invoice in invoices %}
-        <tr>
-            <td>{{ invoice.number }}</td>
-            <td>{{ invoice.due_date }}</td>
-            <td>R$ {{ invoice.amount }}</td>
-            <td><span class="badge bg-{{ invoice.status|yesno:'success,warning' }}">{{ invoice.get_status_display
-                    }}</span></td>
-            <td>
-                <a href="{% url 'faturamento:invoice_detail' invoice.id %}" class="btn btn-sm btn-info"
-                    target="_blank">Ver Detalhes</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">Nenhuma fatura encontrada.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+ <thead>
+ <tr>
+ <th>Número</th>
+ <th>Vencimento</th>
+ <th>Valor</th>
+ <th>Status</th>
+ <th>Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for invoice in invoices %}
+ <tr>
+ <td>{{ invoice.number }}</td>
+ <td>{{ invoice.due_date }}</td>
+ <td>R$ {{ invoice.amount }}</td>
+ <td><span class="badge bg-{{ invoice.status|yesno:'success,warning' }}">{{ invoice.get_status_display }}</span></td>
+ <td>
+ <a href="{% url 'faturamento:invoice_detail' invoice.id %}" class="btn btn-sm btn-info"
+ target="_blank">Ver Detalhes</a>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="5">Nenhuma fatura encontrada.</td>
+ </tr>
+ {% endfor %}
+ </tbody>
 </table>
 {% endblock %}

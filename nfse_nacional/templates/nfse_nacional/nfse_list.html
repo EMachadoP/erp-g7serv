@@ -5,115 +5,113 @@
 
 {% block content %}
 <div class="container py-4">
-    <!-- Header Section -->
-    <div class="row mb-5 animate__animated animate__fadeIn">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center me-3"
-                    style="width: 48px; height: 48px; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);">
-                    <i class="bi bi-receipt fs-4"></i>
-                </div>
-                <div>
-                    <h2 class="fw-bold mb-0 text-dark">NFS-e Nacional</h2>
-                    <p class="text-muted mb-0">Gerencie suas Notas Fiscais de Serviço Eletrônicas.</p>
-                </div>
-            </div>
-            <a href="{% url 'nfse_nacional:nfse_create' %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow">
-                <i class="bi bi-plus-lg me-2"></i>Nova NFS-e
-            </a>
-        </div>
-    </div>
+ <!-- Header Section -->
+ <div class="row mb-5 animate__animated animate__fadeIn">
+ <div class="col-12 d-flex justify-content-between align-items-center">
+ <div class="d-flex align-items-center">
+ <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center me-3"
+ style="width: 48px; height: 48px; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);">
+ <i class="bi bi-receipt fs-4"></i>
+ </div>
+ <div>
+ <h2 class="fw-bold mb-0 text-dark">NFS-e Nacional</h2>
+ <p class="text-muted mb-0">Gerencie suas Notas Fiscais de Serviço Eletrônicas.</p>
+ </div>
+ </div>
+ <a href="{% url 'nfse_nacional:nfse_create' %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow">
+ <i class="bi bi-plus-lg me-2"></i>Nova NFS-e
+ </a>
+ </div>
+ </div>
 
-    <!-- Filters Section (Search) -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4">
-            <form method="get" class="row g-3">
-                <div class="col-lg-10">
-                    <div class="input-group input-group-lg">
-                        <span class="input-group-text bg-white border-end-0 rounded-start-4"><i
-                                class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="q" class="form-control border-start-0 rounded-end-4"
-                            placeholder="Buscar por DPS, Tomador ou Chave de Acesso..." value="{{ query }}">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <button type="submit" class="btn btn-primary btn-lg w-100 rounded-4">Filtrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+ <!-- Filters Section (Search) -->
+ <div class="card border-0 shadow-sm rounded-4 mb-4">
+ <div class="card-body p-4">
+ <form method="get" class="row g-3">
+ <div class="col-lg-10">
+ <div class="input-group input-group-lg">
+ <span class="input-group-text bg-white border-end-0 rounded-start-4"><i
+ class="bi bi-search text-muted"></i></span>
+ <input type="text" name="q" class="form-control border-start-0 rounded-end-4"
+ placeholder="Buscar por DPS, Tomador ou Chave de Acesso..." value="{{ query }}">
+ </div>
+ </div>
+ <div class="col-lg-2">
+ <button type="submit" class="btn btn-primary btn-lg w-100 rounded-4">Filtrar</button>
+ </div>
+ </form>
+ </div>
+ </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-body p-0">
-            <div class=\"table table-premium-responsive\">
-                <table class=\"table table-premium table-hover align-middle mb-0\">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4">DPS / Série</th>
-                            <th>Data Emissão</th>
-                            <th>Tomador</th>
-                            <th>Serviço</th>
-                            <th>Status</th>
-                            <th class="text-end pe-4">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for nfse in nfses %}
-                        <tr>
-                            <td class="ps-4">
-                                <span class="fw-bold text-dark">#{{ nfse.numero_dps|stringformat:"05d" }}</span>
-                                <div class="small text-muted">Série {{ nfse.serie_dps }}</div>
-                            </td>
-                            <td>{{ nfse.data_emissao|date:"d/m/Y" }} <span class="text-muted small">{{
-                                    nfse.data_emissao|date:"H:i" }}</span></td>
-                            <td>
-                                <div class="fw-medium text-dark">{{ nfse.cliente.name }}</div>
-                                <div class="small text-muted">{{ nfse.cliente.document|default:"--" }}</div>
-                            </td>
-                            <td>
-                                <span class="badge bg-light text-dark border">{{ nfse.servico.codigo_tributacao_nacional
-                                    }}</span>
-                            </td>
-                            <td>
-                                {% if nfse.status == 'Autorizada' %}
-                                <span class="badge rounded-pill"
-                                    style="background: #dcfce7; color: #166534; padding: 6px 12px;">Autorizada</span>
-                                {% elif nfse.status == 'Rejeitada' %}
-                                <span class="badge rounded-pill"
-                                    style="background: #fee2e2; color: #991b1b; padding: 6px 12px;">Rejeitada</span>
-                                {% else %}
-                                <span class="badge rounded-pill"
-                                    style="background: #fef3c7; color: #92400e; padding: 6px 12px;">Pendente</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end pe-4">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <a href="{% url 'nfse_nacional:nfse_view' nfse.id %}"
-                                        class="btn btn-outline-success btn-sm rounded-pill px-3"
-                                        title="Visualizar Nota">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if nfse.xml_retorno %}
-                                    <a href="{% url 'nfse_nacional:nfse_xml' nfse.id %}"
-                                        class="btn btn-outline-info btn-sm rounded-pill px-3" title="Baixar XML">
-                                        <i class="bi bi-file-earmark-code"></i>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
-                                Nenhum registro encontrado.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+ <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+ <div class="card-body p-0">
+ <div class="table table-responsive">
+ <table class="table table-premium table-hover align-middle mb-0">
+ <thead class="bg-light">
+ <tr>
+ <th class="ps-4">DPS / Série</th>
+ <th>Data Emissão</th>
+ <th>Tomador</th>
+ <th>Serviço</th>
+ <th>Status</th>
+ <th class="text-end pe-4">Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for nfse in nfses %}
+ <tr>
+ <td class="ps-4">
+ <span class="fw-bold text-dark">#{{ nfse.numero_dps|stringformat:"05d" }}</span>
+ <div class="small text-muted">Série {{ nfse.serie_dps }}</div>
+ </td>
+ <td>{{ nfse.data_emissao|date:"d/m/Y" }} <span class="text-muted small">{{ nfse.data_emissao|date:"H:i" }}</span></td>
+ <td>
+ <div class="fw-medium text-dark">{{ nfse.cliente.name }}</div>
+ <div class="small text-muted">{{ nfse.cliente.document|default:"--" }}</div>
+ </td>
+ <td>
+ <span class="badge bg-light text-dark border">{{ nfse.servico.codigo_tributacao_nacional }}</span>
+ </td>
+ <td>
+ {% if nfse.status == 'Autorizada' %}
+ <span class="badge rounded-pill"
+ style="background: #dcfce7; color: #166534; padding: 6px 12px;">Autorizada</span>
+ {% elif nfse.status == 'Rejeitada' %}
+ <span class="badge rounded-pill"
+ style="background: #fee2e2; color: #991b1b; padding: 6px 12px;">Rejeitada</span>
+ {% else %}
+ <span class="badge rounded-pill"
+ style="background: #fef3c7; color: #92400e; padding: 6px 12px;">Pendente</span>
+ {% endif %}
+ </td>
+ <td class="text-end pe-4">
+ <div class="d-flex justify-content-end gap-2">
+ <a href="{% url 'nfse_nacional:nfse_view' nfse.id %}"
+ class="btn btn-outline-success btn-sm rounded-pill px-3"
+ title="Visualizar Nota">
+ <i class="bi bi-eye"></i>
+ </a>
+ {% if nfse.xml_retorno %}
+ <a href="{% url 'nfse_nacional:nfse_xml' nfse.id %}"
+ class="btn btn-outline-info btn-sm rounded-pill px-3" title="Baixar XML">
+ <i class="bi bi-file-earmark-code"></i>
+ </a>
+ {% endif %}
+ </div>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="6" class="text-center py-5 text-muted">
+ <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+ Nenhum registro encontrado.
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

@@ -5,130 +5,130 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h3 mb-0 text-gray-800">
-                <i class="bi bi-envelope-paper me-2 text-primary"></i>Templates de E-mail
-            </h2>
-            <div>
-                <a href="{% url 'core:company_settings' %}" class="btn btn-outline-secondary me-2">
-                    <i class="bi bi-arrow-left me-1"></i>Voltar
-                </a>
-                <a href="{% url 'core:email_template_create' %}" class="btn btn-primary shadow-sm">
-                    <i class="bi bi-plus-lg me-1"></i>Novo Template
-                </a>
-            </div>
-        </div>
-    </div>
+ <div class="col-12">
+ <div class="d-flex justify-content-between align-items-center">
+ <h2 class="h3 mb-0 text-gray-800">
+ <i class="bi bi-envelope-paper me-2 text-primary"></i>Templates de E-mail
+ </h2>
+ <div>
+ <a href="{% url 'core:company_settings' %}" class="btn btn-outline-secondary me-2">
+ <i class="bi bi-arrow-left me-1"></i>Voltar
+ </a>
+ <a href="{% url 'core:email_template_create' %}" class="btn btn-primary shadow-sm">
+ <i class="bi bi-plus-lg me-1"></i>Novo Template
+ </a>
+ </div>
+ </div>
+ </div>
 </div>
 
 <div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-primary">Templates Cadastrados</h6>
-            </div>
-            <div class="card-body p-0">
-                {% if templates %}
-                <div class=\"table table-premium-responsive\">
-                    <table class=\"table table-premium table-hover mb-0\">
-                        <thead class="bg-light">
-                            <tr>
-                                <th style="width: 40%;">Nome</th>
-                                <th>Tipo</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-center" style="width: 150px;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for template in templates %}
-                            <tr>
-                                <td>
-                                    <strong>{{ template.name }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ template.subject|truncatechars:50 }}</small>
-                                </td>
-                                <td>
-                                    <span class="badge 
-                                        {% if template.template_type == 'BOLETO_NF' %}bg-success
-                                        {% elif template.template_type == 'BOLETO' %}bg-info
-                                        {% elif template.template_type == 'FATURA' %}bg-warning text-dark
-                                        {% elif template.template_type == 'COBRANCA' %}bg-danger
-                                        {% else %}bg-secondary{% endif %}">
-                                        {{ template.get_template_type_display }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    {% if template.active %}
-                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Ativo</span>
-                                    {% else %}
-                                    <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Inativo</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <a href="{% url 'core:email_template_update' template.pk %}"
-                                        class="btn btn-sm btn-outline-primary" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="{% url 'core:email_template_delete' template.pk %}"
-                                        class="btn btn-sm btn-outline-danger ms-1" title="Excluir">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-envelope-x text-muted" style="font-size: 3rem;"></i>
-                    <p class="text-muted mt-3">Nenhum template de e-mail cadastrado.</p>
-                    <a href="{% url 'core:email_template_create' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i>Criar Primeiro Template
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+ <div class="col-12">
+ <div class="card shadow-sm border-0">
+ <div class="card-header bg-white py-3">
+ <h6 class="m-0 fw-bold text-primary">Templates Cadastrados</h6>
+ </div>
+ <div class="card-body p-0">
+ {% if templates %}
+ <div class="table table-responsive">
+ <table class="table table-premium table-hover mb-0">
+ <thead class="bg-light">
+ <tr>
+ <th style="width: 40%;">Nome</th>
+ <th>Tipo</th>
+ <th class="text-center">Status</th>
+ <th class="text-center" style="width: 150px;">Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for template in templates %}
+ <tr>
+ <td>
+ <strong>{{ template.name }}</strong>
+ <br>
+ <small class="text-muted">{{ template.subject|truncatechars:50 }}</small>
+ </td>
+ <td>
+ <span class="badge 
+ {% if template.template_type == 'BOLETO_NF' %}bg-success
+ {% elif template.template_type == 'BOLETO' %}bg-info
+ {% elif template.template_type == 'FATURA' %}bg-warning text-dark
+ {% elif template.template_type == 'COBRANCA' %}bg-danger
+ {% else %}bg-secondary{% endif %}">
+ {{ template.get_template_type_display }}
+ </span>
+ </td>
+ <td class="text-center">
+ {% if template.active %}
+ <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Ativo</span>
+ {% else %}
+ <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Inativo</span>
+ {% endif %}
+ </td>
+ <td class="text-center">
+ <a href="{% url 'core:email_template_update' template.pk %}"
+ class="btn btn-sm btn-outline-primary" title="Editar">
+ <i class="bi bi-pencil"></i>
+ </a>
+ <a href="{% url 'core:email_template_delete' template.pk %}"
+ class="btn btn-sm btn-outline-danger ms-1" title="Excluir">
+ <i class="bi bi-trash"></i>
+ </a>
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ {% else %}
+ <div class="text-center py-5">
+ <i class="bi bi-envelope-x text-muted" style="font-size: 3rem;"></i>
+ <p class="text-muted mt-3">Nenhum template de e-mail cadastrado.</p>
+ <a href="{% url 'core:email_template_create' %}" class="btn btn-primary">
+ <i class="bi bi-plus-lg me-1"></i>Criar Primeiro Template
+ </a>
+ </div>
+ {% endif %}
+ </div>
+ </div>
+ </div>
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-light py-2">
-                <h6 class="m-0 fw-bold text-dark"><i class="bi bi-info-circle me-2"></i>Placeholders Disponíveis</h6>
-            </div>
-            <div class="card-body small">
-                <table class=\"table table-premium table-sm mb-0\">
-                    <tr>
-                        <td><code>{cliente}</code></td>
-                        <td>Nome do cliente</td>
-                    </tr>
-                    <tr>
-                        <td><code>{valor}</code></td>
-                        <td>Valor da fatura (R$)</td>
-                    </tr>
-                    <tr>
-                        <td><code>{vencimento}</code></td>
-                        <td>Data de vencimento</td>
-                    </tr>
-                    <tr>
-                        <td><code>{fatura}</code></td>
-                        <td>Número da fatura</td>
-                    </tr>
-                    <tr>
-                        <td><code>{link_boleto}</code></td>
-                        <td>Link para o boleto</td>
-                    </tr>
-                    <tr>
-                        <td><code>{link_nf}</code></td>
-                        <td>Link para a NFS-e</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
+ <div class="col-md-6">
+ <div class="card shadow-sm border-0">
+ <div class="card-header bg-light py-2">
+ <h6 class="m-0 fw-bold text-dark"><i class="bi bi-info-circle me-2"></i>Placeholders Disponíveis</h6>
+ </div>
+ <div class="card-body small">
+ <table class="table table-premium table-sm mb-0">
+ <tr>
+ <td><code>{cliente}</code></td>
+ <td>Nome do cliente</td>
+ </tr>
+ <tr>
+ <td><code>{valor}</code></td>
+ <td>Valor da fatura (R$)</td>
+ </tr>
+ <tr>
+ <td><code>{vencimento}</code></td>
+ <td>Data de vencimento</td>
+ </tr>
+ <tr>
+ <td><code>{fatura}</code></td>
+ <td>Número da fatura</td>
+ </tr>
+ <tr>
+ <td><code>{link_boleto}</code></td>
+ <td>Link para o boleto</td>
+ </tr>
+ <tr>
+ <td><code>{link_nf}</code></td>
+ <td>Link para a NFS-e</td>
+ </tr>
+ </table>
+ </div>
+ </div>
+ </div>
 </div>
 {% endblock %}

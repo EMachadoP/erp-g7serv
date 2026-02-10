@@ -4,71 +4,71 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h3 class="mb-0">Templates de Importação</h3>
-        <p class="text-muted small mb-0">Gerencie suas configurações de mapeamento salvas</p>
-    </div>
-    <a href="{% url 'importador:upload_page' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Novo Template
-    </a>
+ <div>
+ <h3 class="mb-0">Templates de Importação</h3>
+ <p class="text-muted small mb-0">Gerencie suas configurações de mapeamento salvas</p>
+ </div>
+ <a href="{% url 'importador:upload_page' %}" class="btn btn-primary">
+ <i class="bi bi-plus-lg"></i> Novo Template
+ </a>
 </div>
 
 <div class="card overflow-hidden">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light">
-                <tr>
-                    <th>Nome do Template</th>
-                    <th>Módulo</th>
-                    <th>Colunas</th>
-                    <th>Última Atualização</th>
-                    <th class="text-end">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for template in templates %}
-                <tr>
-                    <td>
-                        <div class="fw-bold">{{ template.name }}</div>
-                        {% if template.description %}
-                        <small class="text-muted">{{ template.description }}</small>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span class="badge bg-secondary">{{ template.module_type }}</span>
-                    </td>
-                    <td>
-                        <small>{{ template.mapping|length }} campos mapeados</small>
-                    </td>
-                    <td>
-                        <small>{{ template.updated_at|date:"d/m/Y H:i" }}</small>
-                    </td>
-                    <td class="text-end">
-                        <div class="btn-group btn-group-sm">
-                            <a href="{% url 'importador:template_edit' template.id %}" class="btn btn-outline-primary"
-                                title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button class="btn btn-outline-danger" title="Excluir"
-                                onclick="deleteTemplate({{ template.id }})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center py-5">
-                        <i class="bi bi-journal-x display-4 text-muted mb-3 d-block"></i>
-                        <p class="text-muted">Nenhum template encontrado.</p>
-                        <a href="{% url 'importador:upload_page' %}" class="btn btn-sm btn-outline-primary">Criar
-                            primeiro template</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+ <div class="table-responsive">
+ <table class="table table-hover align-middle mb-0">
+ <thead class="bg-light">
+ <tr>
+ <th>Nome do Template</th>
+ <th>Módulo</th>
+ <th>Colunas</th>
+ <th>Última Atualização</th>
+ <th class="text-end">Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for template in templates %}
+ <tr>
+ <td>
+ <div class="fw-bold">{{ template.name }}</div>
+ {% if template.description %}
+ <small class="text-muted">{{ template.description }}</small>
+ {% endif %}
+ </td>
+ <td>
+ <span class="badge bg-secondary">{{ template.module_type }}</span>
+ </td>
+ <td>
+ <small>{{ template.mapping|length }} campos mapeados</small>
+ </td>
+ <td>
+ <small>{{ template.updated_at|date:"d/m/Y H:i" }}</small>
+ </td>
+ <td class="text-end">
+ <div class="btn-group btn-group-sm">
+ <a href="{% url 'importador:template_edit' template.id %}" class="btn btn-outline-primary"
+ title="Editar">
+ <i class="bi bi-pencil"></i>
+ </a>
+ <button class="btn btn-outline-danger" title="Excluir"
+ onclick="deleteTemplate({{ template.id }})">
+ <i class="bi bi-trash"></i>
+ </button>
+ </div>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="5" class="text-center py-5">
+ <i class="bi bi-journal-x display-4 text-muted mb-3 d-block"></i>
+ <p class="text-muted">Nenhum template encontrado.</p>
+ <a href="{% url 'importador:upload_page' %}" class="btn btn-sm btn-outline-primary">Criar
+ primeiro template</a>
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
 </div>
 
 {% csrf_token %}
@@ -76,28 +76,28 @@
 
 {% block extra_js %}
 <script>
-    async function deleteTemplate(id) {
-        if (!confirm('Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.')) {
-            return;
-        }
+ async function deleteTemplate(id) {
+ if (!confirm('Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.')) {
+ return;
+ }
 
-        try {
-            const response = await fetch(`{% url 'importador:api_template_detail' 0 %}`.replace('0', id), {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            });
+ try {
+ const response = await fetch(`{% url 'importador:api_template_detail' 0 %}`.replace('0', id), {
+ method: 'DELETE',
+ headers: {
+ 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+ }
+ });
 
-            const result = await response.json();
-            if (result.success) {
-                window.location.reload();
-            } else {
-                alert('Erro ao excluir: ' + (result.detail || 'Desconhecido'));
-            }
-        } catch (error) {
-            alert('Erro na requisição: ' + error.message);
-        }
-    }
+ const result = await response.json();
+ if (result.success) {
+ window.location.reload();
+ } else {
+ alert('Erro ao excluir: ' + (result.detail || 'Desconhecido'));
+ }
+ } catch (error) {
+ alert('Erro na requisição: ' + error.message);
+ }
+ }
 </script>
 {% endblock %}

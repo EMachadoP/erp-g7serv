@@ -4,147 +4,146 @@
 
 {% block content %}
 <style>
-    .table-responsive {
-        max-height: 75vh;
-        overflow-y: auto;
-    }
+ .table-responsive {
+ max-height: 75vh;
+ overflow-y: auto;
+ }
 
-    thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8f9fa;
-        /* Ensure header is visible over scrolling content */
-        z-index: 1;
-    }
+ thead th {
+ position: sticky;
+ top: 0;
+ background-color: #f8f9fa;
+ /* Ensure header is visible over scrolling content */
+ z-index: 1;
+ }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Orçamentos</h2>
-    <a href="{% url 'comercial:budget_create' %}" class="btn btn-warning text-white">
-        <i class="bi bi-plus-lg me-2"></i>Novo Orçamento
-    </a>
+ <h2>Orçamentos</h2>
+ <a href="{% url 'comercial:budget_create' %}" class="btn btn-warning text-white">
+ <i class="bi bi-plus-lg me-2"></i>Novo Orçamento
+ </a>
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0 ps-0" </div>
-        </form>
-    </div>
+ <div class="card-body">
+ <form method="get" class="row g-3">
+ <div class="col-md-6">
+ <div class="input-group">
+ <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+ <input type="text" name="search" class="form-control border-start-0 ps-0" </div>
+ </form>
+ </div>
 </div>
 
 <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class=\"table table-premium-responsive\">
-            <table class=\"table table-premium table-hover align-middle mb-0\">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Orçamento</th>
-                        <th>Cliente</th>
-                        <th>Data</th>
-                        <th>Validade</th>
-                        <th>Total</th>
-                        <th>Situação</th>
-                        <th class="text-end pe-4">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for budget in page_obj %}
-                    <tr>
-                        <td class="ps-4 fw-bold text-primary">
-                            <a href="{% url 'comercial:budget_detail' budget.pk %}" class="text-decoration-none">
-                                {{ budget.id|stringformat:"06d" }}
-                            </a>
-                        </td>
-                        <td>
-                            <div class="fw-bold">{{ budget.client.name }}</div>
-                            <small class="text-muted">{{ budget.title|default:"" }}</small>
-                        </td>
-                        <td>{{ budget.date|date:"d/m/Y" }}</td>
-                        <td>{{ budget.validity_date|date:"d/m/Y"|default:"-" }}</td>
-                        <td>R$ {{ budget.total_value|floatformat:2 }}</td>
-                        <td>
-                            {% if budget.status == 'Ganho' %}
-                            <span
-                                class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Ganho</span>
-                            {% elif budget.status == 'Aberto' %}
-                            <span
-                                class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">Aberto</span>
-                            {% elif budget.status == 'Perdido' %}
-                            <span
-                                class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Perdido</span>
-                            {% else %}
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">{{
-                                budget.status }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end pe-4">
-                            <div class="btn-group">
-                                <a href="{% url 'comercial:budget_update' budget.pk %}"
-                                    class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button type="button"
-                                    class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split"
-                                    data-bs-toggle=\"dropdown\" data-bs-boundary=\"viewport\" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{% url 'comercial:budget_detail' budget.pk %}"><i
-                                                class="bi bi-eye me-2"></i>Detalhes</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item text-success"
-                                            href="{% url 'comercial:budget_win' budget.pk %}"><i
-                                                class="bi bi-check-circle me-2"></i>Ganhar</a></li>
-                                    <li><a class="dropdown-item text-danger"
-                                            href="{% url 'comercial:budget_refuse' budget.pk %}"><i
-                                                class="bi bi-x-circle me-2"></i>Recusar</a></li>
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                            Nenhum orçamento encontrado.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+ <div class="card-body p-0">
+ <div class="table table-responsive">
+ <table class="table table-premium table-hover align-middle mb-0">
+ <thead class="bg-light">
+ <tr>
+ <th class="ps-4">Orçamento</th>
+ <th>Cliente</th>
+ <th>Data</th>
+ <th>Validade</th>
+ <th>Total</th>
+ <th>Situação</th>
+ <th class="text-end pe-4">Ações</th>
+ </tr>
+ </thead>
+ <tbody>
+ {% for budget in page_obj %}
+ <tr>
+ <td class="ps-4 fw-bold text-primary">
+ <a href="{% url 'comercial:budget_detail' budget.pk %}" class="text-decoration-none">
+ {{ budget.id|stringformat:"06d" }}
+ </a>
+ </td>
+ <td>
+ <div class="fw-bold">{{ budget.client.name }}</div>
+ <small class="text-muted">{{ budget.title|default:"" }}</small>
+ </td>
+ <td>{{ budget.date|date:"d/m/Y" }}</td>
+ <td>{{ budget.validity_date|date:"d/m/Y"|default:"-" }}</td>
+ <td>R$ {{ budget.total_value|floatformat:2 }}</td>
+ <td>
+ {% if budget.status == 'Ganho' %}
+ <span
+ class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Ganho</span>
+ {% elif budget.status == 'Aberto' %}
+ <span
+ class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">Aberto</span>
+ {% elif budget.status == 'Perdido' %}
+ <span
+ class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Perdido</span>
+ {% else %}
+ <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">{{ budget.status }}</span>
+ {% endif %}
+ </td>
+ <td class="text-end pe-4">
+ <div class="btn-group">
+ <a href="{% url 'comercial:budget_update' budget.pk %}"
+ class="btn btn-sm btn-outline-primary">
+ <i class="bi bi-pencil"></i>
+ </a>
+ <button type="button"
+ class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+ data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+ <span class="visually-hidden">Toggle Dropdown</span>
+ </button>
+ <ul class="dropdown-menu dropdown-menu-end">
+ <li><a class="dropdown-item" href="{% url 'comercial:budget_detail' budget.pk %}"><i
+ class="bi bi-eye me-2"></i>Detalhes</a></li>
+ <li>
+ <hr class="dropdown-divider">
+ </li>
+ <li><a class="dropdown-item text-success"
+ href="{% url 'comercial:budget_win' budget.pk %}"><i
+ class="bi bi-check-circle me-2"></i>Ganhar</a></li>
+ <li><a class="dropdown-item text-danger"
+ href="{% url 'comercial:budget_refuse' budget.pk %}"><i
+ class="bi bi-x-circle me-2"></i>Recusar</a></li>
+ </ul>
+ </div>
+ </td>
+ </tr>
+ {% empty %}
+ <tr>
+ <td colspan="7" class="text-center py-5 text-muted">
+ <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+ Nenhum orçamento encontrado.
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-    {% if page_obj.has_other_pages %}
-    <div class="card-footer bg-white border-top-0 py-3">
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center mb-0">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Anterior</a>
-                </li>
-                {% endif %}
+ {% if page_obj.has_other_pages %}
+ <div class="card-footer bg-white border-top-0 py-3">
+ <nav aria-label="Page navigation">
+ <ul class="pagination justify-content-center mb-0">
+ {% if page_obj.has_previous %}
+ <li class="page-item">
+ <a class="page-link"
+ href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Anterior</a>
+ </li>
+ {% endif %}
 
-                <li class="page-item disabled">
-                    <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-                </li>
+ <li class="page-item disabled">
+ <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+ </li>
 
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Próximo</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
-    {% endif %}
+ {% if page_obj.has_next %}
+ <li class="page-item">
+ <a class="page-link"
+ href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Próximo</a>
+ </li>
+ {% endif %}
+ </ul>
+ </nav>
+ </div>
+ {% endif %}
 </div>
 {% endblock %}
