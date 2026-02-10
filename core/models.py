@@ -44,6 +44,12 @@ class Person(BaseModel):
     city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cidade")
     state = models.CharField(max_length=2, blank=True, null=True, verbose_name="UF")
 
+    def save(self, *args, **kwargs):
+        if self.zip_code:
+            # Remove non-digits (like '-' or '.') to avoid DataError with max_length=8
+            self.zip_code = "".join(filter(str.isdigit, self.zip_code))
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.fantasy_name or self.name
 

@@ -191,7 +191,7 @@ def get_client_form_context(request, client=None):
         'document', 'name', 'fantasy_name', 'state_registration', 
         'responsible_name', 'responsible_cpf', 'email', 'phone', 
         'zip_code', 'address', 'number', 'complement', 
-        'neighborhood', 'city', 'state'
+        'neighborhood', 'city', 'state', 'codigo_municipio_ibge'
     ]
     ctx = {}
     for f in fields:
@@ -239,6 +239,7 @@ def client_create(request):
                 neighborhood=request.POST.get('neighborhood'),
                 city=request.POST.get('city'),
                 state=request.POST.get('state'),
+                codigo_municipio_ibge=request.POST.get('codigo_municipio_ibge'),
                 is_client=request.POST.get('is_client') == 'on',
                 is_supplier=request.POST.get('is_supplier') == 'on',
             )
@@ -275,6 +276,7 @@ def client_update(request, pk):
             client.neighborhood = request.POST.get('neighborhood')
             client.city = request.POST.get('city')
             client.state = request.POST.get('state')
+            client.codigo_municipio_ibge = request.POST.get('codigo_municipio_ibge')
             client.is_client = request.POST.get('is_client') == 'on'
             client.is_supplier = request.POST.get('is_supplier') == 'on'
             client.save()

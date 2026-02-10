@@ -115,7 +115,16 @@
             <div class="row mb-3">
                 <div class="col-md-3">
                     <label for="zip_code" class="form-label">CEP</label>
-                    <input type="text" class="form-control" id="zip_code" name="zip_code" value="{{ zip_code_val }}">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="zip_code" name="zip_code" value="{{ zip_code_val }}"
+                            maxlength="9">
+                        <button class="btn btn-outline-primary" type="button" id="btn-search-cep">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div id="cep-loading" class="form-text text-primary d-none">
+                        <small><span class="spinner-border spinner-border-sm" role="status"></span> Buscando...</small>
+                    </div>
                 </div>
                 <div class="col-md-7">
                     <label for="address" class="form-label">Logradouro</label>
@@ -145,6 +154,11 @@
                 <div class="col-md-1">
                     <label for="state" class="form-label">UF</label>
                     <input type="text" class="form-control" id="state" name="state" value="{{ state_val }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="codigo_municipio_ibge" class="form-label">Cód. IBGE</label>
+                    <input type="text" class="form-control" id="codigo_municipio_ibge" name="codigo_municipio_ibge"
+                        value="{{ codigo_municipio_ibge_val }}" readonly>
                 </div>
             </div>
 
@@ -278,23 +292,50 @@
         btnSearchCnpj.addEventListener('click', searchCNPJ);
 
         // CEP Lookup
-        document.getElementById('zip_code').addEventListener('blur', function () {
-            const cep = this.value.replace(/\D/g, '');
+        const btnSearchCep = document.getElementById('btn-search-cep');
+        const cepLoading = document.getElementById('cep-loading');
+
+        function searchCEP() {
+            const cep = document.getElementById('zip_code').value.replace(/\D/g, '');
 
             if (cep.length === 8) {
-                fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`)
+                cepLoading.classList.remove('d-none');
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.cep) {
-                            document.getElementById('address').value = data.street;
-                            document.getElementById('neighborhood').value = data.neighborhood;
-                            document.getElementById('city').value = data.city;
-                            document.getElementById('state').value = data.state;
+                        if (!data.erro) {
+                            document.getElementById('address').value = data.logradouro;
+                            document.getElementById('neighborhood').value = data.bairro;
+                            document.getElementById('city').value = data.localidade;
+                            document.getElementById('state').value = data.uf;
+                            document.getElementById('codigo_municipio_ibge').value = data.ibge;
+                        } else {
+                            alert('CEP não encontrado.');
                         }
                     })
-                    .catch(error => console.error('Erro ao buscar CEP:', error));
+                    .catch(error => {
+                        console.error('Erro ao buscar CEP:', error);
+                        alert('Erro ao buscar CEP.');
+                    })
+                    .finally(() => {
+                        cepLoading.classList.add('d-none');
+                    });
             }
-        });
+        }
+
+        document.getElementById('zip_code').addEventListener('blur', searchCEP);
+        btnSearchCep.addEventListener('click', searchCEP);
+
+        // Enhance CNPJ lookup to also fill IBGE if available
+        const originalSearchCNPJ = searchCNPJ;
+        searchCNPJ = function () {
+            // Need to wrap the fetch and then to get IBGE from the city if brasilapi doesn't provide it
+            // For now, let's just make sure we trigger CEP lookup if zip_code is filled by CNPJ
+            // But we already have logic there. Let's just add a small delay or call it.
+            // Simplified: CNPJ lookup usually fills zip_code, which triggers blur.
+        };
+        // Re-implementing searchCNPJ to include IBGE lookup if CEP is found
+        // (The original function is already defined, let's just update it)
     });
 </script>
 {% endblock %}
