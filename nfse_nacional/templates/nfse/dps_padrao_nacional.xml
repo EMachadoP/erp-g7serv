@@ -11,7 +11,9 @@
 
         <prest>
             <CNPJ>{{ prestador_cnpj }}</CNPJ>
+            {% if nfse.empresa.inscricao_municipal %}
             <IM>{{ nfse.empresa.inscricao_municipal }}</IM>
+            {% endif %}
             {% if prest_fone %}
             <fone>{{ prest_fone }}</fone>
             {% endif %}

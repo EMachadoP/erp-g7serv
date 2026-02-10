@@ -10,6 +10,9 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     c_trib_nac = nfse_obj.servico.codigo_tributacao_nacional
     if c_trib_nac:
         c_trib_nac = c_trib_nac.replace('.', '').replace('-', '')
+        # Ensure 6 digits (Padrão Nacional 1.01)
+        if len(c_trib_nac) == 4:
+            c_trib_nac += "00"
         
     c_trib_mun = nfse_obj.servico.codigo_tributacao_municipal
     if c_trib_mun:
@@ -17,7 +20,9 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         # If format is "14.02.01.501", take only the last part "501"
         if '.' in c_trib_mun:
             c_trib_mun = c_trib_mun.split('.')[-1]
-        c_trib_mun = c_trib_mun.replace('-', '')
+        c_trib_mun = c_trib_mun.replace('-', '').strip()
+        # Max 3 digits for TCCodTribMun
+        c_trib_mun = c_trib_mun[:3]
         
     c_nbs = nfse_obj.servico.codigo_nbs
     if c_nbs:
