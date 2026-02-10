@@ -325,6 +325,8 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
             tag = old_el.tag # Fallback
             
         new_el = etree.Element(tag, nsmap=new_nsmap)
+        new_el.text = old_el.text
+        new_el.tail = old_el.tail
         
         # Copiar atributos (Removendo prefixos de Ids etc.)
         for k, v in old_el.attrib.items():
