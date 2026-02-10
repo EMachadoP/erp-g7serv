@@ -4,8 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
     <div>
         <h2 class="text-secondary">Balanço #{{ inventory.id }}</h2>
-        <p class="text-muted mb-0">{{ inventory.date|date:"d/m/Y" }} - {{ inventory.description|default:"Sem descrição"
-            }}</p>
+        <p class="text-muted mb-0">{{ inventory.date|date:"d/m/Y" }} - {{ inventory.description|default:"Sem descrição" }}</p>
     </div>
     <div>
         {% if inventory.status == 'DRAFT' %}
@@ -39,8 +38,7 @@
                         <tr>
                             <td class="ps-4 fw-bold text-primary">{{ item.product.name }}</td>
                             <td>{{ item.product.sku|default:"-" }}</td>
-                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{
-                                    item.location.name|default:"-" }}</span></td>
+                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ item.location.name|default:"-" }}</span></td>
                             <td class="text-center">{{ item.system_quantity }}</td>
                             <td class="text-center">
                                 {% if inventory.status == 'DRAFT' %}

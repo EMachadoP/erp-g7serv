@@ -49,8 +49,7 @@
                             {% if product.current_stock <= product.minimum_stock %} <span
                                 class="badge bg-danger bg-opacity-10 text-danger">{{ product.current_stock }}</span>
                                 {% else %}
-                                <span class="badge bg-success bg-opacity-10 text-success">{{ product.current_stock
-                                    }}</span>
+                                <span class="badge bg-success bg-opacity-10 text-success">{{ product.current_stock }}</span>
                                 {% endif %}
                         </td>
                         <td>R$ {{ product.cost_price }}</td>

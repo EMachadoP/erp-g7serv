@@ -143,8 +143,7 @@
                                         <span class="fw-medium">
                                             {% if product.cost_price > 0 %}
                                             {{
-                                            product.sale_price|add:product.cost_price|divisibleby:product.cost_price|linebreaksbr
-                                            }}
+                                            product.sale_price|add:product.cost_price|divisibleby:product.cost_price|linebreaksbr }}
                                             <!-- This logic is just a placeholder, real margin usually calculated in view/model -->
                                             {% with margin=product.sale_price|add:"-1" %}
                                             <!-- Simple diff for now, ideally percentage -->
@@ -201,8 +200,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="text-muted small d-block">Código do Fornecedor</label>
-                                        <span class="fw-medium">{{ product.supplier_code|default:"Não informado"
-                                            }}</span>
+                                        <span class="fw-medium">{{ product.supplier_code|default:"Não informado" }}</span>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="text-muted small d-block">Código de barras</label>
@@ -210,13 +208,11 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="text-muted small d-block">Permite Estoque Negativo</label>
-                                        <span class="fw-medium">{% if product.allow_negative_stock %}Sim{% else %}Não{%
-                                            endif %}</span>
+                                        <span class="fw-medium">{% if product.allow_negative_stock %}Sim{% else %}Não{% endif %}</span>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="text-muted small d-block">Pode ser Locado</label>
-                                        <span class="fw-medium">{% if product.can_be_rented %}Sim{% else %}Não{% endif
-                                            %}</span>
+                                        <span class="fw-medium">{% if product.can_be_rented %}Sim{% else %}Não{% endif %}</span>
                                     </div>
                                 </div>
                             </div>
