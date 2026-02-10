@@ -27,13 +27,13 @@
                 <div class="col-md-6">
                     <label class="form-label d-block">Classificação</label>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="is_client" id="is_client" {{
+                        <input class="form-check-input" type="checkbox" name="is_client" id="is_client" value="on" {{
                             is_client_checked }}>
                         <label class="form-check-label" for="is_client">Cliente</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="is_supplier" id="is_supplier" {{
-                            is_supplier_checked }}>
+                        <input class="form-check-input" type="checkbox" name="is_supplier" id="is_supplier" value="on"
+                            {{ is_supplier_checked }}>
                         <label class="form-check-label" for="is_supplier">Fornecedor</label>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                     </div>
                     <div class="form-check mt-1">
                         <input class="form-check-input" type="checkbox" name="is_final_consumer" id="is_final_consumer"
-                            {{ is_final_consumer_checked }}>
+                            value="on" {{ is_final_consumer_checked }}>
                         <label class="form-check-label" for="is_final_consumer">Consumidor Final</label>
                     </div>
                 </div>

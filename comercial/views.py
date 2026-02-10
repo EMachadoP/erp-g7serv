@@ -205,13 +205,18 @@ def get_client_form_context(request, client=None):
     ctx['pj_checked'] = 'checked' if p_type == 'PJ' else ''
     ctx['pf_checked'] = 'checked' if p_type == 'PF' else ''
     
-    is_client = request.POST.get('is_client') == 'on' if request.method == 'POST' else (client.is_client if client else True)
+    # Checkbox logic: strictly check 'on' if POST, otherwise use model value (default True for new client as per existing logic)
+    if request.method == 'POST':
+        is_client = request.POST.get('is_client') == 'on'
+        is_supplier = request.POST.get('is_supplier') == 'on'
+        is_final_consumer = request.POST.get('is_final_consumer') == 'on'
+    else:
+        is_client = client.is_client if client else True
+        is_supplier = client.is_supplier if client else False
+        is_final_consumer = client.is_final_consumer if client else False
+
     ctx['is_client_checked'] = 'checked' if is_client else ''
-    
-    is_supplier = request.POST.get('is_supplier') == 'on' if request.method == 'POST' else (client.is_supplier if client else False)
     ctx['is_supplier_checked'] = 'checked' if is_supplier else ''
-    
-    is_final_consumer = request.POST.get('is_final_consumer') == 'on' if request.method == 'POST' else (client.is_final_consumer if client else False)
     ctx['is_final_consumer_checked'] = 'checked' if is_final_consumer else ''
     
     return ctx
