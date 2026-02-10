@@ -63,6 +63,10 @@ class CoraStatementService:
             description = item.get('description', 'Transação Cora')
             transaction_date = item.get('created_at', '').split('T')[0]
             
+            # Extract metadata if available
+            details = item.get('details', {})
+            invoice_id = details.get('invoice_id')
+            
             # Evitar duplicidade usando o cora_id
             if FinancialTransaction.objects.filter(external_id=cora_id).exists():
                 continue
