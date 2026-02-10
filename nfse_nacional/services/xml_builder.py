@@ -9,10 +9,21 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     # Clean taxation codes
     c_trib_nac = nfse_obj.servico.codigo_tributacao_nacional
     if c_trib_nac:
-        c_trib_nac = c_trib_nac.replace('.', '').replace('-', '')
-        # Ensure 6 digits (Padrão Nacional 1.01)
-        if len(c_trib_nac) == 4:
-            c_trib_nac += "00"
+        # Filter digits only to remove dots, dashes or accidental letters (like 'l' instead of '1')
+        c_trib_nac = "".join(filter(str.isdigit, c_trib_nac))
+        
+        # Ensure exactly 6 digits (Padrão Nacional 1.01)
+        # For item 1.07.01, it should be 010701.
+        if len(c_trib_nac) > 0 and len(c_trib_nac) < 6:
+            # If it's like "0107", assume "010700" (back-padding) 
+            # OR if it's like "10701", assume "010701" (front-padding).
+            # The most common failure for 1.07.01 is being sent as 10701 (5 chars).
+            if len(c_trib_nac) == 5:
+                c_trib_nac = c_trib_nac.zfill(6)
+            elif len(c_trib_nac) == 4:
+                c_trib_nac += "00"
+            else:
+                c_trib_nac = c_trib_nac.zfill(6)
         
     c_trib_mun = nfse_obj.servico.codigo_tributacao_municipal
     if c_trib_mun:
