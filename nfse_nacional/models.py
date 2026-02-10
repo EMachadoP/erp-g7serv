@@ -17,6 +17,10 @@ class Empresa(models.Model):
     certificado_base64 = models.TextField(blank=True, null=True, verbose_name="Conteúdo do Certificado (Base64)")
     senha_certificado = models.CharField(max_length=100, verbose_name="Senha do Certificado")
     ambiente = models.IntegerField(choices=AMBIENTE_CHOICES, default=2, verbose_name="Ambiente")
+    
+    # Configurações de Sequência
+    serie_padrao = models.CharField(max_length=5, default='1', verbose_name="Série Padrão")
+    ultimo_numero_dps = models.IntegerField(default=0, verbose_name="Último Número DPS Emitido")
 
     def save(self, *args, **kwargs):
         # Auto-convert uploaded file to base64 for persistence
@@ -72,13 +76,24 @@ class NFSe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.numero_dps:
-            # Get the maximum numero_dps for the current company and series
-            max_numero = NFSe.objects.filter(
-                empresa=self.empresa, 
-                serie_dps=self.serie_dps
-            ).aggregate(Max('numero_dps'))['numero_dps__max']
+            # Pega o último número da empresa para esta série
+            # Se a empresa tem um registro de último número, usamos ele
+            if self.empresa.ultimo_numero_dps > 0:
+                # O número atual será o próximo
+                self.numero_dps = self.empresa.ultimo_numero_dps + 1
+            else:
+                # Fallback para o Max existente se o contador da empresa estiver zerado
+                max_numero = NFSe.objects.filter(
+                    empresa=self.empresa, 
+                    serie_dps=self.serie_dps
+                ).aggregate(models.Max('numero_dps'))['numero_dps__max']
+                self.numero_dps = (max_numero or 0) + 1
             
-            self.numero_dps = (max_numero or 0) + 1
+            # Atualiza o contador na empresa (melhor fazer isso em uma transação ou após sucesso? 
+            # No Django, se o save falhar, o contador pode ter subido. 
+            # Mas para NFSe, o número DPS é reservado na intenção de emissão.)
+            self.empresa.ultimo_numero_dps = self.numero_dps
+            self.empresa.save(update_fields=['ultimo_numero_dps'])
             
         super().save(*args, **kwargs)
 
