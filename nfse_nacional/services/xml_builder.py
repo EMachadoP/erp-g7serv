@@ -74,7 +74,7 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     serie_str = f"{int(nfse_obj.serie_dps):05d}"
     num_dps_str = f"{nfse_obj.numero_dps:015d}"
     
-    inf_dps_id = f"ID{cod_mun_ibge}{tipo_insc}{inscr_federal}{serie_str}{num_dps_str}"
+    inf_dps_id = f"DPS{cod_mun_ibge}{tipo_insc}{inscr_federal}{serie_str}{num_dps_str}"
 
     # Format Date with Timezone (TSDateTimeUTC)
     # Format: YYYY-MM-DDThh:mm:ss-HH:MM (Explicit offset with colon)
