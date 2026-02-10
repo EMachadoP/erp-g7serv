@@ -267,18 +267,12 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     # Load XML
     root = etree.fromstring(xml_string.encode('utf-8'))
 
-    # Digital Signature Settings
-    if usar_sha256:
-        signature_algorithm = 'rsa-sha256'
-        digest_algorithm = 'sha256'
-    else:
-        signature_algorithm = 'rsa-sha1'
-        digest_algorithm = 'sha1'
-
-    # Create Signer
-    # Using Exclusive C14N which is often more resilient to prefix changes in modern APIs
-    c14n_algo = 'http://www.w3.org/2001/10/xml-exc-c14n#'
+    # Digital Signature Settings - FORCED to RSA-SHA1/SHA1 as per manual
+    signature_algorithm = 'rsa-sha1'
+    digest_algorithm = 'sha1'
+    c14n_algo = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     
+    # Create Signer
     signer = XMLSigner(
         method=methods.enveloped,
         signature_algorithm=signature_algorithm,
@@ -286,7 +280,7 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         c14n_algorithm=c14n_algo
     )
 
-    # Find infDPS (National standard uses 'infDPS')
+    # Find inf_dps ID
     inf_dps = root.find('.//{%s}infDPS' % NS_NFSE)
     reference_uri = None
     if inf_dps is not None:
@@ -295,48 +289,41 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
             reference_uri = f"#{dps_id}"
 
     # Sign the document
-    # We try to use ns_prefix=None if the library supports it to avoid prefixes from the start
-    try:
-        signed_root = signer.sign(
-            root,
-            key=private_key,
-            cert=certs_pem,
-            reference_uri=reference_uri,
-            always_add_id=False
-        )
-    except TypeError:
-        # Fallback if always_add_id or other params are not supported
-        signed_root = signer.sign(
-            root,
-            key=private_key,
-            cert=certs_pem,
-            reference_uri=reference_uri
-        )
+    signed_root = signer.sign(
+        root,
+        key=private_key,
+        cert=certs_pem,
+        reference_uri=reference_uri
+    )
 
-    # --- RE-CONSTRUÇÃO RIGOROSA DE NAMESPACES (Core Fix for E6155) ---
-    # Para resolver definitivamente o erro E6155 (Sefin), 
-    # precisamos garantir que tags de negócio NÃO tenham prefixo e Signature TENHA 'ds'
-    # OU também não tenha, mas o Sefin é chato. 
-    # Se usarmos Exclusive C14N, a remoção do prefixo 'ds' do Signature element 
-    # e a troca pelo xmlns default no Signature block DEVE manter a signature válida
-    # porque as referências internas serão recalibradas pelo C14N-EXCL.
+    # --- PRUNING AND RE-CONSTRUCTION ---
+    # Sefin requires strictly: <X509Certificate> inside <X509Data> inside <KeyInfo>
+    # Also requires NO prefixes in business tags and Signature with local xmlns or 'ds'
+    # Actually, the user says <Signature xmlns="..."> without prefix.
     
-    def copy_element_clean(old_el, ns_target, ns_dsig):
+    def copy_element_clean(old_el, ns_target, ns_dsig, is_keyinfo=False):
         qname = etree.QName(old_el)
         ns = qname.namespace
         ln = qname.localname
+        
+        # Pruning KeyInfo logic
+        if ln == "KeyInfo":
+            is_keyinfo = True
         
         # Define nsmap:
         if ln == "DPS":
             new_nsmap = {None: ns_target}
         elif ln == "Signature":
-            new_nsmap = {None: ns_dsig} # Sefin exigindo Signature sem prefixo
+            new_nsmap = {None: ns_dsig} # Force no prefix for Signature
         else:
-            new_nsmap = None # Herda do pai
+            new_nsmap = None
             
         if ns == ns_target:
             tag = "{%s}%s" % (ns_target, ln)
         elif ns == ns_dsig:
+            # Pruning KeyInfo: only keep X509Data and X509Certificate
+            if is_keyinfo and ln not in ("KeyInfo", "X509Data", "X509Certificate"):
+                return None
             tag = "{%s}%s" % (ns_dsig, ln)
         else:
             tag = old_el.tag
@@ -345,30 +332,24 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         new_el.text = old_el.text
         new_el.tail = old_el.tail
         
-        # Copiar atributos (Removendo prefixos de Ids etc.)
         for k, v in old_el.attrib.items():
             aq = etree.QName(k)
-            # Preservar o namespace do atributo se não for o padrão
             if aq.namespace:
                 new_el.set(k, v)
             else:
                 new_el.set(aq.localname, v)
             
-        # Copiar filhos recursivamente
         for child in old_el:
             if isinstance(child, etree._Element):
-                new_el.append(copy_element_clean(child, ns_target, ns_dsig))
+                res = copy_element_clean(child, ns_target, ns_dsig, is_keyinfo)
+                if res is not None:
+                    new_el.append(res)
                 
         return new_el
 
-    # Re-gera o documento inteiro a partir da raiz limpa
     definitive_root = copy_element_clean(signed_root, NS_NFSE, NS_DSIG)
-
-    # Limpeza final de namespaces redundantes
     etree.cleanup_namespaces(definitive_root)
 
-    # Gera string XML final
     xml_output = etree.tostring(definitive_root, encoding='UTF-8', xml_declaration=False).decode('utf-8')
-    
     header = '<?xml version="1.0" encoding="UTF-8"?>'
     return header + xml_output
