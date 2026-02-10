@@ -263,6 +263,9 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     certs_pem = certificate.public_bytes(serialization.Encoding.PEM)
     # If we need chain, we should update carregar_certificado to return it.
     
+    # Define o namespace da NFSe Nacional
+    NS_MAP = {None: 'http://www.sped.fazenda.gov.br/nfse'}
+    
     root = etree.fromstring(xml_string.encode('utf-8'))
 
     if usar_sha256:
@@ -279,29 +282,25 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     )
 
-    # Check for 'InfDPS' to sign specifically that element if present
-    # national standard usually signs the InfDPS
-    inf_dps = root.find('.//{http://www.abrasf.org.br/nfse.xsd}InfDPS')
+    # Buscar infDPS no namespace correto (Nacional usa CamelCase infDPS)
+    inf_dps = root.find('.//{http://www.sped.fazenda.gov.br/nfse}infDPS')
     reference_uri = None
-    node_to_sign = root
     
     if inf_dps is not None:
-        # If InfDPS exists, we might want to sign IT, but verify if signature should be child of root or InfDPS.
-        # Enveloped signature usually goes as a sibling of the content or inside the root.
-        # If we sign 'root', it signs the whole doc.
-        # If we sign 'inf_dps', the signature usually wraps it or is appended.
-        # For NFSe Nacional, usually the signature is an element of the 'DPS' (root?) or sends 'DPS' which contains 'InfDPS' and 'Signature'.
-        
-        # Checking 'Id' attribute
         dps_id = inf_dps.get('Id')
         if dps_id:
              reference_uri = f"#{dps_id}"
 
+    # Assinar
     signed_root = signer.sign(
         root,
         key=private_key,
         cert=certs_pem,
-        reference_uri=reference_uri # If None, signs the root object referenced by empty URI? or whole doc?
+        reference_uri=reference_uri
     )
 
+    # Forçar a remoção de qualquer prefixo (como ns0, ns1)
+    # NFSe Nacional REJEITA qualquer prefixo (Erro E6155)
+    etree.cleanup_namespaces(signed_root)
+    
     return etree.tostring(signed_root, encoding='UTF-8', xml_declaration=True).decode('utf-8')
