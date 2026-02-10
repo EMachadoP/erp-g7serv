@@ -258,7 +258,7 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     # My existing code expects 2. I kept 2 in the return above.
     
     private_key, certificate = carregar_certificado(caminho_ou_bytes_pfx, senha)
-    # chain is missing in this call, but we can reconstruct pem 
+    certs_pem = certificate.public_bytes(serialization.Encoding.PEM)
     
     # Namespaces
     NS_NFSE = 'http://www.sped.fazenda.gov.br/nfse'
