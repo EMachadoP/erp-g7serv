@@ -258,48 +258,27 @@ class BillingEmailService:
             # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
             invoice.refresh_from_db()
 
-            # Anexo NFSe (PDF ou XML) — com auto-link de registros órfãos
+            # 2. Garante DANFSe/XML (Novo: com retries se necessário)
+            from faturamento.services.nfse_files import ensure_nfse_files
+            from faturamento.services.nfse_utils import _auto_link_nfse
+            
+            # Tenta garantir os arquivos (aguarda até 10s se for recém-emitida)
+            ensure_nfse_files(invoice, max_wait_seconds=10, sleep_seconds=3)
+            invoice.refresh_from_db()
+
+            # Anexo NFSe (PDF ou XML)
             nfse_content = None
             nfse_filename = None
             nfse_content_type = None
             
-            # Auto-link: tenta encontrar NFSe se o FK estiver vazio
-            if not invoice.nfse_record and invoice.nfse_status == 'EMITIDA':
-                from nfse_nacional.models import NFSe as NFSeNacional
-                nfse = NFSeNacional.objects.filter(
-                    descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
-                ).first()
-                if not nfse:
-                    nfse = NFSeNacional.objects.filter(
-                        cliente=invoice.client, status='Autorizada'
-                    ).order_by('-data_emissao').first()
-                if nfse:
-                    invoice.nfse_record = nfse
-                    invoice.save(update_fields=['nfse_record'])
-                    invoice.refresh_from_db()
-            
-            if invoice.nfse_record:
-                nfse_rec = invoice.nfse_record
-                # Prioridade: PDF DANFSe > tentar baixar > XML fallback
+            nfse_rec = _auto_link_nfse(invoice)
+            if nfse_rec:
+                # Prioridade: PDF DANFSe > XML fallback
                 if nfse_rec.pdf_danfse:
                     nfse_content = bytes(nfse_rec.pdf_danfse)
                     nfse_filename = f"NFSe_{invoice.number}.pdf"
                     nfse_content_type = 'pdf'
-                elif nfse_rec.chave_acesso:
-                    # Tenta baixar o DANFSe on-demand
-                    try:
-                        from nfse_nacional.services.api_client import NFSeNacionalClient
-                        client = NFSeNacionalClient()
-                        if client.baixar_danfse(nfse_rec):
-                            nfse_rec.refresh_from_db()
-                            nfse_content = bytes(nfse_rec.pdf_danfse)
-                            nfse_filename = f"NFSe_{invoice.number}.pdf"
-                            nfse_content_type = 'pdf'
-                    except Exception as e:
-                        logger.warning(f"Falha ao baixar DANFSe on-demand: {e}")
-                
-                # Fallback: XML
-                if not nfse_content and nfse_rec.xml_retorno:
+                elif nfse_rec.xml_retorno:
                     nfse_content = nfse_rec.xml_retorno
                     nfse_filename = f"NFSe_{invoice.number}.xml"
                     nfse_content_type = 'xml'

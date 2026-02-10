@@ -785,6 +785,10 @@ def invoice_bulk_generate_nfse(request):
             invoice.nfse_record = nota
             invoice.nfse_status = 'EMITIDA'
             
+            # Tenta baixar o PDF imediatamente (não bloqueia por muito tempo: 5s)
+            from .services.nfse_files import ensure_nfse_files
+            ensure_nfse_files(invoice, max_wait_seconds=5, sleep_seconds=2)
+            
             # URLs para download e visualização
             invoice.nfse_link = f"/faturamento/faturas/{invoice.id}/nfse/view/"
             invoice.save(update_fields=['nfse_status', 'nfse_link', 'nfse_record'])
@@ -807,22 +811,8 @@ def invoice_bulk_generate_nfse(request):
 
 from django.http import HttpResponse
 
-def _auto_link_nfse(invoice):
-    """Tenta vincular automaticamente uma NFSe órfã à fatura."""
-    if invoice.nfse_record:
-        return invoice.nfse_record
-    from nfse_nacional.models import NFSe as NFSeNacional
-    nfse = NFSeNacional.objects.filter(
-        descricao_servico__icontains=f'Ref. Fatura {invoice.number}'
-    ).first()
-    if not nfse:
-        nfse = NFSeNacional.objects.filter(
-            cliente=invoice.client, status='Autorizada'
-        ).order_by('-data_emissao').first()
-    if nfse:
-        invoice.nfse_record = nfse
-        invoice.save(update_fields=['nfse_record'])
-    return nfse
+from .services.nfse_utils import _auto_link_nfse
+from .services.nfse_files import ensure_nfse_files
 
 @login_required
 def invoice_nfse_xml(request, pk):
@@ -834,24 +824,15 @@ def invoice_nfse_xml(request, pk):
         messages.error(request, "NFS-e não encontrada para esta fatura.")
         return redirect('faturamento:list')
     
-    # Prioridade: PDF DANFSe > Tentar baixar > XML como fallback
+    # Tenta garantir que o arquivo existE (com retry curto)
+    ensure_nfse_files(invoice, max_wait_seconds=5, sleep_seconds=2)
+    nfse.refresh_from_db()
+    
+    # Prioridade: PDF DANFSe > XML como fallback
     if nfse.pdf_danfse:
         response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="NFSe_{invoice.number}.pdf"'
         return response
-    
-    # Tenta baixar o DANFSe agora se tem chave de acesso
-    if nfse.chave_acesso:
-        try:
-            from nfse_nacional.services.api_client import NFSeNacionalClient
-            client = NFSeNacionalClient()
-            if client.baixar_danfse(nfse):
-                nfse.refresh_from_db()
-                response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="NFSe_{invoice.number}.pdf"'
-                return response
-        except Exception as e:
-            print(f"Erro ao baixar DANFSe on-demand: {e}")
     
     # Fallback: serve XML
     if nfse.xml_retorno:
@@ -872,26 +853,18 @@ def invoice_nfse_view(request, pk):
         messages.error(request, "NFS-e não encontrada para esta fatura.")
         return redirect('faturamento:list')
     
+    # Tenta garantir que o arquivo existe
+    ensure_nfse_files(invoice, max_wait_seconds=5, sleep_seconds=2)
+    nfse.refresh_from_db()
+    
     # Se tem PDF, serve inline (visualização no browser)
     if nfse.pdf_danfse:
         response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
         response['Content-Disposition'] = f'inline; filename="NFSe_{invoice.number}.pdf"'
         return response
     
-    # Se tem chave de acesso, tenta baixar o PDF
+    # Se tem chave de acesso mas sem PDF, redireciona para o portal
     if nfse.chave_acesso:
-        try:
-            from nfse_nacional.services.api_client import NFSeNacionalClient
-            client = NFSeNacionalClient()
-            if client.baixar_danfse(nfse):
-                nfse.refresh_from_db()
-                response = HttpResponse(bytes(nfse.pdf_danfse), content_type='application/pdf')
-                response['Content-Disposition'] = f'inline; filename="NFSe_{invoice.number}.pdf"'
-                return response
-        except Exception as e:
-            print(f"Erro ao baixar DANFSe on-demand: {e}")
-        
-        # Fallback: redireciona para o portal de consulta pública
         link = nfse.link_danfse or f"https://www.nfse.gov.br/ConsultaPublica/?chave={nfse.chave_acesso}"
         return redirect(link)
     
