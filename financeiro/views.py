@@ -1338,18 +1338,20 @@ def diagnostico_nfse_nacional(request):
     from nfse_nacional.models import Empresa
     from nfse_nacional.services.assinador import carregar_certificado, assinar_xml, decode_pfx_base64, diagnosticar_pfx_com_openssl
     
+    import ssl
     sha1_check = "Não testado"
     try:
         h = hashes.Hash(hashes.SHA1(), backend=ossl)
         h.update(b"test")
         h.finalize()
-        sha1_check = "✅ Suportado (EVP)"
+        sha1_check = "✅ Suportado (EVP/Hash)"
     except Exception as e:
-        sha1_check = f"❌ Não suportado: {str(e)}"
+        sha1_check = f"❌ Rejeitado: {str(e)}"
     
     ctx = {
         'openssl_conf': os.environ.get('OPENSSL_CONF', 'Não definida'),
-        'openssl_version': ossl.openssl_version_text(),
+        'openssl_version_lib': ossl.openssl_version_text(),
+        'openssl_version_ssl': ssl.OPENSSL_VERSION,
         'sha1_support': sha1_check,
         'results': [],
         'error': None
