@@ -299,62 +299,50 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         reference_uri=reference_uri
     )
 
-    # --- Refinamento de Namespaces (Core Fix for E6155) ---
+    # --- RE-CONSTRUÇÃO RIGOROSA DE NAMESPACES (Core Fix for E6155) ---
+    # Para resolver definitivamente o erro E6155 (Sefin), 
+    # precisamos garantir que tags de negócio NÃO tenham prefixo e Signature TENHA 'ds'
     
-    # 1. Garantir que os elementos de negócio NÃO tenham prefixo
-    # 2. Garantir que a Signature TENHA o prefixo "ds"
-    
-    def adjust_namespaces(el):
-        qname = etree.QName(el)
+    def copy_element_clean(old_el, ns_target, ns_dsig):
+        qname = etree.QName(old_el)
         ns = qname.namespace
         ln = qname.localname
         
-        if ns == NS_DSIG:
-            # Forçar prefixo "ds" para Signature e seus filhos
-            el.tag = "{%s}%s" % (NS_DSIG, ln)
-            # No lxml, definimos o prefixo via nsmap na criação ou via técnica de re-tag
-            # Para Signature, queremos que ela tenha seu próprio nsmap local com 'ds'
-        elif ns == NS_NFSE:
-            # Forçar SEM prefixo para elementos de negócio
-            el.tag = "{%s}%s" % (NS_NFSE, ln)
+        # Define nsmap: se for root (DPS), definimos os namespaces principais
+        if ln == "DPS":
+            new_nsmap = {None: ns_target, 'ds': ns_dsig}
+        else:
+            new_nsmap = None # Herda do pai
+            
+        # Define a nova tag
+        # Se for negócio (NS_NFSE), usamos default namespace (None prefix)
+        # Se for assinatura (NS_DSIG), usamos prefixo 'ds' especificado no root
+        if ns == ns_target:
+            tag = "{%s}%s" % (ns_target, ln)
+        elif ns == ns_dsig:
+            tag = "{%s}%s" % (ns_dsig, ln)
+        else:
+            tag = old_el.tag # Fallback
+            
+        new_el = etree.Element(tag, nsmap=new_nsmap)
         
-        # Limpar atributos prefixados
-        for attr, val in list(el.attrib.items()):
-            aq = etree.QName(attr)
-            if aq.namespace and aq.namespace != ns: # Keep only if strictly necessary (like Id?)
-                pass 
-            elif ":" in attr:
-                del el.attrib[attr]
-                el.attrib[aq.localname] = val
+        # Copiar atributos (Removendo prefixos de Ids etc.)
+        for k, v in old_el.attrib.items():
+            aq = etree.QName(k)
+            new_el.set(aq.localname, v)
+            
+        # Copiar filhos recursivamente
+        for child in old_el:
+            if isinstance(child, etree._Element):
+                new_el.append(copy_element_clean(child, ns_target, ns_dsig))
+                
+        return new_el
 
-        for child in el:
-            adjust_namespaces(child)
+    # Re-gera o documento inteiro a partir da raiz limpa
+    # signed_root é o elemento <DPS> retornado pelo signxml
+    definitive_root = copy_element_clean(signed_root, NS_NFSE, NS_DSIG)
 
-    # Executa ajuste recursivo
-    adjust_namespaces(signed_root)
+    # Double check for redundant declarations
+    etree.cleanup_namespaces(definitive_root)
 
-    # Fix Signature element specifically to use 'ds' prefix
-    for sig in signed_root.xpath('//*[local-name()="Signature" and namespace-uri()="%s"]' % NS_DSIG):
-        # We recreate the element or use lxml magic to force prefix
-        # Mapping 'ds' to DSIG namespace
-        new_sig = etree.Element("{%s}Signature" % NS_DSIG, nsmap={'ds': NS_DSIG})
-        # Copy children and attributes
-        for attr, val in sig.attrib.items(): new_sig.attrib[attr] = val
-        for child in sig: new_sig.append(child)
-        
-        # Replace old signature with new one (retaining the parent)
-        parent = sig.getparent()
-        if parent is not None:
-            parent.replace(sig, new_sig)
-
-    # Cleanup with a strict TOP_NSMAP
-    etree.cleanup_namespaces(signed_root, top_nsmap={
-        None: NS_NFSE,
-        'ds': NS_DSIG
-    })
-    
-    # Final check: root must not have a prefix
-    if signed_root.prefix is not None:
-        signed_root.tag = "{%s}%s" % (NS_NFSE, etree.QName(signed_root).localname)
-
-    return etree.tostring(signed_root, encoding='UTF-8', xml_declaration=True).decode('utf-8')
+    return etree.tostring(definitive_root, encoding='UTF-8', xml_declaration=True).decode('utf-8')
