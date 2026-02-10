@@ -39,7 +39,6 @@ class NFSeNacionalClient:
             # 2. Ler Certificado (Bytes)
             try:
                 if nfse_obj.empresa.certificado_base64:
-                    import base64
                     cert_bytes = base64.b64decode(nfse_obj.empresa.certificado_base64)
                 elif nfse_obj.empresa.certificado_a1:
                      # Fallback to file opening (might fail on Railway if file is gone)
@@ -141,7 +140,6 @@ class NFSeNacionalClient:
                     xml_gzip_b64 = data.get('nfseXmlGZipB64')
                     if xml_gzip_b64:
                         try:
-                            import gzip
                             xml_bytes = gzip.decompress(base64.b64decode(xml_gzip_b64))
                             nfse_obj.xml_retorno = xml_bytes.decode('utf-8')
                         except Exception as e:
@@ -233,11 +231,9 @@ class NFSeNacionalClient:
                 cert_bytes_raw, nfse_obj.empresa.senha_certificado
             )
             
-            import tempfile
             key_file = tempfile.NamedTemporaryFile(delete=False)
             cert_file = tempfile.NamedTemporaryFile(delete=False)
             
-            from cryptography.hazmat.primitives import serialization
             key_bytes = private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
@@ -295,7 +291,6 @@ class NFSeNacionalClient:
                     if xml_b64 and not nfse_obj.xml_retorno:
                          try:
                              if data.get('nfseXmlGZipB64'):
-                                 import gzip
                                  nfse_obj.xml_retorno = gzip.decompress(base64.b64decode(xml_b64)).decode('utf-8')
                              else:
                                  nfse_obj.xml_retorno = base64.b64decode(xml_b64).decode('utf-8')
