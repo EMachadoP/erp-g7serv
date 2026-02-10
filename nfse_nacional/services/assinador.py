@@ -308,8 +308,7 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
         root,
         key=private_key,
         cert=certs_pem,
-        reference_uri=reference_uri,
-        digest_algorithm=digest_algorithm
+        reference_uri=reference_uri
     )
 
     # --- PRUNING AND RE-CONSTRUCTION ---
