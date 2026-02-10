@@ -2,20 +2,6 @@ openssl_conf = openssl_init
 
 [openssl_init]
 providers = provider_sect
-alg_section = evp_properties
-ssl_conf = ssl_module
-
-[evp_properties]
-# Ensure legacy algorithms (like SHA1) are allowed for EVP
-default_properties = "fips=no,legacy=yes"
-
-[ssl_module]
-system_default = system_default_sect
-
-[system_default_sect]
-# Lower security level to 0 to allow SHA1 signatures
-CipherString = DEFAULT@SECLEVEL=0
-SignatureAlgorithms = RSA+SHA1:ECDSA+SHA1:RSA+SHA256:RSA+SHA384:RSA+SHA512
 
 [provider_sect]
 default = default_sect
