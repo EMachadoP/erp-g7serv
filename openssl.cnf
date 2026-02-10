@@ -8,11 +8,9 @@ ssl_conf = ssl_module
 system_default = system_default_sect
 
 [system_default_sect]
-# SECLEVEL=0 is required for SHA1 signing in many OpenSSL 3 environments.
-# Using 'DEFAULT' without the '@' or with ':' depending on the version.
-# 'DEFAULT:@SECLEVEL=0' is common for Debian-based systems.
-CipherString = DEFAULT:@SECLEVEL=0
-SignatureAlgorithms = RSA+SHA1:ECDSA+SHA1:RSA+SHA256:RSA+SHA384:RSA+SHA512
+# Lowering SECLEVEL to 0 to support SHA1, which is required by Sefin Nacional.
+# Using standard syntax DEFAULT@SECLEVEL=0.
+CipherString = DEFAULT@SECLEVEL=0
 
 [provider_sect]
 default = default_sect
