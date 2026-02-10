@@ -303,18 +303,23 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     # NFSe Nacional exige namespace padrão sem prefixos (Erro E6155)
     def remove_prefixes(el):
         # Namespace do elemento original
-        ns = etree.QName(el).namespace
-        # Se tem prefixo, reconstrói sem ele
-        if el.prefix is not None:
-            el.tag = "{%s}%s" % (ns, etree.QName(el).localname)
+        qname = etree.QName(el)
+        ns = qname.namespace
+        ln = qname.localname
         
-        # Limpar atributos (alguns atributos como 'Id' podem vir prefixados)
+        # Se tem prefixo, reconstrói a tag apenas com o namespace entre chaves
+        # O lxml cuidará de renderizar como xmlns= se o prefixo for None
+        if el.prefix is not None:
+            el.tag = "{%s}%s" % (ns, ln)
+        
+        # Limpar atributos
         for attr, val in list(el.attrib.items()):
-            if ":" in attr or etree.QName(attr).prefix:
-                 local_attr = etree.QName(attr).localname
-                 # Se for um atributo de namespace (xmlns:...), removemos
+            aq = etree.QName(attr)
+            # Se o atributo está em um namespace ou tem prefixo na string
+            if aq.namespace or ":" in attr:
+                 # Remove e re-adiciona como atributo local
                  del el.attrib[attr]
-                 # Re-adicionamos apenas atributos reais sem prefixo (raro)
+                 el.attrib[aq.localname] = val
         
         for child in el:
             remove_prefixes(child)
