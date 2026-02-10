@@ -258,12 +258,21 @@ class BillingEmailService:
             # Recarregar do banco para garantir que o campo pdf_fatura está atualizado no objeto
             invoice.refresh_from_db()
 
+            # Anexo NFSe XML (se existir)
+            nfse_xml = None
+            nfse_filename = None
+            if invoice.nfse_record and invoice.nfse_record.xml_retorno:
+                nfse_xml = invoice.nfse_record.xml_retorno
+                nfse_filename = f"NFSe_{invoice.number}.xml"
+
             return BillingEmailService.send_via_brevo(
                 recipient_email=recipient_email,
                 subject=subject,
                 body=body,
                 invoice=invoice,
-                pdf_content=pdf_content
+                pdf_content=pdf_content,
+                nfse_xml=nfse_xml,
+                nfse_filename=nfse_filename
             )
 
         email = EmailMessage(
@@ -287,17 +296,18 @@ class BillingEmailService:
                 pdf_content,
                 "application/pdf"
             )
-        elif invoice.pdf_fatura:
+
+        # 3. Anexo: NFSe XML (SMTP)
+        if invoice.nfse_record and invoice.nfse_record.xml_retorno:
             try:
-                # Fallback para o arquivo salvo se os bytes não estiverem na memória
-                with invoice.pdf_fatura.open('rb') as f:
-                    email.attach(
-                        f"Demonstrativo_Fatura_{invoice.number}.pdf",
-                        f.read(),
-                        "application/pdf"
-                    )
+                email.attach(
+                    f"NFSe_{invoice.number}.xml",
+                    invoice.nfse_record.xml_retorno,
+                    "application/xml"
+                )
+                logger.info(f"Anexando NFSe XML via SMTP para fatura {invoice.number}")
             except Exception as e:
-                logger.warning(f"Não foi possível anexar o arquivo PDF (SMTP): {e}")
+                logger.warning(f"Falha ao anexar NFSe XML (SMTP): {e}")
             
         try:
             email.send()
@@ -310,7 +320,7 @@ class BillingEmailService:
             return False, msg
 
     @staticmethod
-    def send_via_brevo(recipient_email, subject, body, invoice, pdf_content=None):
+    def send_via_brevo(recipient_email, subject, body, invoice, pdf_content=None, nfse_xml=None, nfse_filename=None):
         """
         Envia e-mail via API HTTP da Brevo (Sendinblue).
         """
@@ -356,19 +366,20 @@ class BillingEmailService:
             except Exception as e:
                 logger.warning(f"Falha ao carregar fatura via storage para Brevo: {e}")
 
-        # 2. Anexo: Boleto (URL Remota)
-        if invoice.boleto_url:
-            try:
-                resp = requests.get(invoice.boleto_url, timeout=10)
-                if resp.status_code == 200:
-                    content = base64.b64encode(resp.content).decode('utf-8')
-                    data["attachment"].append({
-                        "content": content,
-                        "name": f"Boleto_Bancario_{invoice.number}.pdf"
-                    })
-                    logger.info(f"Anexando boleto da Cora: Boleto_Bancario_{invoice.number}.pdf")
             except Exception as e:
                 logger.warning(f"Falha ao baixar boleto remoto para Brevo: {e}")
+
+        # 3. Anexo: NFSe XML (Brevo)
+        if nfse_xml:
+            try:
+                content = base64.b64encode(nfse_xml.encode('utf-8') if isinstance(nfse_xml, str) else nfse_xml).decode('utf-8')
+                data["attachment"].append({
+                    "content": content,
+                    "name": nfse_filename or f"NFSe_{invoice.number}.xml"
+                })
+                logger.info(f"Anexando NFSe XML via Brevo: {nfse_filename}")
+            except Exception as e:
+                logger.warning(f"Falha ao processar NFSe XML para Brevo: {e}")
 
         try:
             response = requests.post(url, json=data, headers=headers, timeout=20)
