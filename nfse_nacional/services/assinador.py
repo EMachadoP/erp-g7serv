@@ -347,4 +347,10 @@ def assinar_xml(xml_string, caminho_ou_bytes_pfx, senha, usar_sha256=True):
     # Double check for redundant declarations
     etree.cleanup_namespaces(definitive_root)
 
-    return etree.tostring(definitive_root, encoding='UTF-8', xml_declaration=True).decode('utf-8')
+    # Gera string XML final
+    xml_output = etree.tostring(definitive_root, encoding='UTF-8', xml_declaration=False).decode('utf-8')
+    
+    # Prepend declaration manualmente com aspas duplas e sem newline se possivel
+    # A Sefin pode ser chata com aspas simples ou espaços extras
+    header = '<?xml version="1.0" encoding="UTF-8"?>'
+    return header + xml_output

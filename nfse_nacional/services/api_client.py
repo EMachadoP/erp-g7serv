@@ -94,7 +94,7 @@ class NFSeNacionalClient:
                 
                 # Create JSON payload
                 payload = {
-                    "dpsXmlGZipB64": b64_xml
+                    "dpsXmlGzipB64": b64_xml
                 }
                 
                 print(f"--- TENTANDO ENVIO PARA: {api_url} ---")
