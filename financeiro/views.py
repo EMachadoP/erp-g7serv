@@ -1509,4 +1509,22 @@ def diagnostico_nfse_nacional(request):
     except Exception as e:
         output.write(f"\nCRASH: Ocorreu um erro fatal durante o diagnóstico:\n{str(e)}\n\nTraceback:\n{traceback.format_exc()}")
         
+    # 6. Mostrar Últimos XMLs Gerados (Para depuração de E6155)
+    print("\n--- ÚLTIMOS XMLS ENVIADOS (DEBUG E6155) ---")
+    from nfse_nacional.models import NFSe
+    ultimas = NFSe.objects.filter(empresa=empresa).order_by('-id')[:3]
+    for n in ultimas:
+        print(f"\n[ID: {n.id}] Fatura: {n.fatura_id if hasattr(n, 'fatura_id') else 'N/A'} | Status: {n.status}")
+        if n.xml_envio:
+            # Mostra apenas o início e o bloco da assinatura para ver os prefixos
+            xml_str = n.xml_envio
+            print(f"XML (200 primeiros chars): {xml_str[:200]}")
+            # Busca ds:Signature ou Signature
+            if '<Signature' in xml_str:
+                 idx = xml_str.find('<Signature')
+                 if idx == -1: idx = xml_str.find('<ds:Signature')
+                 print(f"Bloco Assinatura: {xml_str[idx:idx+300]}...")
+        else:
+            print("Sem XML de envio salvo.")
+
     return render(request, 'financeiro/diagnostico_nfse.html', {'output': output.getvalue()})
