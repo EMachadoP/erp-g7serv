@@ -85,5 +85,8 @@
                 </totTrib>
             </trib>
         </valores>
+        {% if inf_adic %}
+        <infAdic>{{ inf_adic }}</infAdic>
+        {% endif %}
     </infDPS>
 </DPS>

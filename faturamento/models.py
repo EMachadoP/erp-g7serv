@@ -92,6 +92,7 @@ class Invoice(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='PD')
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default='BOLETO', verbose_name="Forma de Pagamento")
+    complementary_info = models.TextField(blank=True, null=True, verbose_name="Informações Complementares")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

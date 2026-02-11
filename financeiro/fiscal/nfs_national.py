@@ -65,7 +65,8 @@ def emitir_nfse(invoice):
             cliente=invoice.client, # Assuming Person model compatibility
             servico=default_service,
             valor_servico=invoice.amount, # Override value from invoice
-            descricao_servico=f"Ref. Fatura {invoice.number}" # Override description
+            descricao_servico=f"Ref. Fatura {invoice.number}", # Override description
+            inf_adic=invoice.complementary_info # Copy complementary info
         )
         
         # 4. Transmit to SEFIN

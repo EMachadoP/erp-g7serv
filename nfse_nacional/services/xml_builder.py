@@ -192,6 +192,7 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         'trib_issqn': '1',  # 1=Tributável
         'c_loc_incid': cod_mun_ibge,  # Município de incidência do ISS
         'tp_ret_issqn': '1',  # 1=Não retido
+        'inf_adic': nfse_obj.inf_adic,
     }
     
     # Render the template

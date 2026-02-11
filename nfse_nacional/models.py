@@ -75,6 +75,7 @@ class NFSe(models.Model):
     # Override fields from Service/Invoice
     valor_servico = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Valor do Serviço (Override)")
     descricao_servico = models.TextField(null=True, blank=True, verbose_name="Descrição do Serviço (Override)")
+    inf_adic = models.TextField(null=True, blank=True, verbose_name="Informações Complementares")
 
     def save(self, *args, **kwargs):
         if not self.numero_dps:
