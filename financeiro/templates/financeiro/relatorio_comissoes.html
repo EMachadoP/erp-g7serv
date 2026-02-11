@@ -4,9 +4,33 @@
 <div class="p-6">
     <h1 class="text-2xl font-bold">Relatório de Comissões e Gratificações</h1>
 
-    <div class="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
-        <p><strong>Total de Vendas:</strong> R$ {{ relatorio.total_vendas }}</p>
-        <p><strong>Total de Comissões:</strong> R$ {{ relatorio.total_comissoes }}</p>
+    <div class="mt-4 p-4 bg-white border rounded shadow-sm">
+        <form method="get" class="flex flex-wrap items-end gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Data Início</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}"
+                    class="mt-1 block w-full border rounded-md p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Data Fim</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}"
+                    class="mt-1 block w-full border rounded-md p-2">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                Filtrar
+            </button>
+        </form>
+    </div>
+
+    <div class="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 bg-white rounded shadow-sm border-l-4 border-green-500">
+            <p class="text-sm text-gray-500 uppercase font-bold">Total de Vendas</p>
+            <p class="text-2xl font-bold text-gray-800">R$ {{ relatorio.total_vendas }}</p>
+        </div>
+        <div class="p-4 bg-white rounded shadow-sm border-l-4 border-blue-500">
+            <p class="text-sm text-gray-500 uppercase font-bold">Total de Comissões</p>
+            <p class="text-2xl font-bold text-gray-800">R$ {{ relatorio.total_comissoes }}</p>
+        </div>
     </div>
 
     <h2 class="mt-6 text-xl font-semibold text-blue-600">Demanda Direta (Cliente)</h2>

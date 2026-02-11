@@ -1553,3 +1553,36 @@ def diagnostico_nfse_nacional(request):
             output.write("\nSem XML de envio salvo.")
 
     return render(request, 'financeiro/diagnostico_nfse.html', {'output': output.getvalue()})
+
+@login_required
+def commission_report(request):
+    from .reports import gerar_relatorio_comissoes
+    from django.utils import timezone
+    from datetime import datetime
+
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+
+    if not data_inicio:
+        data_inicio = timezone.now().replace(day=1).date()
+    else:
+        try:
+            data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d').date()
+        except ValueError:
+            data_inicio = timezone.now().replace(day=1).date()
+
+    if not data_fim:
+        data_fim = timezone.now().date()
+    else:
+        try:
+            data_fim = datetime.strptime(data_fim, '%Y-%m-%d').date()
+        except ValueError:
+            data_fim = timezone.now().date()
+
+    relatorio = gerar_relatorio_comissoes(data_inicio, data_fim)
+
+    return render(request, 'financeiro/relatorio_comissoes.html', {
+        'relatorio': relatorio,
+        'data_inicio': data_inicio.strftime('%Y-%m-%d'),
+        'data_fim': data_fim.strftime('%Y-%m-%d')
+    })
