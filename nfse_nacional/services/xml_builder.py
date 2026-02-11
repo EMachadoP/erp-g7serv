@@ -53,6 +53,13 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
     def format_decimal(value):
         return f"{value:.2f}"
 
+    # Build service description (append complementary info if present)
+    desc_serv = nfse_obj.servico.description or nfse_obj.servico.name
+    if nfse_obj.inf_adic:
+        desc_serv = f"{desc_serv} | {nfse_obj.inf_adic}"
+    # Truncate to 2000 chars (xDescServ limit)
+    desc_serv = desc_serv[:2000]
+
     # Updated to use override fields
     sale_price = nfse_obj.valor_servico if nfse_obj.valor_servico else nfse_obj.servico.sale_price
     
@@ -192,7 +199,7 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         'trib_issqn': '1',  # 1=Tributável
         'c_loc_incid': cod_mun_ibge,  # Município de incidência do ISS
         'tp_ret_issqn': '1',  # 1=Não retido
-        'inf_adic': nfse_obj.inf_adic,
+        'desc_serv': desc_serv,
     }
     
     # Render the template

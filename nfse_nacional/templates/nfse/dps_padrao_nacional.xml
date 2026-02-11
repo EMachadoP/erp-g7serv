@@ -63,7 +63,7 @@
             <cServ>
                 <cTribNac>{{ c_trib_nac }}</cTribNac>
                 {% if c_trib_mun %}<cTribMun>{{ c_trib_mun }}</cTribMun>{% endif %}
-                <xDescServ>{{ nfse.servico.description|default:nfse.servico.name|truncatechars:2000 }}</xDescServ>
+                <xDescServ>{{ desc_serv }}</xDescServ>
             </cServ>
         </serv>
 
@@ -85,8 +85,5 @@
                 </totTrib>
             </trib>
         </valores>
-        {% if inf_adic %}
-        <infAdic>{{ inf_adic }}</infAdic>
-        {% endif %}
     </infDPS>
 </DPS>
