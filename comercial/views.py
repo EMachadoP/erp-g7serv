@@ -731,9 +731,27 @@ def budget_detail(request, pk):
 @login_required
 def budget_win(request, pk):
     budget = get_object_or_404(Budget, pk=pk)
+    
+    from financeiro.models import ConfiguracaoComissao
+    
+    # Busca a regra administrativa
+    try:
+        if budget.origin == 'preventiva':
+            regra = ConfiguracaoComissao.objects.get(tipo_venda="Venda via Preventiva")
+            budget.seller_commission_pct = regra.pct_vendedor
+            budget.technician_commission_pct = regra.pct_tecnico
+        else:
+            regra = ConfiguracaoComissao.objects.get(tipo_venda="Venda Direta")
+            budget.seller_commission_pct = regra.pct_vendedor
+            budget.technician_commission_pct = 0 # Direta não tem técnico
+    except ConfiguracaoComissao.DoesNotExist:
+        messages.warning(request, 'Configuração de comissão não encontrada. Verifique as regras no financeiro.')
+        
     budget.status = 'Ganho'
+    budget.closing_date = timezone.now().date()
     budget.save()
-    messages.success(request, 'Orçamento marcado como Ganho!')
+    
+    messages.success(request, 'Orçamento marcado como Ganho e Comissões Registradas!')
     return redirect('comercial:budget_detail', pk=pk)
 
 @login_required

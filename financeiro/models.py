@@ -292,3 +292,15 @@ class NotaFiscalServico(models.Model):
     class Meta:
         verbose_name = "NFS-e"
         verbose_name_plural = "Notas Fiscais de Serviço"
+
+class ConfiguracaoComissao(models.Model):
+    tipo_venda = models.CharField(max_length=50, verbose_name="Tipo de Venda") # Ex: "Venda Direta", "Venda via Preventiva"
+    pct_vendedor = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Comissão Vendedor (%)")
+    pct_tecnico = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Comissão Técnico (%)")
+    
+    def __str__(self):
+        return self.tipo_venda
+
+    class Meta:
+        verbose_name = "Configuração de Comissão"
+        verbose_name_plural = "Configurações de Comissão"

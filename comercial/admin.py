@@ -48,6 +48,20 @@ class ContractAdmin(admin.ModelAdmin):
 
 @admin.register(Budget)
 class BudgetAdmin(admin.ModelAdmin):
-    list_display = ('client', 'date', 'total_value', 'status')
-    list_filter = ('status', 'date')
-    search_fields = ('client__name',)
+    list_display = ('id', 'client', 'date', 'total_value', 'status', 'origin', 'seller')
+    list_filter = ('status', 'date', 'origin', 'seller', 'commission_paid')
+    search_fields = ('client__name', 'id')
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('client', 'title', 'seller', 'status', 'origin', 'date', 'validity_date')
+        }),
+        ('Comissionamento', {
+            'fields': ('technician', 'seller_commission_pct', 'technician_commission_pct', 'gratification_value', 'commission_paid', 'closing_date')
+        }),
+        ('Valores e Pagamento', {
+            'fields': ('total_value', 'payment_method', 'payment_details')
+        }),
+        ('Endereço e Observações', {
+            'fields': ('address', 'contact', 'observation', 'approved_by_operations', 'followup_strategy', 'last_followup')
+        }),
+    )

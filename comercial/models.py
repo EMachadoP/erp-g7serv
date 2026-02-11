@@ -115,10 +115,26 @@ class Budget(BaseModel):
         ('OUTRO', 'Outro'),
     )
 
+    ORIGIN_CHOICES = [
+        ('direta', 'Demanda Direta (Cliente)'),
+        ('preventiva', 'Demanda de Preventiva'),
+    ]
+
     client = models.ForeignKey(Person, on_delete=models.CASCADE, limit_choices_to={'is_client': True}, verbose_name="Cliente")
     title = models.CharField(max_length=255, verbose_name="Título", blank=True, null=True)
     seller = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Vendedor")
+    technician = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='indicacoes', verbose_name="Técnico (Indicação)")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Aberto', verbose_name="Status")
+    origin = models.CharField(max_length=20, choices=ORIGIN_CHOICES, default='direta', verbose_name="Origem")
+    
+    # Percentuais aplicados no momento do fechamento
+    seller_commission_pct = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Comissão Vendedor (%)")
+    technician_commission_pct = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Comissão Técnico (%)")
+    gratification_value = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Valor de Gratificação")
+    
+    commission_paid = models.BooleanField(default=False, verbose_name="Comissão Paga")
+    closing_date = models.DateField(null=True, blank=True, verbose_name="Data de Fechamento")
+
     approved_by_operations = models.BooleanField(default=False, verbose_name="Liberado pelo Operacional")
     followup_strategy = models.CharField(max_length=20, choices=FOLLOWUP_CHOICES, default='Manual', verbose_name="Estratégia de Follow-up")
     last_followup = models.DateTimeField(null=True, blank=True, verbose_name="Último Follow-up")
@@ -132,6 +148,11 @@ class Budget(BaseModel):
     # Address info (snapshot)
     address = models.TextField(blank=True, null=True, verbose_name="Endereço")
     contact = models.CharField(max_length=255, blank=True, null=True, verbose_name="Contato")
+
+    def calculate_commission_values(self):
+        seller_total = (self.total_value * self.seller_commission_pct) / 100
+        technician_total = (self.total_value * self.technician_commission_pct) / 100
+        return seller_total, technician_total
 
     def __str__(self):
         return f"Orçamento {self.id} - {self.client.name}"

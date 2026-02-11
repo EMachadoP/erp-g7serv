@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold">Relatório de Comissões e Gratificações</h1>
+
+    <div class="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+        <p><strong>Total de Vendas:</strong> R$ {{ relatorio.total_vendas }}</p>
+        <p><strong>Total de Comissões:</strong> R$ {{ relatorio.total_comissoes }}</p>
+    </div>
+
+    <h2 class="mt-6 text-xl font-semibold text-blue-600">Demanda Direta (Cliente)</h2>
+    <div class="overflow-x-auto mt-2">
+        <table class="w-full border-collapse border border-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border border-gray-200 p-2">Vendedor</th>
+                    <th class="border border-gray-200 p-2">Valor Venda</th>
+                    <th class="border border-gray-200 p-2">Comissão (%)</th>
+                    <th class="border border-gray-200 p-2">Valor Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in relatorio.direta %}
+                <tr>
+                    <td class="border border-gray-200 p-2">{{ v.seller.get_full_name|default:v.seller.username }}</td>
+                    <td class="border border-gray-200 p-2">R$ {{ v.total_value }}</td>
+                    <td class="border border-gray-200 p-2">{{ v.seller_commission_pct }}%</td>
+                    <td class="border border-gray-200 p-2">R$ {{ v.calculate_commission_values.0 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="border border-gray-200 p-2 text-center text-gray-500">Nenhuma venda direta no
+                        período.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="mt-8 text-xl font-semibold text-green-600">Demanda de Preventiva</h2>
+    <div class="overflow-x-auto mt-2">
+        <table class="w-full border-collapse border border-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border border-gray-200 p-2">Técnico (Indicação)</th>
+                    <th class="border border-gray-200 p-2">Vendedor</th>
+                    <th class="border border-gray-200 p-2">Venda</th>
+                    <th class="border border-gray-200 p-2">Comiss. Técnico</th>
+                    <th class="border border-gray-200 p-2">Comiss. Vendedor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in relatorio.preventiva %}
+                <tr>
+                    <td class="border border-gray-200 p-2">{{ v.technician.get_full_name|default:v.technician.username
+                        }}</td>
+                    <td class="border border-gray-200 p-2">{{ v.seller.get_full_name|default:v.seller.username }}</td>
+                    <td class="border border-gray-200 p-2">R$ {{ v.total_value }}</td>
+                    <td class="border border-gray-200 p-2">R$ {{ v.calculate_commission_values.1 }} ({{
+                        v.technician_commission_pct }}%)</td>
+                    <td class="border border-gray-200 p-2">R$ {{ v.calculate_commission_values.0 }} ({{
+                        v.seller_commission_pct }}%)</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="border border-gray-200 p-2 text-center text-gray-500">Nenhuma venda via
+                        preventiva no período.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

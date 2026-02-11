@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     AccountPayable, AccountReceivable, CategoriaFinanceira, BankReconciliation, 
     CentroResultado, CashAccount, Receipt, BudgetPlan, BudgetItem, 
-    EmpresaFiscal, NotaFiscalServico
+    EmpresaFiscal, NotaFiscalServico, ConfiguracaoComissao
 )
 
 @admin.register(CategoriaFinanceira)
@@ -68,3 +68,7 @@ class NotaFiscalServicoAdmin(admin.ModelAdmin):
     list_display = ('numero_dps', 'cliente', 'valor_total', 'status', 'protocolo')
     list_filter = ('status', 'serie')
     search_fields = ('cliente__name', 'protocolo')
+
+@admin.register(ConfiguracaoComissao)
+class ConfiguracaoComissaoAdmin(admin.ModelAdmin):
+    list_display = ('tipo_venda', 'pct_vendedor', 'pct_tecnico')
