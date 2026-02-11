@@ -1614,6 +1614,8 @@ def commission_config_edit(request, pk):
             form.save()
             messages.success(request, f'Configuração para "{config.tipo_venda}" atualizada!')
             return redirect('financeiro:commission_config_list')
+        else:
+            messages.error(request, "Erro ao salvar: Verifique os campos abaixo.")
     else:
         form = ConfiguracaoComissaoForm(instance=config)
     
