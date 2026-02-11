@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Regras de Comissão</h2>
+    </div>
+
+    <div class="card module-card text-start shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Defina os percentuais padrão por tipo de venda</h5>
+            <div class="table-responsive">
+                <table class="table table-premium">
+                    <thead>
+                        <tr>
+                            <th>Tipo de Venda</th>
+                            <th>Vendedor (%)</th>
+                            <th>Técnico / Indicação (%)</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for config in configs %}
+                        <tr>
+                            <td><span class="fw-bold">{{ config.tipo_venda }}</span></td>
+                            <td>{{ config.pct_vendedor }}%</td>
+                            <td>{{ config.pct_tecnico }}%</td>
+                            <td class="text-end">
+                                <a href="{% url 'financeiro:commission_config_edit' config.pk %}"
+                                    class="btn btn-sm btn-outline-primary shadow-sm">
+                                    <i class="bi bi-pencil me-1"></i> Editar
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                Nenhuma configuração encontrada. Elas serão criadas automaticamente ao acessar esta
+                                página.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

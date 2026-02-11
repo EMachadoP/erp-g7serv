@@ -73,6 +73,8 @@ urlpatterns = [
 
     # Comissões
     path('comissoes/', views.commission_report, name='commission_report'),
+    path('comissoes/config/', views.commission_config_list, name='commission_config_list'),
+    path('comissoes/config/<int:pk>/editar/', views.commission_config_edit, name='commission_config_edit'),
 
     # Configurações Fiscais
     path('configuracoes/fiscal/', views.fiscal_settings, name='fiscal_settings'),

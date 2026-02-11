@@ -3,8 +3,18 @@ from django.db.models import Q
 from django.utils import timezone
 from .models import (
     AccountPayable, AccountReceivable, CashAccount, CentroResultado, 
-    CategoriaFinanceira, Receipt, EmpresaFiscal
+    CategoriaFinanceira, Receipt, EmpresaFiscal, ConfiguracaoComissao
 )
+
+class ConfiguracaoComissaoForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracaoComissao
+        fields = ['tipo_venda', 'pct_vendedor', 'pct_tecnico']
+        widgets = {
+            'tipo_venda': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'pct_vendedor': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'pct_tecnico': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
 
 class EmpresaFiscalForm(forms.ModelForm):
     class Meta:

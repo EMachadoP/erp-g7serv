@@ -33,7 +33,7 @@ from django.views.decorators.http import require_POST
 import json
 import requests
 from core.models import Person
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
@@ -1585,4 +1585,39 @@ def commission_report(request):
         'relatorio': relatorio,
         'data_inicio': data_inicio.strftime('%Y-%m-%d'),
         'data_fim': data_fim.strftime('%Y-%m-%d')
+    })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def commission_config_list(request):
+    from .models import ConfiguracaoComissao
+    configs = ConfiguracaoComissao.objects.all()
+    
+    # Se não houver configurações, cria as padrões
+    if not configs.exists():
+        ConfiguracaoComissao.objects.get_or_create(tipo_venda="Venda Direta", pct_vendedor=0, pct_tecnico=0)
+        ConfiguracaoComissao.objects.get_or_create(tipo_venda="Venda via Preventiva", pct_vendedor=0, pct_tecnico=0)
+        configs = ConfiguracaoComissao.objects.all()
+
+    return render(request, 'financeiro/commission_config_list.html', {'configs': configs})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def commission_config_edit(request, pk):
+    from .models import ConfiguracaoComissao
+    from .forms import ConfiguracaoComissaoForm
+    config = get_object_or_404(ConfiguracaoComissao, pk=pk)
+    
+    if request.method == 'POST':
+        form = ConfiguracaoComissaoForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Configuração para "{config.tipo_venda}" atualizada!')
+            return redirect('financeiro:commission_config_list')
+    else:
+        form = ConfiguracaoComissaoForm(instance=config)
+    
+    return render(request, 'financeiro/commission_config_form.html', {
+        'form': form,
+        'config': config
     })
