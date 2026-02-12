@@ -15,12 +15,11 @@
                     <label class="form-label d-block">Tipo de Pessoa</label>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="person_type" id="type_pj" value="PJ" {% if
-                            not client or client.person_type=='PJ' %}checked{% endif %}>
+                            not client or client.person_type == 'PJ' %}checked{% endif %}>
                         <label class="form-check-label" for="type_pj">Pessoa Jurídica</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="person_type" id="type_pf" value="PF" {% if
-                            client.person_type=='PF' %}checked{% endif %}>
+                        <input class="form-check-input" type="radio" name="person_type" id="type_pf" value="PF" {% if client.person_type == 'PF' %}checked{% endif %}>
                         <label class="form-check-label" for="type_pf">Pessoa Física</label>
                     </div>
                 </div>

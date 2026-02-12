@@ -22,7 +22,7 @@
                     <select name="client" id="client" class="form-select" required>
                         <option value="">Selecione um cliente...</option>
                         {% for client in clients %}
-                        <option value="{{ client.id }}" {% if contract and contract.client.id==client.id %}selected{%
+                        <option value="{{ client.id }}" {% if contract and contract.client.id == c lient.id %}selected{%
                             endif %}>
                             {{ client.name }}
                         </option>
@@ -35,8 +35,7 @@
                     <select name="template" id="template" class="form-select" required>
                         <option value="">Selecione um modelo...</option>
                         {% for template in templates %}
-                        <option value="{{ template.id }}" {% if contract and contract.template.id==template.id
-                            %}selected{% endif %}>
+                        <option value="{{ template.id }}" {% if contract and contract.template.id == template.id %}selected{% endif %}>
                             {{ template.name }}
                         </option>
                         {% endfor %}
@@ -48,8 +47,7 @@
                     <select name="billing_group" id="billing_group" class="form-select">
                         <option value="">Nenhum</option>
                         {% for group in billing_groups %}
-                        <option value="{{ group.id }}" {% if contract and contract.billing_group.id==group.id
-                            %}selected{% endif %}>
+                        <option value="{{ group.id }}" {% if contract and contract.billing_group.id == group.id %}selected{% endif %}>
                             {{ group.name }}
                         </option>
                         {% endfor %}
@@ -59,13 +57,13 @@
                 <div class="col-md-4">
                     <label for="status" class="form-label">Status *</label>
                     <select name="status" id="status" class="form-select" required>
-                        <option value="Ativo" {% if contract and contract.status=='Ativo' %}selected{% endif %}>Ativo
+                        <option value="Ativo" {% if contract and contract.status == 'Ativo' %}selected{% endif %}>Ativo
                         </option>
-                        <option value="Inativo" {% if contract and contract.status=='Inativo' %}selected{% endif %}>
+                        <option value="Inativo" {% if contract and contract.status == 'Inativo' %}selected{% endif %}>
                             Inativo</option>
-                        <option value="Cancelado" {% if contract and contract.status=='Cancelado' %}selected{% endif %}>
+                        <option value="Cancelado" {% if contract and contract.status == 'Cancelado' %}selected{% endif %}>
                             Cancelado</option>
-                        <option value="Expirado" {% if contract and contract.status=='Expirado' %}selected{% endif %}>
+                        <option value="Expirado" {% if contract and contract.status == 'Expirado' %}selected{% endif %}>
                             Expirado</option>
                     </select>
                 </div>
@@ -90,9 +88,9 @@
                 <div class="col-md-3">
                     <label for="modality" class="form-label">Modalidade *</label>
                     <select name="modality" id="modality" class="form-select" required>
-                        <option value="Mensal" {% if contract and contract.modality=='Mensal' %}selected{% endif %}>
+                        <option value="Mensal" {% if contract and contract.modality == 'Mensal' %}selected{% endif %}>
                             Mensal</option>
-                        <option value="Anual" {% if contract and contract.modality=='Anual' %}selected{% endif %}>Anual
+                        <option value="Anual" {% if contract and contract.modality == 'Anual' %}selected{% endif %}>Anual
                         </option>
                     </select>
                 </div>

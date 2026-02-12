@@ -23,9 +23,9 @@
             <div class="col-md-4">
                 <select name="status" class="form-select">
                     <option value="">Todos os Status</option>
-                    <option value="Ativo" {% if status_filter=='Ativo' %}selected{% endif %}>Ativo</option>
-                    <option value="Encerrado" {% if status_filter=='Encerrado' %}selected{% endif %}>Encerrado</option>
-                    <option value="Cancelado" {% if status_filter=='Cancelado' %}selected{% endif %}>Cancelado</option>
+                    <option value="Ativo" {% if status_filter == 'Ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="Encerrado" {% if status_filter == 'Encerrado' %}selected{% endif %}>Encerrado</option>
+                    <option value="Cancelado" {% if status_filter == 'Cancelado' %}selected{% endif %}>Cancelado</option>
                 </select>
             </div>
             <div class="col-md-2">
