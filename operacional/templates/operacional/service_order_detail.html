@@ -2,104 +2,217 @@
 
 {% block content %}
 <div class="card mt-4 border-0 shadow-sm">
- <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
- <h3 class="mb-0 text-secondary">OS #{{ order.id }} - {{ order.client.name }}</h3>
- <div>
- {% if order.status == 'COMPLETED' %}
- <span class="badge bg-success bg-opacity-10 text-success fs-6">Concluído</span>
- {% elif order.status == 'PENDING' %}
- <span class="badge bg-warning bg-opacity-10 text-warning fs-6">Pendente</span>
- {% else %}
- <span class="badge bg-secondary bg-opacity-10 text-secondary fs-6">{{ order.get_status_display }}</span>
- {% endif %}
- </div>
- </div>
- <div class="card-body">
- <h5 class="card-title text-primary">{{ order.product|default:"Serviço Geral" }}</h5>
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h3 class="mb-0 text-secondary">OS #{{ order.id }} - {{ order.client.name }}</h3>
+        <div>
+            {% if order.status == 'COMPLETED' %}
+            <span class="badge bg-success bg-opacity-10 text-success fs-6">Concluído</span>
+            {% elif order.status == 'PENDING' %}
+            <span class="badge bg-warning bg-opacity-10 text-warning fs-6">Pendente</span>
+            {% else %}
+            <span class="badge bg-secondary bg-opacity-10 text-secondary fs-6">{{ order.get_status_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title text-primary">{{ order.product|default:"Serviço Geral" }}</h5>
 
- <div class="row mt-4">
- <div class="col-md-6">
- <h6 class="text-muted">Detalhes</h6>
- <p><strong>Descrição:</strong><br> {{ order.description|linebreaks }}</p>
- <p><strong>Valor Total:</strong> <span class="fs-5 text-success">R$ {{ order.value }}</span></p>
- </div>
- <div class="col-md-6">
- <h6 class="text-muted">Datas</h6>
- <p><strong>Data Início:</strong> {{ order.start_date|default:"-" }}</p>
- <p><strong>Data Término:</strong> {{ order.end_date|default:"-" }}</p>
- <p><strong>Previsão:</strong> {{ order.scheduled_date|default:"-" }}</p>
- <p><strong>Duração:</strong> {{ order.duration|default:"-" }}</p>
- </div>
- </div>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h6 class="text-muted">Detalhes</h6>
+                <p><strong>Descrição:</strong><br> {{ order.description|linebreaks }}</p>
+                <p><strong>Valor Total:</strong> <span class="fs-5 text-success">R$ {{ order.value }}</span></p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">Datas</h6>
+                <p><strong>Data Início:</strong> {{ order.start_date|default:"-" }}</p>
+                <p><strong>Data Término:</strong> {{ order.end_date|default:"-" }}</p>
+                <p><strong>Previsão:</strong> {{ order.scheduled_date|default:"-" }}</p>
+                <p><strong>Duração:</strong> {{ order.duration|default:"-" }}</p>
+            </div>
+        </div>
 
- <div class="row mt-4">
- <div class="col-md-6">
- <h6 class="text-muted">Equipe</h6>
- <p><strong>Técnico:</strong> {{ order.technical_team.name|default:"-" }}</p>
- <p><strong>Vendedor:</strong>
- {% if order.seller %}
- {{ order.seller.get_full_name|default:order.seller.username|default:"-" }}
- {% else %}
- -
- {% endif %}
- </p>
- </div>
- <div class="col-md-6">
- <h6 class="text-muted">Endereço de Atendimento</h6>
- <p>{{ order.address|default:"-" }}</p>
- <p><strong>Contato:</strong> {{ order.contact|default:"-" }}</p>
- </div>
- </div>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h6 class="text-muted">Equipe</h6>
+                <p><strong>Técnico:</strong> {{ order.technical_team.name|default:"-" }}</p>
+                <p><strong>Vendedor:</strong>
+                    {% if order.seller %}
+                    {{ order.seller.get_full_name|default:order.seller.username|default:"-" }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">Endereço de Atendimento</h6>
+                <p>{{ order.address|default:"-" }}</p>
+                <p><strong>Contato:</strong> {{ order.contact|default:"-" }}</p>
+            </div>
+        </div>
 
- <hr class="my-4">
+        <hr class="my-4">
 
- <h5 class="text-muted mb-3">Itens / Produtos</h5>
- <div class="table-responsive">
- <table class="table table-hover table-bordered">
- <thead class="bg-light">
- <tr>
- <th>Produto</th>
- <th class="text-center">Quantidade</th>
- <th class="text-end">Preço Unit.</th>
- <th class="text-end">Total</th>
- </tr>
- </thead>
- <tbody>
- {% for item in order.items.all %}
- <tr>
- <td>{{ item.product.name }}</td>
- <td class="text-center">{{ item.quantity }}</td>
- <td class="text-end">R$ {{ item.unit_price }}</td>
- <td class="text-end">R$ {{ item.total_price }}</td>
- </tr>
- {% empty %}
- <tr>
- <td colspan="4" class="text-center text-muted">Nenhum item adicionado.</td>
- </tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
+        <h5 class="text-muted mb-3">Itens / Produtos</h5>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Produto</th>
+                        <th class="text-center">Quantidade</th>
+                        <th class="text-end">Preço Unit.</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">R$ {{ item.unit_price }}</td>
+                        <td class="text-end">R$ {{ item.total_price }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Nenhum item adicionado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
- <div class="mt-4 d-flex gap-2">
- <a href="{% url 'operacional:service_order_update' order.id %}" class="btn btn-warning text-white"><i
- class="bi bi-pencil"></i> Editar</a>
- <a href="{% url 'faturamento:create_from_os' order.id %}" class="btn btn-success text-white"><i
- class="bi bi-receipt"></i> Gerar Fatura</a>
- <a href="{% url 'operacional:service_order_pdf' order.id %}" class="btn btn-info text-white"
- target="_blank"><i class="bi bi-printer"></i> Imprimir OS</a>
+        <!-- Horários de Execução -->
+        {% if order.checkin_time or order.checkout_time %}
+        <hr class="my-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-clock-history me-2"></i>Horários de Execução</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-box-arrow-in-right text-success fs-3"></i>
+                        <p class="text-muted small mb-1 mt-2">Check-in (Início)</p>
+                        <p class="fw-bold mb-0">{{ order.checkin_time|date:"d/m/Y H:i"|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-box-arrow-right text-danger fs-3"></i>
+                        <p class="text-muted small mb-1 mt-2">Check-out (Fim)</p>
+                        <p class="fw-bold mb-0">{{ order.checkout_time|date:"d/m/Y H:i"|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-stopwatch text-primary fs-3"></i>
+                        <p class="text-muted small mb-1 mt-2">Duração Estimada</p>
+                        <p class="fw-bold mb-0">{{ order.duration|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
- {% if order.order_type == 'Preventiva' and order.status == 'COMPLETED' %}
- <a href="{% url 'operacional:service_order_checklist_pdf' order.id %}" class="btn btn-primary text-white">
- <i class="bi bi-file-earmark-pdf"></i> Relatório Preventiva
- </a>
- <a href="{% url 'operacional:checklist_enviar_email' order.id %}" class="btn btn-dark text-white">
- <i class="bi bi-envelope"></i> Enviar por E-mail
- </a>
- {% endif %}
+        <!-- Laudo Final do Técnico -->
+        {% if order.solution %}
+        <hr class="my-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-clipboard-check me-2"></i>Laudo Final do Técnico</h5>
+        <div class="card border-0 bg-light">
+            <div class="card-body">
+                <p class="mb-0">{{ order.solution|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
 
- <a href="{% url 'operacional:service_order_list' %}" class="btn btn-outline-secondary">Voltar</a>
- </div>
- </div>
+        <!-- Fotos Antes / Depois / Diagnóstico -->
+        {% if fotos_antes or fotos_depois or fotos_diagnostico %}
+        <hr class="my-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-camera me-2"></i>Registro Fotográfico</h5>
+
+        {% if fotos_antes %}
+        <h6 class="fw-bold text-uppercase small text-muted mt-3 mb-2">
+            <i class="bi bi-arrow-right-circle me-1"></i>Antes do Serviço
+        </h6>
+        <div class="row g-3 mb-3">
+            {% for foto in fotos_antes %}
+            <div class="col-6 col-md-3">
+                <a href="{{ foto.file.url }}" target="_blank">
+                    <img src="{{ foto.file.url }}" class="img-fluid rounded shadow-sm" alt="Antes do serviço"
+                        style="max-height: 200px; width: 100%; object-fit: cover;">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if fotos_depois %}
+        <h6 class="fw-bold text-uppercase small text-muted mt-3 mb-2">
+            <i class="bi bi-check-circle me-1"></i>Depois do Serviço
+        </h6>
+        <div class="row g-3 mb-3">
+            {% for foto in fotos_depois %}
+            <div class="col-6 col-md-3">
+                <a href="{{ foto.file.url }}" target="_blank">
+                    <img src="{{ foto.file.url }}" class="img-fluid rounded shadow-sm" alt="Depois do serviço"
+                        style="max-height: 200px; width: 100%; object-fit: cover;">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if fotos_diagnostico %}
+        <h6 class="fw-bold text-uppercase small text-muted mt-3 mb-2">
+            <i class="bi bi-search me-1"></i>Diagnóstico / Laudo
+        </h6>
+        <div class="row g-3 mb-3">
+            {% for foto in fotos_diagnostico %}
+            <div class="col-6 col-md-3">
+                <a href="{{ foto.file.url }}" target="_blank">
+                    <img src="{{ foto.file.url }}" class="img-fluid rounded shadow-sm" alt="Diagnóstico"
+                        style="max-height: 200px; width: 100%; object-fit: cover;">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% endif %}
+
+        <!-- Assinatura do Cliente -->
+        {% if order.signature_image %}
+        <hr class="my-4">
+        <h5 class="text-muted mb-3"><i class="bi bi-pen me-2"></i>Assinatura do Cliente</h5>
+        <div class="card border-0 bg-light" style="max-width: 400px;">
+            <div class="card-body text-center">
+                <img src="{{ order.signature_image.url }}" class="img-fluid" alt="Assinatura do cliente"
+                    style="max-height: 150px;">
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="mt-4 d-flex gap-2">
+            <a href="{% url 'operacional:service_order_update' order.id %}" class="btn btn-warning text-white"><i
+                    class="bi bi-pencil"></i> Editar</a>
+            <a href="{% url 'faturamento:create_from_os' order.id %}" class="btn btn-success text-white"><i
+                    class="bi bi-receipt"></i> Gerar Fatura</a>
+            <a href="{% url 'operacional:service_order_pdf' order.id %}" class="btn btn-info text-white"
+                target="_blank"><i class="bi bi-printer"></i> Imprimir OS</a>
+
+            {% if order.order_type == 'Preventiva' and order.status == 'COMPLETED' %}
+            <a href="{% url 'operacional:service_order_checklist_pdf' order.id %}" class="btn btn-primary text-white">
+                <i class="bi bi-file-earmark-pdf"></i> Relatório Preventiva
+            </a>
+            <a href="{% url 'operacional:checklist_enviar_email' order.id %}" class="btn btn-dark text-white">
+                <i class="bi bi-envelope"></i> Enviar por E-mail
+            </a>
+            {% endif %}
+
+            <a href="{% url 'operacional:service_order_list' %}" class="btn btn-outline-secondary">Voltar</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

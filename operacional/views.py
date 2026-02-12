@@ -99,7 +99,15 @@ def service_order_cancel(request, pk):
 @login_required
 def service_order_detail(request, pk):
     order = get_object_or_404(ServiceOrder, pk=pk)
-    return render(request, 'operacional/service_order_detail.html', {'order': order})
+    fotos_antes = order.anexos.filter(type='Antes')
+    fotos_depois = order.anexos.filter(type='Depois')
+    fotos_diagnostico = order.anexos.filter(type='Diagnostico')
+    return render(request, 'operacional/service_order_detail.html', {
+        'order': order,
+        'fotos_antes': fotos_antes,
+        'fotos_depois': fotos_depois,
+        'fotos_diagnostico': fotos_diagnostico,
+    })
 
 @login_required
 def service_order_create(request):
