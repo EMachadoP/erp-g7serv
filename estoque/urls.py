@@ -25,6 +25,13 @@ urlpatterns = [
     path('locais/nova/', views.location_create, name='location_create'),
     path('locais/<int:pk>/editar/', views.location_update, name='location_update'),
 
+    # Famílias
+    path('familias/nova/', views.family_create, name='family_create'),
+    path('familias/<int:pk>/editar/', views.family_update, name='family_update'),
+
+    # Cadastros Auxiliares (tela unificada)
+    path('cadastros/', views.cadastros_auxiliares, name='cadastros_auxiliares'),
+
     # Balanços (Inventário)
     path('balancos/', views.inventory_list, name='inventory_list'),
     path('balancos/novo/', views.inventory_create, name='inventory_create'),

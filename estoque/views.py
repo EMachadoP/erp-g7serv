@@ -30,7 +30,7 @@ def product_update(request, pk):
     return render(request, 'estoque/product_form.html', {'form': form, 'title': 'Editar Produto'})
 
 from django.contrib import messages
-from .models import Product, StockMovement, Brand, Category, StockLocation, Inventory, InventoryItem
+from .models import Product, StockMovement, Brand, Category, StockLocation, ProductFamily, Inventory, InventoryItem
 from django.core.paginator import Paginator
 from django.db.models import Q
 
@@ -145,7 +145,7 @@ def location_create(request):
             description=request.POST.get('description')
         )
         messages.success(request, 'Local de Estoque criado com sucesso.')
-        return redirect('estoque:location_list')
+        return redirect('estoque:cadastros_auxiliares')
     return render(request, 'estoque/location_form.html')
 
 @login_required
@@ -156,7 +156,7 @@ def location_update(request, pk):
         location.description = request.POST.get('description')
         location.save()
         messages.success(request, 'Local de Estoque atualizado com sucesso.')
-        return redirect('estoque:location_list')
+        return redirect('estoque:cadastros_auxiliares')
     return render(request, 'estoque/location_form.html', {'location': location})
 
 @login_required
@@ -231,3 +231,64 @@ def inventory_detail(request, pk):
             return redirect('estoque:inventory_detail', pk=inventory.id)
             
     return render(request, 'estoque/inventory_detail.html', {'inventory': inventory, 'items': items})
+
+
+# ========== Família de Produto ==========
+
+@login_required
+def family_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if name:
+            ProductFamily.objects.create(name=name)
+            messages.success(request, 'Família criada com sucesso.')
+        else:
+            messages.error(request, 'O nome da família é obrigatório.')
+        return redirect('estoque:cadastros_auxiliares')
+    return redirect('estoque:cadastros_auxiliares')
+
+
+@login_required
+def family_update(request, pk):
+    family = get_object_or_404(ProductFamily, pk=pk)
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if name:
+            family.name = name
+            family.save()
+            messages.success(request, 'Família atualizada com sucesso.')
+        else:
+            messages.error(request, 'O nome da família é obrigatório.')
+        return redirect('estoque:cadastros_auxiliares')
+    return redirect('estoque:cadastros_auxiliares')
+
+
+# ========== Tela Unificada: Cadastros Auxiliares ==========
+
+@login_required
+def cadastros_auxiliares(request):
+    """Unified management page for Família de Produto and Localização de Estoque."""
+    families = ProductFamily.objects.filter(active=True).order_by('name')
+    locations = StockLocation.objects.filter(active=True).order_by('name')
+    brands = Brand.objects.filter(active=True).order_by('name')
+    categories = Category.objects.filter(active=True).order_by('name')
+
+    # Check if editing
+    edit_family = None
+    edit_location = None
+    edit_family_id = request.GET.get('edit_family')
+    edit_location_id = request.GET.get('edit_location')
+    if edit_family_id:
+        edit_family = ProductFamily.objects.filter(pk=edit_family_id).first()
+    if edit_location_id:
+        edit_location = StockLocation.objects.filter(pk=edit_location_id).first()
+
+    return render(request, 'estoque/cadastros_auxiliares.html', {
+        'families': families,
+        'locations': locations,
+        'brands': brands,
+        'categories': categories,
+        'edit_family': edit_family,
+        'edit_location': edit_location,
+    })
+
