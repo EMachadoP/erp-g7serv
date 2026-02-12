@@ -2,71 +2,72 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
- <h2>Usuários</h2>
- <a href="{% url 'core:user_create' %}" class="btn btn-warning text-white">Novo Usuário</a>
+    <h2>Usuários</h2>
+    <a href="{% url 'core:user_create' %}" class="btn btn-warning text-white">Novo Usuário</a>
 </div>
 
 <div class="card mb-3">
- <div class="card-body">
- <form method="get" class="row g-3 align-items-end">
- <div class="col-md-6">
- <label class="form-label">Pesquisar</label>
- <input type="text" name="search" class="form-control" placeholder="Nome ou Email"
- value="{{ search_query }}">
- </div>
- <div class="col-md-3">
- <div class="form-check mb-2">
- <input class="form-check-input" type="checkbox" name="show_inactive" id="showInactive" {% if show_inactive=='on' %}checked{% endif %}>
- <label class="form-check-label" for="showInactive">
- Exibir inativos
- </label>
- </div>
- </div>
- <div class="col-md-3">
- <button type="submit" class="btn btn-primary w-100">Filtrar</button>
- </div>
- </form>
- </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">Pesquisar</label>
+                <input type="text" name="search" class="form-control" placeholder="Nome ou Email"
+                    value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="show_inactive" id="showInactive" {% if
+                        show_inactive=='on' %}checked{% endif %}>
+                    <label class="form-check-label" for="showInactive">
+                        Exibir inativos
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card">
- <div class="card-body p-0">
- <table class="table table-premium table-striped mb-0">
- <thead>
- <tr>
- <th>NOME</th>
- <th>EMAIL</th>
- <th>CRIADO EM</th>
- <th>ÚLTIMO ACESSO</th>
- <th>STATUS</th>
- <th>AÇÕES</th>
- </tr>
- </thead>
- <tbody>
- {% for user in users %}
- <tr>
- <td class="text-uppercase fw-bold">{{ user.get_full_name|default:user.username }}</td>
- <td>{{ user.email }}</td>
- <td>{{ user.date_joined|date:"d/m/Y" }}</td>
- <td>{{ user.last_login|date:"d/m/Y H:i"|default:"-" }}</td>
- <td>
- {% if user.is_active %}
- <span class="badge bg-success">Ativo</span>
- {% else %}
- <span class="badge bg-secondary">Inativo</span>
- {% endif %}
- </td>
- <td>
- <a href="{% url 'core:user_update' user.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
- </td>
- </tr>
- {% empty %}
- <tr>
- <td colspan="6" class="text-center">Nenhum usuário encontrado.</td>
- </tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
+    <div class="card-body p-0">
+        <table class="table table-premium table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>NOME</th>
+                    <th>EMAIL</th>
+                    <th>CRIADO EM</th>
+                    <th>ÚLTIMO ACESSO</th>
+                    <th>STATUS</th>
+                    <th>AÇÕES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td class="text-uppercase fw-bold">{{ user.get_full_name|default:user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                    <td>{{ user.last_login|date:"d/m/Y H:i"|default:"-" }}</td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:user_update' user.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Nenhum usuário encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
