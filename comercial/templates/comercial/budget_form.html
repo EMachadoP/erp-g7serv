@@ -278,34 +278,33 @@
 </div>
 
 <script>
-    function updateClientInfo(select) {
-        $(document).ready(function () {
-            if ($.fn.select2) {
-                $('#client').select2({
-                    theme: 'bootstrap-5',
-                    width: '100%',
-                    placeholder: 'Selecione um cliente...'
-                }).on('select2:select', function (e) {
-                    updateClientInfo(e.target);
-                });
-            }
-        });
-
-        function updateClientInfo(select) {
-            const option = select.options[select.selectedIndex];
-            if (option.value) {
-                document.getElementById('address').value = option.dataset.address;
-                document.getElementById('contact').value = option.dataset.contact || option.dataset.email;
-            } else {
-                document.getElementById('address').value = '';
-                document.getElementById('contact').value = '';
-            }
+    $(document).ready(function () {
+        if ($.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Selecione um cliente...'
+            }).on('select2:select', function (e) {
+                updateClientInfo(e.target);
+            });
         }
+    });
 
-        function addProductRow() {
-            const tbody = document.querySelector('#productsTable tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
+    function updateClientInfo(select) {
+        const option = select.options[select.selectedIndex];
+        if (option.value) {
+            document.getElementById('address').value = option.dataset.address;
+            document.getElementById('contact').value = option.dataset.contact || option.dataset.email;
+        } else {
+            document.getElementById('address').value = '';
+            document.getElementById('contact').value = '';
+        }
+    }
+
+    function addProductRow() {
+        const tbody = document.querySelector('#productsTable tbody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
  <td>
  <select name="product_id[]" class="form-select product-select" onchange="updateProductPrice(this)" required>
  <option value="">Selecione...</option>
@@ -319,13 +318,13 @@
  <td><input type="text" class="form-control-plaintext text-end row-total" value="R$ 0.00" readonly></td>
  <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
  `;
-            tbody.appendChild(row);
-        }
+        tbody.appendChild(row);
+    }
 
-        function addServiceRow() {
-            const tbody = document.querySelector('#servicesTable tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
+    function addServiceRow() {
+        const tbody = document.querySelector('#servicesTable tbody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
  <td>
  <select name="service_id[]" class="form-select service-select" onchange="updateServicePrice(this)" required>
  <option value="">Selecione...</option>
@@ -339,77 +338,77 @@
  <td><input type="text" class="form-control-plaintext text-end row-total" value="R$ 0.00" readonly></td>
  <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
  `;
-            tbody.appendChild(row);
+        tbody.appendChild(row);
+    }
+
+    function removeRow(btn) {
+        btn.closest('tr').remove();
+    }
+
+    function updateProductPrice(select) {
+        const price = select.options[select.selectedIndex].dataset.price;
+        const row = select.closest('tr');
+        const priceInput = row.querySelector('input[name="product_price[]"]');
+        if (price) {
+            priceInput.value = parseFloat(price).toFixed(2);
+            calculateRowTotal(priceInput);
+        }
+    }
+
+    function updateServicePrice(select) {
+        const price = select.options[select.selectedIndex].dataset.price;
+        const row = select.closest('tr');
+        const priceInput = row.querySelector('input[name="service_price[]"]');
+        if (price) {
+            priceInput.value = parseFloat(price).toFixed(2);
+            calculateRowTotal(priceInput);
+        }
+    }
+
+    function calculateRowTotal(element) {
+        const row = element.closest('tr');
+        const qty = parseFloat(row.querySelector('input[type="number"][name$="qty[]"]').value) || 0;
+        const price = parseFloat(row.querySelector('input[type="number"][name$="price[]"]').value) || 0;
+        const total = qty * price;
+        row.querySelector('.row-total').value = 'R$ ' + total.toFixed(2);
+    }
+
+    function generateInstallments() {
+        const count = parseInt(document.getElementById('installments_count').value);
+        const interval = parseInt(document.getElementById('interval_days').value);
+        const firstInstallmentDays = document.getElementById('first_installment_days').value ? parseInt(document.getElementById('first_installment_days').value) : interval;
+
+        // Calculate total value from all rows
+        let totalValue = 0;
+        document.querySelectorAll('.row-total').forEach(input => {
+            const val = parseFloat(input.value.replace('R$ ', '')) || 0;
+            totalValue += val;
+        });
+
+        if (!count || !interval || totalValue === 0) {
+            alert('Por favor, preencha o número de parcelas, o intervalo e adicione itens ao orçamento.');
+            return;
         }
 
-        function removeRow(btn) {
-            btn.closest('tr').remove();
+        const installmentValue = totalValue / count;
+        let details = `Valor Total: R$ ${totalValue.toFixed(2)}\n`;
+        details += `Parcelamento em ${count}x de R$ ${installmentValue.toFixed(2)}\n\n`;
+
+        const today = new Date();
+        let currentDate = new Date(today);
+
+        // First installment
+        currentDate.setDate(today.getDate() + firstInstallmentDays);
+
+        for (let i = 1; i <= count; i++) {
+            const dateStr = currentDate.toLocaleDateString('pt-BR');
+            details += `${i}ª Parcela: ${dateStr} - R$ ${installmentValue.toFixed(2)}\n`;
+
+            // Prepare date for next installment
+            currentDate.setDate(currentDate.getDate() + interval);
         }
 
-        function updateProductPrice(select) {
-            const price = select.options[select.selectedIndex].dataset.price;
-            const row = select.closest('tr');
-            const priceInput = row.querySelector('input[name="product_price[]"]');
-            if (price) {
-                priceInput.value = parseFloat(price).toFixed(2);
-                calculateRowTotal(priceInput);
-            }
-        }
-
-        function updateServicePrice(select) {
-            const price = select.options[select.selectedIndex].dataset.price;
-            const row = select.closest('tr');
-            const priceInput = row.querySelector('input[name="service_price[]"]');
-            if (price) {
-                priceInput.value = parseFloat(price).toFixed(2);
-                calculateRowTotal(priceInput);
-            }
-        }
-
-        function calculateRowTotal(element) {
-            const row = element.closest('tr');
-            const qty = parseFloat(row.querySelector('input[type="number"][name$="qty[]"]').value) || 0;
-            const price = parseFloat(row.querySelector('input[type="number"][name$="price[]"]').value) || 0;
-            const total = qty * price;
-            row.querySelector('.row-total').value = 'R$ ' + total.toFixed(2);
-        }
-
-        function generateInstallments() {
-            const count = parseInt(document.getElementById('installments_count').value);
-            const interval = parseInt(document.getElementById('interval_days').value);
-            const firstInstallmentDays = document.getElementById('first_installment_days').value ? parseInt(document.getElementById('first_installment_days').value) : interval;
-
-            // Calculate total value from all rows
-            let totalValue = 0;
-            document.querySelectorAll('.row-total').forEach(input => {
-                const val = parseFloat(input.value.replace('R$ ', '')) || 0;
-                totalValue += val;
-            });
-
-            if (!count || !interval || totalValue === 0) {
-                alert('Por favor, preencha o número de parcelas, o intervalo e adicione itens ao orçamento.');
-                return;
-            }
-
-            const installmentValue = totalValue / count;
-            let details = `Valor Total: R$ ${totalValue.toFixed(2)}\n`;
-            details += `Parcelamento em ${count}x de R$ ${installmentValue.toFixed(2)}\n\n`;
-
-            const today = new Date();
-            let currentDate = new Date(today);
-
-            // First installment
-            currentDate.setDate(today.getDate() + firstInstallmentDays);
-
-            for (let i = 1; i <= count; i++) {
-                const dateStr = currentDate.toLocaleDateString('pt-BR');
-                details += `${i}ª Parcela: ${dateStr} - R$ ${installmentValue.toFixed(2)}\n`;
-
-                // Prepare date for next installment
-                currentDate.setDate(currentDate.getDate() + interval);
-            }
-
-            document.getElementById('payment_details').value = details;
-        }
+        document.getElementById('payment_details').value = details;
+    }
 </script>
 {% endblock %}

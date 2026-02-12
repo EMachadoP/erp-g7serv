@@ -169,6 +169,16 @@
 
 <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
 <script>
+    $(document).ready(function () {
+        if ($.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Selecione um cliente...'
+            });
+        }
+    });
+
     // Dynamic item addition/removal
     const addBtn = document.getElementById('add-item');
     const container = document.getElementById('items-container');
