@@ -434,6 +434,23 @@ def process_contract_billing(request):
         except Exception as e:
             messages.error(request, f"Erro ao processar contrato #{contract.id}: {str(e)}")
             continue
+    
+    # Update batch with final stats
+    batch.finished_at = timezone.now()
+    batch.status = 'COMPLETED'
+    batch.total_invoiced = total_invoiced
+    batch.save()
+            
+    # Handle HTMX request
+    if request.headers.get('HX-Request'):
+        return render(request, 'faturamento/partials/billing_result_message.html', {
+            'created_count': created_count,
+            'email_count': email_count,
+            'batch': batch
+        })
+        
+    messages.success(request, f'{created_count} faturas geradas ({email_count} e-mails enviados).')
+    return redirect('faturamento:billing_batch_detail', pk=batch.pk)
 
 @login_required
 def invoice_cancel(request, pk):
@@ -462,23 +479,6 @@ def invoice_cancel(request, pk):
         messages.error(request, f'Erro ao cancelar fatura: {str(e)}')
         
     return redirect('faturamento:contract_billing')
-    
-    # Update batch with final stats
-    batch.finished_at = timezone.now()
-    batch.status = 'COMPLETED'
-    batch.total_invoiced = total_invoiced
-    batch.save()
-            
-    # Handle HTMX request
-    if request.headers.get('HX-Request'):
-        return render(request, 'faturamento/partials/billing_result_message.html', {
-            'created_count': created_count,
-            'email_count': email_count,
-            'batch': batch
-        })
-        
-    messages.success(request, f'{created_count} faturas geradas ({email_count} e-mails enviados).')
-    return redirect('faturamento:billing_batch_detail', pk=batch.pk)
 
 
 @login_required
