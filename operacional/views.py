@@ -432,8 +432,14 @@ def service_order_pdf(request, pk):
         'now': timezone.now(),
     }
     
+    # Custom Filename
+    # OS_[NUMERO]_[NOME_DO_CLIENTE]_[DATA_DA_OS].pdf
+    client_name = "".join([c if c.isalnum() or c == " " else "" for c in order.client.name]).strip().replace(" ", "_")
+    os_date = order.created_at.strftime('%d_%m_%Y')
+    filename = f"OS_{order.id}_{client_name}_{os_date}.pdf"
+    
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="os_{order.id}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
     template = get_template('operacional/service_order_pdf.html')
     html = template.render(context)
     

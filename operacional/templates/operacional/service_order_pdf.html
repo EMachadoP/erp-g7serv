@@ -185,8 +185,11 @@
 
         .photo-grid img {
             max-width: 180px;
-            max-height: 140px;
+            max-height: 180px;
+            width: auto;
+            height: auto;
             border: 1px solid #ddd;
+            object-fit: contain;
         }
 
         /* Signature */
@@ -260,7 +263,7 @@
         <tr>
             <td style="width: 65%;">
                 {% if company.logo %}
-                <img src="{{ company_logo_b64 }}" style="max-height: 50px; margin-bottom: 5px;"><br>
+                <img src="{{ company_logo_b64 }}" style="max-height: 50px; max-width: 250px; margin-bottom: 5px;"><br>
                 {% endif %}
                 <p class="company-name">{{ company.name|default:"G7 Serv" }}</p>
                 {% if company.cnpj %}<p class="company-info">CNPJ: {{ company.cnpj }}</p>{% endif %}
@@ -329,7 +332,8 @@
             </td>
             <td class="info-label">Técnico(s)</td>
             <td>
-                {% if order.technician %}{{ order.technician.get_full_name|default:order.technician.username }}{% endif %}
+                {% if order.technician %}{{ order.technician.get_full_name|default:order.technician.username }}{% endif
+                %}
                 {% if order.technical_team %}{{ order.technical_team.name }}{% endif %}
                 {% if not order.technician and not order.technical_team %}-{% endif %}
             </td>
