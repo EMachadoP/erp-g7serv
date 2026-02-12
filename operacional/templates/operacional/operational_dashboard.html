@@ -119,8 +119,7 @@
                 <div class="card-header border-bottom fw-bold py-3 d-flex justify-content-between align-items-center text-white"
                     style="background-color: #20c997;">
                     <span><i class="bi bi-house-gear me-2"></i>Instalação Pendente</span>
-                    <span class="badge bg-white rounded-pill" style="color: #20c997;">{{ instalacoes_pendentes.count
-                        }}</span>
+                    <span class="badge bg-white rounded-pill" style="color: #20c997;">{{ instalacoes_pendentes.count }}</span>
                 </div>
                 <div class="card-body overflow-auto p-2" style="max-height: 70vh; min-height: 300px;">
                     {% for os in instalacoes_pendentes %}
@@ -133,16 +132,14 @@
                                     style="color: #20c997; font-size: 0.7rem;">Instalação</span>
                             </div>
                             <div class="mb-2">
-                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{
-                                    os.client.name }}</div>
+                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{ os.client.name }}</div>
                                 <div class="small" style="color: #20c997;">R$ {{ os.value|floatformat:2 }}</div>
                                 {% if os.budget %}
                                 <div class="small text-muted mt-1"><i class="bi bi-file-earmark-text me-1"></i>Orç. #{{
                                     os.budget.id|stringformat:"06d" }}</div>
                                 {% endif %}
                                 {% if os.technician %}
-                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{
-                                    os.technician.get_full_name }}</div>
+                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{ os.technician.get_full_name }}</div>
                                 {% else %}
                                 <div class="small text-muted mt-1"><i class="bi bi-person-x me-1"></i>Sem técnico</div>
                                 {% endif %}
@@ -180,12 +177,10 @@
                                 <small class="text-muted">{{ os.scheduled_date|date:"d/m H:i"|default:"-" }}</small>
                             </div>
                             <div class="mb-2">
-                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{
-                                    os.client.name }}</div>
+                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{ os.client.name }}</div>
                                 <div class="small text-muted">{{ os.order_type }}</div>
                                 {% if os.technician %}
-                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{
-                                    os.technician.get_full_name }}</div>
+                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{ os.technician.get_full_name }}</div>
                                 {% else %}
                                 <div class="small text-muted mt-1"><i class="bi bi-person-x me-1"></i>Sem técnico</div>
                                 {% endif %}
@@ -212,26 +207,23 @@
                 <div
                     class="card-header bg-white border-bottom fw-bold py-3 text-primary d-flex justify-content-between align-items-center">
                     <span>Em Execução</span>
-                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ em_execucao.count
-                        }}</span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ em_execucao.count }}</span>
                 </div>
                 <div class="card-body overflow-auto p-2" style="max-height: 70vh; min-height: 300px;">
                     {% for os in em_execucao %}
                     <div id="os-{{ os.id }}"
                         class="card mb-2 border-0 shadow-sm border-start border-4 border-primary {% if selected_os.id == os.id %}ring-4 ring-primary bg-primary bg-opacity-10{% endif %}"
-                        {% if selected_os.id==os.id %}style="border: 2px solid #0d6efd !important;" {% endif %}>
+                        {% if selected_os.id == os.id %}style="border: 2px solid #0d6efd !important;" {% endif %}>
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <span class="fw-bold fs-6">#{{ os.id|stringformat:"06d" }}</span>
                                 <span class="badge bg-primary">Executando</span>
                             </div>
                             <div class="mb-2">
-                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{
-                                    os.client.name }}</div>
+                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{ os.client.name }}</div>
                                 <div class="small text-muted">{{ os.order_type }}</div>
                                 {% if os.technician %}
-                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{
-                                    os.technician.get_full_name }}</div>
+                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{ os.technician.get_full_name }}</div>
                                 {% endif %}
                             </div>
                             <div class="d-grid mt-3">
@@ -256,8 +248,7 @@
                 <div
                     class="card-header bg-white border-bottom fw-bold py-3 text-warning d-flex justify-content-between align-items-center">
                     <span>Aguardando Material</span>
-                    <span class="badge bg-warning bg-opacity-10 text-dark rounded-pill">{{ aguardando_material.count
-                        }}</span>
+                    <span class="badge bg-warning bg-opacity-10 text-dark rounded-pill">{{ aguardando_material.count }}</span>
                 </div>
                 <div class="card-body overflow-auto p-2" style="max-height: 70vh; min-height: 300px;">
                     {% for os in aguardando_material %}
@@ -268,12 +259,10 @@
                                 <span class="badge bg-warning text-dark">Material</span>
                             </div>
                             <div class="mb-2">
-                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{
-                                    os.client.name }}</div>
+                                <div class="text-truncate fw-bold text-dark" title="{{ os.client.name }}">{{ os.client.name }}</div>
                                 <div class="small text-muted">{{ os.product|default:"-" }}</div>
                                 {% if os.technician %}
-                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{
-                                    os.technician.get_full_name }}</div>
+                                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{ os.technician.get_full_name }}</div>
                                 {% endif %}
                             </div>
                             <div class="d-grid mt-3">
@@ -309,8 +298,7 @@
                                 <small class="text-success fw-bold">{{ os.checkout_time|date:"H:i" }}</small>
                             </div>
                             <div class="mb-1">
-                                <div class="text-truncate fw-bold text-dark small" title="{{ os.client.name }}">{{
-                                    os.client.name }}</div>
+                                <div class="text-truncate fw-bold text-dark small" title="{{ os.client.name }}">{{ os.client.name }}</div>
                                 {% if os.technician %}
                                 <div class="small text-muted" style="font-size: 0.75rem;"><i
                                         class="bi bi-person me-1"></i>{{ os.technician.get_full_name }}</div>
@@ -390,3 +378,5 @@
 </style>
 {% endif %}
 {% endblock %}
+
+
