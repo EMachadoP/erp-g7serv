@@ -21,6 +21,7 @@ from estoque.models import Product, StockMovement
 from comercial.models import Budget, Contract
 from django.contrib.auth.models import User
 import io
+from xhtml2pdf import pisa
 
 @login_required
 def service_order_checklist_pdf(request, pk):
