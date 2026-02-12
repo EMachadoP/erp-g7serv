@@ -332,8 +332,7 @@
             </td>
             <td class="info-label">Técnico(s)</td>
             <td>
-                {% if order.technician %}{{ order.technician.get_full_name|default:order.technician.username }}{% endif
-                %}
+                {% if order.technician %}{{ order.technician.get_full_name|default:order.technician.username }}{% endif %}
                 {% if order.technical_team %}{{ order.technical_team.name }}{% endif %}
                 {% if not order.technician and not order.technical_team %}-{% endif %}
             </td>
