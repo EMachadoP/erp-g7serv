@@ -12,7 +12,7 @@ class ContractForm(forms.ModelForm):
         model = Contract
         fields = [
             'client', 'template', 'billing_group', 'modality', 
-            'due_day', 'status', 'start_date', 'end_date'
+            'due_day', 'status', 'start_date', 'end_date', 'maintenance_services'
         ]
         widgets = {
             'client': forms.Select(attrs={'class': 'form-select select2'}),
@@ -23,6 +23,7 @@ class ContractForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'maintenance_services': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         }
 
 class ContractItemForm(forms.ModelForm):

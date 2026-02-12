@@ -27,13 +27,13 @@
                     <div class="mb-3">
                         <label for="template_type" class="form-label">Tipo de Modelo *</label>
                         <select name="template_type" id="template_type" class="form-select" required>
-                            <option value="Novo Contrato" {% if template.template_type == 'Novo Contrato' %}selected{%
+                            <option value="Novo Contrato" {% if template.template_type=='Novo Contrato' %}selected{%
                                 endif %}>Novo Contrato</option>
-                            <option value="Cancelamento" {% if template.template_type == 'Cancelamento' %}selected{% endif
+                            <option value="Cancelamento" {% if template.template_type=='Cancelamento' %}selected{% endif
                                 %}>Cancelamento</option>
-                            <option value="Reajuste" {% if template.template_type == 'Reajuste' %}selected{% endif %}>
+                            <option value="Reajuste" {% if template.template_type=='Reajuste' %}selected{% endif %}>
                                 Reajuste</option>
-                            <option value="Aditivos" {% if template.template_type == 'Aditivos' %}selected{% endif %}>
+                            <option value="Aditivos" {% if template.template_type=='Aditivos' %}selected{% endif %}>
                                 Aditivos</option>
                         </select>
                     </div>
@@ -106,6 +106,10 @@
                     <li class="list-group-item bg-transparent px-0">
                         <strong>{{ANO}}</strong><br>
                         <span class="text-muted">Ano de início (4 dígitos)</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0">
+                        <strong>{{ITENS_CONTRATADOS}}</strong><br>
+                        <span class="text-muted">Lista dos serviços de manutenção selecionados</span>
                     </li>
                 </ul>
             </div>

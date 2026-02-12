@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import BillingGroup, ContractTemplate, Contract, Budget
+from .models import BillingGroup, ContractTemplate, Contract, Budget, MaintenanceService
+
+@admin.register(MaintenanceService)
+class MaintenanceServiceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'order', 'active')
+    list_editable = ('order', 'active')
+    search_fields = ('name',)
+
 
 @admin.register(BillingGroup)
 class BillingGroupAdmin(admin.ModelAdmin):

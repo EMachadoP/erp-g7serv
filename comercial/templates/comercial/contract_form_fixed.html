@@ -82,6 +82,28 @@
                 </div>
             </div>
 
+            <h5 class="mb-3 text-secondary">Serviços de Manutenção Contratados</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <div class="row row-cols-1 row-cols-md-3 g-3">
+                                {% for checkbox in form.maintenance_services %}
+                                <div class="col">
+                                    <div class="form-check form-switch">
+                                        {{ checkbox.tag }}
+                                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                            {{ checkbox.choice_label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <h5 class="mb-3 text-secondary d-flex justify-content-between">
                 Itens e Serviços do Contrato
                 <button type="button" id="add-item" class="btn btn-sm btn-success">
@@ -154,6 +176,72 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <h5 class="mb-3 text-secondary">Variáveis do Modelo de Contrato</h5>
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <p class="text-muted small">Use as variáveis abaixo no conteúdo do modelo de contrato para
+                        preenchimento automático:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{NOME_CLIENTE}}</strong><br>
+                            <span class="text-muted">Nome completo do cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{CNPJ_CPF_CLIENTE}}</strong><br>
+                            <span class="text-muted">CNPJ ou CPF do cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{ENDERECO_CLIENTE}}</strong><br>
+                            <span class="text-muted">Endereço completo do cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{NOME_RESPONSAVEL}}</strong><br>
+                            <span class="text-muted">Nome do responsável pelo cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{CPF_RESPONSAVEL}}</strong><br>
+                            <span class="text-muted">CPF do responsável pelo cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{EMAIL_CLIENTE}}</strong><br>
+                            <span class="text-muted">Email do cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{TELEFONE_CLIENTE}}</strong><br>
+                            <span class="text-muted">Telefone do cliente</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{VALOR_MENSAL}}</strong><br>
+                            <span class="text-muted">Valor total do contrato (soma dos itens)</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{DIA_VENCIMENTO}}</strong><br>
+                            <span class="text-muted">Dia de vencimento da fatura</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{DATA_INICIO}}</strong><br>
+                            <span class="text-muted">Data de início do contrato (DD/MM/AAAA)</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{DIA}}</strong><br>
+                            <span class="text-muted">Dia de início (2 dígitos)</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{MÊS POR EXTENSO}}</strong><br>
+                            <span class="text-muted">Mês de início por extenso</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{ANO}}</strong><br>
+                            <span class="text-muted">Ano de início (4 dígitos)</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0">
+                            <strong>{{ITENS_CONTRATADOS}}</strong><br>
+                            <span class="text-muted">Lista dos serviços de manutenção selecionados</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
 

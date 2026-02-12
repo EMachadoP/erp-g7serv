@@ -155,6 +155,17 @@ def replace_contract_variables(content, contract):
         # Placeholder for signature date
         content = replace_ignore_case(content, r'{{DATA_ASSINATURA}}', '__________________')
 
+    # Maintenance Services
+    services_list = contract.maintenance_services.all()
+    if services_list.exists():
+        services_ul = "<ul>"
+        for s in services_list:
+            services_ul += f"<li>{s.name}</li>"
+        services_ul += "</ul>"
+        content = replace_ignore_case(content, r'{{ITENS[_\s]CONTRATADOS}}', services_ul)
+    else:
+        content = replace_ignore_case(content, r'{{ITENS[_\s]CONTRATADOS}}', '')
+
     return content
 
 from django.core.paginator import Paginator

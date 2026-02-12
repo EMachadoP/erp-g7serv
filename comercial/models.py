@@ -43,6 +43,20 @@ class ContractTemplate(BaseModel):
         verbose_name = "Modelo de Contrato"
         verbose_name_plural = "Modelos de Contrato"
 
+class MaintenanceService(BaseModel):
+    name = models.CharField(max_length=255, verbose_name="Nome do Serviço")
+    description = models.TextField(blank=True, default='', verbose_name="Descrição")
+    order = models.IntegerField(default=0, verbose_name="Ordem de Exibição")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "Serviço de Manutenção"
+        verbose_name_plural = "Serviços de Manutenção"
+
+
 class Contract(BaseModel):
     MODALITY_CHOICES = (
         ('Mensal', 'Mensal'),
@@ -68,6 +82,12 @@ class Contract(BaseModel):
     start_date = models.DateField(verbose_name="Data de Início")
     end_date = models.DateField(null=True, blank=True, verbose_name="Data de Término")
     next_readjustment_date = models.DateField(null=True, blank=True, verbose_name="Próximo Reajuste")
+
+    # Maintenance Services (checklist)
+    maintenance_services = models.ManyToManyField(
+        'MaintenanceService', blank=True,
+        verbose_name="Serviços de Manutenção Contratados"
+    )
 
     # Digital Signature
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
