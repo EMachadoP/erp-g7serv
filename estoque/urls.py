@@ -32,6 +32,10 @@ urlpatterns = [
     # Cadastros Auxiliares (tela unificada)
     path('cadastros/', views.cadastros_auxiliares, name='cadastros_auxiliares'),
 
+    # HTMX Partials
+    path('htmx/familia/nova/', views.htmx_family_create, name='htmx_family_create'),
+    path('htmx/local/novo/', views.htmx_location_create, name='htmx_location_create'),
+
     # Balanços (Inventário)
     path('balancos/', views.inventory_list, name='inventory_list'),
     path('balancos/novo/', views.inventory_create, name='inventory_create'),

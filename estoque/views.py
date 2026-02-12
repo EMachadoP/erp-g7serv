@@ -292,3 +292,50 @@ def cadastros_auxiliares(request):
         'edit_location': edit_location,
     })
 
+
+# ========== HTMX Partials for Dropdowns ==========
+
+@login_required
+def htmx_family_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('family_name', '').strip()
+        if name:
+            new_family = ProductFamily.objects.create(name=name)
+            families = ProductFamily.objects.filter(active=True).order_by('name')
+            
+            # Return updated select partial
+            html = f'<select name="family" class="form-select" id="id_family">'
+            html += '<option value="">---------</option>'
+            for f in families:
+                selected = 'selected' if f.pk == new_family.pk else ''
+                html += f'<option value="{f.pk}" {selected}>{f.name}</option>'
+            html += '</select>'
+            
+            from django.http import HttpResponse
+            return HttpResponse(html)
+            
+    return HttpResponse(status=400)
+
+
+@login_required
+def htmx_location_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('location_name', '').strip()
+        description = request.POST.get('location_description', '').strip()
+        if name:
+            new_location = StockLocation.objects.create(name=name, description=description)
+            locations = StockLocation.objects.filter(active=True).order_by('name')
+            
+            # Return updated select partial
+            html = f'<select name="location" class="form-select" id="id_location">'
+            html += '<option value="">---------</option>'
+            for l in locations:
+                selected = 'selected' if l.pk == new_location.pk else ''
+                html += f'<option value="{l.pk}" {selected}>{l.name}</option>'
+            html += '</select>'
+            
+            from django.http import HttpResponse
+            return HttpResponse(html)
+            
+    return HttpResponse(status=400)
+

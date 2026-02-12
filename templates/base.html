@@ -274,6 +274,12 @@
                         Grupo de Produtos
                     </a>
                     {% endif %}
+                    {% if perms.estoque.view_productfamily %}
+                    <a href="{% url 'estoque:cadastros_auxiliares' %}"
+                        class="list-group-item list-group-item-action bg-transparent second-text ps-5 small">
+                        Família e Localização
+                    </a>
+                    {% endif %}
                     <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header text-light">Acesso</h6>
                     {% if perms.auth.view_user %}
