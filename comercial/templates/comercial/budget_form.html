@@ -4,294 +4,308 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
- <h2>{% if budget %}Editar Orçamento{% else %}Novo Orçamento{% endif %}</h2>
- <a href="{% url 'comercial:budget_list' %}" class="btn btn-outline-secondary">
- <i class="bi bi-arrow-left me-2"></i>Voltar
- </a>
+    <h2>{% if budget %}Editar Orçamento{% else %}Novo Orçamento{% endif %}</h2>
+    <a href="{% url 'comercial:budget_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Voltar
+    </a>
 </div>
 
 <div class="card border-0 shadow-sm">
- <div class="card-body p-4">
- <form method="post" id="budgetForm">
- {% csrf_token %}
+    <div class="card-body p-4">
+        <form method="post" id="budgetForm">
+            {% csrf_token %}
 
- <h5 class="mb-4 text-primary border-bottom pb-2">Dados Básicos</h5>
+            <h5 class="mb-4 text-primary border-bottom pb-2">Dados Básicos</h5>
 
- <div class="row g-3 mb-4">
- <div class="col-md-6">
- <label for="client" class="form-label">Cliente *</label>
- <select class="form-select" id="client" name="client" onchange="updateClientInfo(this)" required>
- <option value="">Selecione um cliente...</option>
- {% for client in clients %}
- {% if budget and budget.client.id == client.id %}
- <option value="{{ client.id }}" data-address="{{ client.address|default:'' }}"
- data-contact="{{ client.phone|default:'' }}" data-email="{{ client.email|default:'' }}"
- selected>
- {{ client.name }} {% if client.fantasy_name %}({{ client.fantasy_name }}){% endif %}
- </option>
- {% else %}
- <option value="{{ client.id }}" data-address="{{ client.address|default:'' }}"
- data-contact="{{ client.phone|default:'' }}" data-email="{{ client.email|default:'' }}">
- {{ client.name }} {% if client.fantasy_name %}({{ client.fantasy_name }}){% endif %}
- </option>
- {% endif %}
- {% endfor %}
- </select>
- </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="client" class="form-label">Cliente *</label>
+                    <select class="form-select select2" id="client" name="client" onchange="updateClientInfo(this)"
+                        required>
+                        <option value="">Selecione um cliente...</option>
+                        {% for client in clients %}
+                        {% if budget and budget.client.id == client.id %}
+                        <option value="{{ client.id }}" data-address="{{ client.address|default:'' }}"
+                            data-contact="{{ client.phone|default:'' }}" data-email="{{ client.email|default:'' }}"
+                            selected>
+                            {{ client.name }} {% if client.fantasy_name %}({{ client.fantasy_name }}){% endif %}
+                        </option>
+                        {% else %}
+                        <option value="{{ client.id }}" data-address="{{ client.address|default:'' }}"
+                            data-contact="{{ client.phone|default:'' }}" data-email="{{ client.email|default:'' }}">
+                            {{ client.name }} {% if client.fantasy_name %}({{ client.fantasy_name }}){% endif %}
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
 
- <div class="col-md-6">
- <label for="title" class="form-label">Título</label>
- <input type="text" class="form-control" id="title" name="title"
- value="{{ budget.title|default:'' }}" placeholder="Ex: Orçamento de Manutenção">
- </div>
+                <div class="col-md-6">
+                    <label for="title" class="form-label">Título</label>
+                    <input type="text" class="form-control" id="title" name="title"
+                        value="{{ budget.title|default:'' }}" placeholder="Ex: Orçamento de Manutenção">
+                </div>
 
- <div class="col-md-3">
- <label for="date" class="form-label">Data de Abertura *</label>
- <input type="date" class="form-control" id="date" name="date"
- value="{{ budget.date|date:'Y-m-d'|default:'' }}" required>
- </div>
+                <div class="col-md-3">
+                    <label for="date" class="form-label">Data de Abertura *</label>
+                    <input type="date" class="form-control" id="date" name="date"
+                        value="{{ budget.date|date:'Y-m-d'|default:'' }}" required>
+                </div>
 
- <div class="col-md-3">
- <label for="validity_date" class="form-label">Validade</label>
- <input type="date" class="form-control" id="validity_date" name="validity_date"
- value="{{ budget.validity_date|date:'Y-m-d'|default:'' }}">
- </div>
+                <div class="col-md-3">
+                    <label for="validity_date" class="form-label">Validade</label>
+                    <input type="date" class="form-control" id="validity_date" name="validity_date"
+                        value="{{ budget.validity_date|date:'Y-m-d'|default:'' }}">
+                </div>
 
- <div class="col-md-3">
- <label for="payment_method" class="form-label">Forma de Pagamento</label>
- <select class="form-select" id="payment_method" name="payment_method">
- {% if budget and budget.payment_method == 'PIX' %}
- <option value="PIX" selected>PIX</option>
- {% else %}
- <option value="PIX">PIX</option>
- {% endif %}
+                <div class="col-md-3">
+                    <label for="payment_method" class="form-label">Forma de Pagamento</label>
+                    <select class="form-select" id="payment_method" name="payment_method">
+                        {% if budget and budget.payment_method == 'PIX' %}
+                        <option value="PIX" selected>PIX</option>
+                        {% else %}
+                        <option value="PIX">PIX</option>
+                        {% endif %}
 
- {% if budget and budget.payment_method == 'BOLETO' %}
- <option value="BOLETO" selected>Boleto</option>
- {% else %}
- <option value="BOLETO">Boleto</option>
- {% endif %}
+                        {% if budget and budget.payment_method == 'BOLETO' %}
+                        <option value="BOLETO" selected>Boleto</option>
+                        {% else %}
+                        <option value="BOLETO">Boleto</option>
+                        {% endif %}
 
- {% if budget and budget.payment_method == 'CARTAO' %}
- <option value="CARTAO" selected>Cartão de Crédito</option>
- {% else %}
- <option value="CARTAO">Cartão de Crédito</option>
- {% endif %}
+                        {% if budget and budget.payment_method == 'CARTAO' %}
+                        <option value="CARTAO" selected>Cartão de Crédito</option>
+                        {% else %}
+                        <option value="CARTAO">Cartão de Crédito</option>
+                        {% endif %}
 
- {% if budget and budget.payment_method == 'OUTRO' %}
- <option value="OUTRO" selected>Outro</option>
- {% else %}
- <option value="OUTRO">Outro</option>
- {% endif %}
- </select>
- </div>
+                        {% if budget and budget.payment_method == 'OUTRO' %}
+                        <option value="OUTRO" selected>Outro</option>
+                        {% else %}
+                        <option value="OUTRO">Outro</option>
+                        {% endif %}
+                    </select>
+                </div>
 
- <div class="col-md-3">
- <label for="followup_strategy" class="form-label">Follow-up</label>
- <select class="form-select" id="followup_strategy" name="followup_strategy">
- {% if budget and budget.followup_strategy == 'Manual' %}
- <option value="Manual" selected>Manual</option>
- {% else %}
- <option value="Manual">Manual</option>
- {% endif %}
+                <div class="col-md-3">
+                    <label for="followup_strategy" class="form-label">Follow-up</label>
+                    <select class="form-select" id="followup_strategy" name="followup_strategy">
+                        {% if budget and budget.followup_strategy == 'Manual' %}
+                        <option value="Manual" selected>Manual</option>
+                        {% else %}
+                        <option value="Manual">Manual</option>
+                        {% endif %}
 
- {% if budget and budget.followup_strategy == 'Automatico' %}
- <option value="Automatico" selected>Automático</option>
- {% else %}
- <option value="Automatico">Automático</option>
- {% endif %}
- </select>
- </div>
- </div>
+                        {% if budget and budget.followup_strategy == 'Automatico' %}
+                        <option value="Automatico" selected>Automático</option>
+                        {% else %}
+                        <option value="Automatico">Automático</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
 
- <div class="row g-3 mb-4">
- <div class="col-md-6">
- <label for="address" class="form-label">Endereço</label>
- <textarea class="form-control" id="address" name="address"
- rows="2">{{ budget.address|default:'' }}</textarea>
- </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="address" class="form-label">Endereço</label>
+                    <textarea class="form-control" id="address" name="address"
+                        rows="2">{{ budget.address|default:'' }}</textarea>
+                </div>
 
- <div class="col-md-6">
- <label for="contact" class="form-label">Contato</label>
- <input type="text" class="form-control" id="contact" name="contact"
- value="{{ budget.contact|default:'' }}">
- </div>
- </div>
+                <div class="col-md-6">
+                    <label for="contact" class="form-label">Contato</label>
+                    <input type="text" class="form-control" id="contact" name="contact"
+                        value="{{ budget.contact|default:'' }}">
+                </div>
+            </div>
 
- <h5 class="mb-3 text-primary border-bottom pb-2 d-flex justify-content-between align-items-center">
- Produtos
- <button type="button" class="btn btn-sm btn-outline-primary" onclick="addProductRow()">
- <i class="bi bi-plus-lg me-1"></i>Adicionar Produto
- </button>
- </h5>
+            <h5 class="mb-3 text-primary border-bottom pb-2 d-flex justify-content-between align-items-center">
+                Produtos
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addProductRow()">
+                    <i class="bi bi-plus-lg me-1"></i>Adicionar Produto
+                </button>
+            </h5>
 
- <div class="table-responsive mb-4">
- <table class="table table-bordered table-hover" id="productsTable">
- <thead class="table-light">
- <tr>
- <th style="width: 40%;">Produto</th>
- <th style="width: 15%;">Qtd</th>
- <th style="width: 20%;">Preço Unit.</th>
- <th style="width: 20%;">Total</th>
- <th style="width: 5%;"></th>
- </tr>
- </thead>
- <tbody>
- {% if budget %}
- {% for item in budget.products.all %}
- <tr>
- <td>
- <select name="product_id[]" class="form-select product-select"
- onchange="updateProductPrice(this)" required>
- <option value="">Selecione...</option>
- {% for product in products %}
- {% if item.product.id == product.id %}
- <option value="{{ product.id }}" data-price="{{ product.sale_price }}" selected>
- {{ product.name }}
- </option>
- {% else %}
- <option value="{{ product.id }}" data-price="{{ product.sale_price }}">
- {{ product.name }}
- </option>
- {% endif %}
- {% endfor %}
- </select>
- </td>
- <td><input type="number" name="product_qty[]" class="form-control"
- value="{{ item.quantity }}" min="1" onchange="calculateRowTotal(this)" required>
- </td>
- <td><input type="number" name="product_price[]" class="form-control"
- value="{{ item.unit_price|stringformat:'.2f' }}" step="0.01"
- onchange="calculateRowTotal(this)" required></td>
- <td><input type="text" class="form-control-plaintext text-end row-total"
- value="R$ {{ item.total_price|stringformat:'.2f' }}" readonly></td>
- <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger"
- onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
- </tr>
- {% endfor %}
- {% endif %}
- </tbody>
- </table>
- </div>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-hover" id="productsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40%;">Produto</th>
+                            <th style="width: 15%;">Qtd</th>
+                            <th style="width: 20%;">Preço Unit.</th>
+                            <th style="width: 20%;">Total</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if budget %}
+                        {% for item in budget.products.all %}
+                        <tr>
+                            <td>
+                                <select name="product_id[]" class="form-select product-select"
+                                    onchange="updateProductPrice(this)" required>
+                                    <option value="">Selecione...</option>
+                                    {% for product in products %}
+                                    {% if item.product.id == product.id %}
+                                    <option value="{{ product.id }}" data-price="{{ product.sale_price }}" selected>
+                                        {{ product.name }}
+                                    </option>
+                                    {% else %}
+                                    <option value="{{ product.id }}" data-price="{{ product.sale_price }}">
+                                        {{ product.name }}
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="number" name="product_qty[]" class="form-control"
+                                    value="{{ item.quantity }}" min="1" onchange="calculateRowTotal(this)" required>
+                            </td>
+                            <td><input type="number" name="product_price[]" class="form-control"
+                                    value="{{ item.unit_price|stringformat:'.2f' }}" step="0.01"
+                                    onchange="calculateRowTotal(this)" required></td>
+                            <td><input type="text" class="form-control-plaintext text-end row-total"
+                                    value="R$ {{ item.total_price|stringformat:'.2f' }}" readonly></td>
+                            <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
 
- <h5 class="mb-3 text-primary border-bottom pb-2 d-flex justify-content-between align-items-center">
- Serviços
- <button type="button" class="btn btn-sm btn-outline-primary" onclick="addServiceRow()">
- <i class="bi bi-plus-lg me-1"></i>Adicionar Serviço
- </button>
- </h5>
+            <h5 class="mb-3 text-primary border-bottom pb-2 d-flex justify-content-between align-items-center">
+                Serviços
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addServiceRow()">
+                    <i class="bi bi-plus-lg me-1"></i>Adicionar Serviço
+                </button>
+            </h5>
 
- <div class="table-responsive mb-4">
- <table class="table table-bordered table-hover" id="servicesTable">
- <thead class="table-light">
- <tr>
- <th style="width: 40%;">Serviço</th>
- <th style="width: 15%;">Qtd</th>
- <th style="width: 20%;">Preço Unit.</th>
- <th style="width: 20%;">Total</th>
- <th style="width: 5%;"></th>
- </tr>
- </thead>
- <tbody>
- {% if budget %}
- {% for item in budget.services.all %}
- <tr>
- <td>
- <select name="service_id[]" class="form-select service-select"
- onchange="updateServicePrice(this)" required>
- <option value="">Selecione...</option>
- {% for service in services %}
- {% if item.service.id == service.id %}
- <option value="{{ service.id }}" data-price="{{ service.sale_price }}" selected>
- {{ service.name }}
- </option>
- {% else %}
- <option value="{{ service.id }}" data-price="{{ service.sale_price }}">
- {{ service.name }}
- </option>
- {% endif %}
- {% endfor %}
- </select>
- </td>
- <td><input type="number" name="service_qty[]" class="form-control"
- value="{{ item.quantity }}" min="1" onchange="calculateRowTotal(this)" required>
- </td>
- <td><input type="number" name="service_price[]" class="form-control"
- value="{{ item.unit_price|stringformat:'.2f' }}" step="0.01"
- onchange="calculateRowTotal(this)" required></td>
- <td><input type="text" class="form-control-plaintext text-end row-total"
- value="R$ {{ item.total_price|stringformat:'.2f' }}" readonly></td>
- <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger"
- onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
- </tr>
- {% endfor %}
- {% endif %}
- </tbody>
- </table>
- </div>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-hover" id="servicesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40%;">Serviço</th>
+                            <th style="width: 15%;">Qtd</th>
+                            <th style="width: 20%;">Preço Unit.</th>
+                            <th style="width: 20%;">Total</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if budget %}
+                        {% for item in budget.services.all %}
+                        <tr>
+                            <td>
+                                <select name="service_id[]" class="form-select service-select"
+                                    onchange="updateServicePrice(this)" required>
+                                    <option value="">Selecione...</option>
+                                    {% for service in services %}
+                                    {% if item.service.id == service.id %}
+                                    <option value="{{ service.id }}" data-price="{{ service.sale_price }}" selected>
+                                        {{ service.name }}
+                                    </option>
+                                    {% else %}
+                                    <option value="{{ service.id }}" data-price="{{ service.sale_price }}">
+                                        {{ service.name }}
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="number" name="service_qty[]" class="form-control"
+                                    value="{{ item.quantity }}" min="1" onchange="calculateRowTotal(this)" required>
+                            </td>
+                            <td><input type="number" name="service_price[]" class="form-control"
+                                    value="{{ item.unit_price|stringformat:'.2f' }}" step="0.01"
+                                    onchange="calculateRowTotal(this)" required></td>
+                            <td><input type="text" class="form-control-plaintext text-end row-total"
+                                    value="R$ {{ item.total_price|stringformat:'.2f' }}" readonly></td>
+                            <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
 
- <h5 class="mb-3 text-primary border-bottom pb-2">Condições de Pagamento</h5>
- <div class="card bg-light mb-4">
- <div class="card-body">
- <div class="row g-3 align-items-end mb-3">
- <div class="col-md-3">
- <label for="installments_count" class="form-label">Nº de Parcelas</label>
- <input type="number" class="form-control" id="installments_count" placeholder="Ex: 3"
- min="1">
- </div>
- <div class="col-md-3">
- <label for="first_installment_days" class="form-label">1ª Parcela (dias)</label>
- <input type="number" class="form-control" id="first_installment_days" placeholder="Ex: 5"
- min="0">
- </div>
- <div class="col-md-3">
- <label for="interval_days" class="form-label">Demais (dias)</label>
- <input type="number" class="form-control" id="interval_days" placeholder="Ex: 30" min="1">
- </div>
- <div class="col-md-3">
- <button type="button" class="btn btn-primary w-100" onclick="generateInstallments()">
- <i class="bi bi-calculator me-2"></i>Gerar Parcelas
- </button>
- </div>
- </div>
- <div class="mb-2">
- <label for="payment_details" class="form-label">Detalhes do Pagamento</label>
- <textarea class="form-control" id="payment_details" name="payment_details"
- rows="4">{{ budget.payment_details|default:'' }}</textarea>
- </div>
- </div>
- </div>
+            <h5 class="mb-3 text-primary border-bottom pb-2">Condições de Pagamento</h5>
+            <div class="card bg-light mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end mb-3">
+                        <div class="col-md-3">
+                            <label for="installments_count" class="form-label">Nº de Parcelas</label>
+                            <input type="number" class="form-control" id="installments_count" placeholder="Ex: 3"
+                                min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="first_installment_days" class="form-label">1ª Parcela (dias)</label>
+                            <input type="number" class="form-control" id="first_installment_days" placeholder="Ex: 5"
+                                min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="interval_days" class="form-label">Demais (dias)</label>
+                            <input type="number" class="form-control" id="interval_days" placeholder="Ex: 30" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary w-100" onclick="generateInstallments()">
+                                <i class="bi bi-calculator me-2"></i>Gerar Parcelas
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label for="payment_details" class="form-label">Detalhes do Pagamento</label>
+                        <textarea class="form-control" id="payment_details" name="payment_details"
+                            rows="4">{{ budget.payment_details|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
 
- <h5 class="mb-3 text-primary border-bottom pb-2">Observações</h5>
- <div class="mb-4">
- <textarea class="form-control" id="observation" name="observation"
- rows="3">{{ budget.observation|default:'' }}</textarea>
- </div>
+            <h5 class="mb-3 text-primary border-bottom pb-2">Observações</h5>
+            <div class="mb-4">
+                <textarea class="form-control" id="observation" name="observation"
+                    rows="3">{{ budget.observation|default:'' }}</textarea>
+            </div>
 
- <div class="d-flex justify-content-end gap-2">
- <a href="{% url 'comercial:budget_list' %}" class="btn btn-secondary">Cancelar</a>
- <button type="submit" class="btn btn-success px-4">Salvar Orçamento</button>
- </div>
- </form>
- </div>
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'comercial:budget_list' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-success px-4">Salvar Orçamento</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
- function updateClientInfo(select) {
- const option = select.options[select.selectedIndex];
- if (option.value) {
- document.getElementById('address').value = option.dataset.address;
- document.getElementById('contact').value = option.dataset.contact || option.dataset.email;
- } else {
- document.getElementById('address').value = '';
- document.getElementById('contact').value = '';
- }
- }
+    function updateClientInfo(select) {
+        $(document).ready(function () {
+            if ($.fn.select2) {
+                $('#client').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: 'Selecione um cliente...'
+                }).on('select2:select', function (e) {
+                    updateClientInfo(e.target);
+                });
+            }
+        });
 
- function addProductRow() {
- const tbody = document.querySelector('#productsTable tbody');
- const row = document.createElement('tr');
- row.innerHTML = `
+        function updateClientInfo(select) {
+            const option = select.options[select.selectedIndex];
+            if (option.value) {
+                document.getElementById('address').value = option.dataset.address;
+                document.getElementById('contact').value = option.dataset.contact || option.dataset.email;
+            } else {
+                document.getElementById('address').value = '';
+                document.getElementById('contact').value = '';
+            }
+        }
+
+        function addProductRow() {
+            const tbody = document.querySelector('#productsTable tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
  <td>
  <select name="product_id[]" class="form-select product-select" onchange="updateProductPrice(this)" required>
  <option value="">Selecione...</option>
@@ -305,13 +319,13 @@
  <td><input type="text" class="form-control-plaintext text-end row-total" value="R$ 0.00" readonly></td>
  <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
  `;
- tbody.appendChild(row);
- }
+            tbody.appendChild(row);
+        }
 
- function addServiceRow() {
- const tbody = document.querySelector('#servicesTable tbody');
- const row = document.createElement('tr');
- row.innerHTML = `
+        function addServiceRow() {
+            const tbody = document.querySelector('#servicesTable tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
  <td>
  <select name="service_id[]" class="form-select service-select" onchange="updateServicePrice(this)" required>
  <option value="">Selecione...</option>
@@ -325,77 +339,77 @@
  <td><input type="text" class="form-control-plaintext text-end row-total" value="R$ 0.00" readonly></td>
  <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
  `;
- tbody.appendChild(row);
- }
+            tbody.appendChild(row);
+        }
 
- function removeRow(btn) {
- btn.closest('tr').remove();
- }
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+        }
 
- function updateProductPrice(select) {
- const price = select.options[select.selectedIndex].dataset.price;
- const row = select.closest('tr');
- const priceInput = row.querySelector('input[name="product_price[]"]');
- if (price) {
- priceInput.value = parseFloat(price).toFixed(2);
- calculateRowTotal(priceInput);
- }
- }
+        function updateProductPrice(select) {
+            const price = select.options[select.selectedIndex].dataset.price;
+            const row = select.closest('tr');
+            const priceInput = row.querySelector('input[name="product_price[]"]');
+            if (price) {
+                priceInput.value = parseFloat(price).toFixed(2);
+                calculateRowTotal(priceInput);
+            }
+        }
 
- function updateServicePrice(select) {
- const price = select.options[select.selectedIndex].dataset.price;
- const row = select.closest('tr');
- const priceInput = row.querySelector('input[name="service_price[]"]');
- if (price) {
- priceInput.value = parseFloat(price).toFixed(2);
- calculateRowTotal(priceInput);
- }
- }
+        function updateServicePrice(select) {
+            const price = select.options[select.selectedIndex].dataset.price;
+            const row = select.closest('tr');
+            const priceInput = row.querySelector('input[name="service_price[]"]');
+            if (price) {
+                priceInput.value = parseFloat(price).toFixed(2);
+                calculateRowTotal(priceInput);
+            }
+        }
 
- function calculateRowTotal(element) {
- const row = element.closest('tr');
- const qty = parseFloat(row.querySelector('input[type="number"][name$="qty[]"]').value) || 0;
- const price = parseFloat(row.querySelector('input[type="number"][name$="price[]"]').value) || 0;
- const total = qty * price;
- row.querySelector('.row-total').value = 'R$ ' + total.toFixed(2);
- }
+        function calculateRowTotal(element) {
+            const row = element.closest('tr');
+            const qty = parseFloat(row.querySelector('input[type="number"][name$="qty[]"]').value) || 0;
+            const price = parseFloat(row.querySelector('input[type="number"][name$="price[]"]').value) || 0;
+            const total = qty * price;
+            row.querySelector('.row-total').value = 'R$ ' + total.toFixed(2);
+        }
 
- function generateInstallments() {
- const count = parseInt(document.getElementById('installments_count').value);
- const interval = parseInt(document.getElementById('interval_days').value);
- const firstInstallmentDays = document.getElementById('first_installment_days').value ? parseInt(document.getElementById('first_installment_days').value) : interval;
+        function generateInstallments() {
+            const count = parseInt(document.getElementById('installments_count').value);
+            const interval = parseInt(document.getElementById('interval_days').value);
+            const firstInstallmentDays = document.getElementById('first_installment_days').value ? parseInt(document.getElementById('first_installment_days').value) : interval;
 
- // Calculate total value from all rows
- let totalValue = 0;
- document.querySelectorAll('.row-total').forEach(input => {
- const val = parseFloat(input.value.replace('R$ ', '')) || 0;
- totalValue += val;
- });
+            // Calculate total value from all rows
+            let totalValue = 0;
+            document.querySelectorAll('.row-total').forEach(input => {
+                const val = parseFloat(input.value.replace('R$ ', '')) || 0;
+                totalValue += val;
+            });
 
- if (!count || !interval || totalValue === 0) {
- alert('Por favor, preencha o número de parcelas, o intervalo e adicione itens ao orçamento.');
- return;
- }
+            if (!count || !interval || totalValue === 0) {
+                alert('Por favor, preencha o número de parcelas, o intervalo e adicione itens ao orçamento.');
+                return;
+            }
 
- const installmentValue = totalValue / count;
- let details = `Valor Total: R$ ${totalValue.toFixed(2)}\n`;
- details += `Parcelamento em ${count}x de R$ ${installmentValue.toFixed(2)}\n\n`;
+            const installmentValue = totalValue / count;
+            let details = `Valor Total: R$ ${totalValue.toFixed(2)}\n`;
+            details += `Parcelamento em ${count}x de R$ ${installmentValue.toFixed(2)}\n\n`;
 
- const today = new Date();
- let currentDate = new Date(today);
+            const today = new Date();
+            let currentDate = new Date(today);
 
- // First installment
- currentDate.setDate(today.getDate() + firstInstallmentDays);
+            // First installment
+            currentDate.setDate(today.getDate() + firstInstallmentDays);
 
- for (let i = 1; i <= count; i++) {
- const dateStr = currentDate.toLocaleDateString('pt-BR');
- details += `${i}ª Parcela: ${dateStr} - R$ ${installmentValue.toFixed(2)}\n`;
+            for (let i = 1; i <= count; i++) {
+                const dateStr = currentDate.toLocaleDateString('pt-BR');
+                details += `${i}ª Parcela: ${dateStr} - R$ ${installmentValue.toFixed(2)}\n`;
 
- // Prepare date for next installment
- currentDate.setDate(currentDate.getDate() + interval);
- }
+                // Prepare date for next installment
+                currentDate.setDate(currentDate.getDate() + interval);
+            }
 
- document.getElementById('payment_details').value = details;
- }
+            document.getElementById('payment_details').value = details;
+        }
 </script>
 {% endblock %}
