@@ -70,6 +70,25 @@ class ConfiguracaoCoraView(LoginRequiredMixin, View):
                         aviso_ambiente = f" Lembre-se: IDs de Produção só funcionam no ambiente 'Produção'. Atualmente tentando em: {url_tentada}."
                     
                     messages.error(request, f"Erro na conexão: {str(e)}.{aviso_ambiente}")
+            # Action: Manual Statement Sync
+            elif 'sync_statement' in request.POST:
+                try:
+                    from .services.statement import CoraStatementService
+                    from financeiro.models import CashAccount
+                    
+                    # Procura a conta Cora
+                    account = CashAccount.objects.filter(name__icontains='Cora').first() or \
+                              CashAccount.objects.filter(bank_name__icontains='Cora').first()
+                    
+                    if not account:
+                        messages.error(request, "Conta Bancária 'Cora' não encontrada no sistema. Crie-a em Financeiro > Contas.")
+                    else:
+                        service = CoraStatementService()
+                        count, total = service.sync_statement(account)
+                        messages.success(request, f"Sincronização realizada! {count} lançamentos processados. Total: R$ {total:.2f}")
+                        
+                except Exception as e:
+                    messages.error(request, f"Erro na sincronização: {str(e)}")
             else:
                 messages.success(request, "Configurações salvas com sucesso.")
                 
