@@ -17,6 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', include('core.urls')),
@@ -34,3 +36,14 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('importador/', include('importador.urls')),
 ]
+
+# Serve media files (uploads) in all environments
+# In production, consider using cloud storage (S3/GCS) for persistence
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    from django.urls import re_path
+    from django.views.static import serve
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
