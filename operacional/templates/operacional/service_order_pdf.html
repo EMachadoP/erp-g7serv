@@ -2,144 +2,485 @@
 <html>
 
 <head>
- <meta charset="utf-8">
- <title>OS #{{ order.id }}</title>
- <style>
- body {
- font-family: Helvetica, Arial, sans-serif;
- font-size: 12px;
- }
+    <meta charset="utf-8">
+    <title>OS #{{ order.id }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
 
- .header {
- text-align: center;
- margin-bottom: 20px;
- }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            color: #333;
+            line-height: 1.4;
+        }
 
- .header h1 {
- margin: 0;
- }
+        /* Header */
+        .header-table {
+            width: 100%;
+            margin-bottom: 15px;
+        }
 
- .info-table {
- width: 100%;
- margin-bottom: 20px;
- border-collapse: collapse;
- }
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+        }
 
- .info-table td {
- padding: 5px;
- border: 1px solid #ccc;
- }
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a3a5c;
+            margin: 0;
+        }
 
- .info-header {
- background-color: #f0f0f0;
- font-weight: bold;
- }
+        .company-info {
+            font-size: 9px;
+            color: #666;
+            margin: 2px 0;
+        }
 
- .items-table {
- width: 100%;
- border-collapse: collapse;
- margin-bottom: 20px;
- }
+        .os-number-box {
+            border: 2px solid #1a3a5c;
+            padding: 8px 15px;
+            text-align: center;
+            float: right;
+        }
 
- .items-table th,
- .items-table td {
- border: 1px solid #000;
- padding: 8px;
- text-align: left;
- }
+        .os-number-label {
+            font-size: 9px;
+            color: #666;
+        }
 
- .items-table th {
- background-color: #eee;
- }
+        .os-number {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1a3a5c;
+        }
 
- .totals {
- text-align: right;
- margin-top: 10px;
- }
+        /* Section Headers */
+        .section-header {
+            background-color: #1a3a5c;
+            color: white;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 12px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
- .signature-section {
- margin-top: 50px;
- text-align: center;
- }
+        /* Info Tables */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
 
- .signature-box {
- border: 1px solid #ccc;
- display: inline-block;
- padding: 10px;
- }
+        .info-table td {
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            font-size: 10px;
+            vertical-align: top;
+        }
 
- .signature-img {
- max-width: 300px;
- max-height: 150px;
- }
- </style>
+        .info-label {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            color: #555;
+            width: 120px;
+            font-size: 9px;
+        }
+
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+
+        .items-table th {
+            background-color: #e8edf2;
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: bold;
+            color: #1a3a5c;
+        }
+
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            font-size: 10px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total-row {
+            background-color: #f0f4f8;
+            font-weight: bold;
+        }
+
+        /* Execution Cards */
+        .exec-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .exec-table td {
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .exec-label {
+            font-size: 8px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .exec-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #1a3a5c;
+        }
+
+        /* Report Box */
+        .report-box {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            min-height: 40px;
+            background-color: #fafafa;
+        }
+
+        /* Photos */
+        .photo-section {
+            margin-top: 5px;
+        }
+
+        .photo-label {
+            font-size: 9px;
+            font-weight: bold;
+            color: #555;
+            margin: 8px 0 4px 0;
+            text-transform: uppercase;
+        }
+
+        .photo-grid {
+            width: 100%;
+        }
+
+        .photo-grid td {
+            padding: 3px;
+            vertical-align: top;
+        }
+
+        .photo-grid img {
+            max-width: 180px;
+            max-height: 140px;
+            border: 1px solid #ddd;
+        }
+
+        /* Signature */
+        .signature-section {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .signature-box {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        .signature-img {
+            max-width: 250px;
+            max-height: 120px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 250px;
+            margin: 30px auto 5px auto;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 3px 10px;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .status-completed {
+            background-color: #28a745;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .status-progress {
+            background-color: #17a2b8;
+        }
+
+        .status-canceled {
+            background-color: #dc3545;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 8px;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
+    </style>
 </head>
 
 <body>
- <div class="header">
- <h1>Ordem de Serviço #{{ order.id }}</h1>
- <p>Descartex Soluções</p>
- </div>
+    <!-- HEADER -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 65%;">
+                {% if company.logo %}
+                <img src="{{ company_logo_b64 }}" style="max-height: 50px; margin-bottom: 5px;"><br>
+                {% endif %}
+                <p class="company-name">{{ company.name|default:"G7 Serv" }}</p>
+                {% if company.cnpj %}<p class="company-info">CNPJ: {{ company.cnpj }}</p>{% endif %}
+                {% if company.phone %}<p class="company-info">Tel: {{ company.phone }}
+                    {% if company.email %} | {{ company.email }}{% endif %}</p>{% endif %}
+                {% if company.address %}<p class="company-info">{{ company.address }}</p>{% endif %}
+            </td>
+            <td style="width: 35%; text-align: right;">
+                <div class="os-number-box">
+                    <p class="os-number-label">Ordem de Serviço Nº</p>
+                    <p class="os-number">{{ order.id }}</p>
+                    <p class="company-info">{{ order.created_at|date:"d/m/Y" }}</p>
+                    <span
+                        class="status-badge {% if order.status == 'COMPLETED' %}status-completed{% elif order.status == 'PENDING' %}status-pending{% elif order.status == 'IN_PROGRESS' %}status-progress{% elif order.status == 'CANCELED' %}status-canceled{% else %}status-pending{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </table>
 
- <table class="info-table">
- <tr>
- <td class="info-header">Cliente</td>
- <td>{{ order.client.name }}</td>
- <td class="info-header">Data</td>
- <td>{{ order.created_at|date:"d/m/Y" }}</td>
- </tr>
- <tr>
- <td class="info-header">Endereço</td>
- <td colspan="3">{{ order.address|default:"-" }}</td>
- </tr>
- <tr>
- <td class="info-header">Descrição</td>
- <td colspan="3">{{ order.description|linebreaksbr }}</td>
- </tr>
- </table>
+    <!-- DADOS DO CLIENTE -->
+    <div class="section-header">Dados do Cliente</div>
+    <table class="info-table">
+        <tr>
+            <td class="info-label">Razão Social</td>
+            <td colspan="3">{{ order.client.name }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">CPF/CNPJ</td>
+            <td>{{ order.client.cpf_cnpj|default:"-" }}</td>
+            <td class="info-label">Contato</td>
+            <td>{{ order.contact|default:order.client.phone|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Endereço</td>
+            <td colspan="3">{{ order.address|default:order.client.address|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">E-mail</td>
+            <td colspan="3">{{ order.client.email|default:"-" }}</td>
+        </tr>
+    </table>
 
- <h3>Itens / Serviços</h3>
- <table class="items-table">
- <thead>
- <tr>
- <th>Produto/Serviço</th>
- <th>Qtd</th>
- <th>Unitário</th>
- <th>Total</th>
- </tr>
- </thead>
- <tbody>
- {% for item in order.items.all %}
- <tr>
- <td>{{ item.product.name }}</td>
- <td>{{ item.quantity }}</td>
- <td>R$ {{ item.unit_price }}</td>
- <td>R$ {{ item.total_price }}</td>
- </tr>
- {% empty %}
- <tr>
- <td colspan="4">Nenhum item registrado.</td>
- </tr>
- {% endfor %}
- </tbody>
- </table>
+    <!-- INFORMAÇÕES DA OS -->
+    <div class="section-header">Informações da Ordem de Serviço</div>
+    <table class="info-table">
+        <tr>
+            <td class="info-label">Tipo</td>
+            <td>{{ order.get_order_type_display|default:"-" }}</td>
+            <td class="info-label">Motivo</td>
+            <td>{{ order.get_reason_display|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Previsão</td>
+            <td>{{ order.scheduled_date|date:"d/m/Y H:i"|default:"-" }}</td>
+            <td class="info-label">Duração</td>
+            <td>{{ order.duration|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Vendedor(es)</td>
+            <td>
+                {% if order.seller %}
+                {{ order.seller.get_full_name|default:order.seller.username }}
+                {% else %}-{% endif %}
+            </td>
+            <td class="info-label">Técnico(s)</td>
+            <td>
+                {% if order.technician %}{{ order.technician.get_full_name|default:order.technician.username }}{% endif
+                %}
+                {% if order.technical_team %}{{ order.technical_team.name }}{% endif %}
+                {% if not order.technician and not order.technical_team %}-{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td class="info-label">Descrição</td>
+            <td colspan="3">{{ order.description|linebreaksbr }}</td>
+        </tr>
+    </table>
 
- <div class="totals">
- <h3>Total: R$ {{ order.value }}</h3>
- </div>
+    <!-- PRODUTOS / SERVIÇOS -->
+    <div class="section-header">Produtos / Serviços</div>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Descrição do Produto</th>
+                <th class="text-center" style="width: 15%;">Quantidade</th>
+                <th class="text-right" style="width: 15%;">Preço Unit.</th>
+                <th class="text-right" style="width: 20%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-right">R$ {{ item.unit_price }}</td>
+                <td class="text-right">R$ {{ item.total_price }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center" style="color: #999;">Nenhum item registrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="3" class="text-right">Total de Produtos</td>
+                <td class="text-right">R$ {{ order.value }}</td>
+            </tr>
+        </tfoot>
+    </table>
 
- <div class="signature-section">
- {% if order.signature_image %}
- <p>Assinatura do Cliente:</p>
- <div class="signature-box">
- <img src="{{ order.signature_image.path }}" class="signature-img">
- </div>
- <p>Assinado em: {{ order.updated_at|date:"d/m/Y H:i" }}</p>
- {% else %}
- <p>__________________________________________</p>
- <p>Assinatura do Cliente</p>
- {% endif %}
- </div>
+    <!-- EXECUÇÃO -->
+    {% if order.checkin_time or order.checkout_time %}
+    <div class="section-header">Execução do Serviço</div>
+    <table class="exec-table">
+        <tr>
+            <td style="width: 25%;">
+                <p class="exec-label">Data Início</p>
+                <p class="exec-value">
+                    {% if order.checkin_time %}{{ order.checkin_time|date:"d/m/Y" }}{% else %}-{% endif %}
+                </p>
+            </td>
+            <td style="width: 25%;">
+                <p class="exec-label">Hora Início</p>
+                <p class="exec-value">
+                    {% if order.checkin_time %}{{ order.checkin_time|date:"H:i" }}{% else %}-{% endif %}
+                </p>
+            </td>
+            <td style="width: 25%;">
+                <p class="exec-label">Hora Término</p>
+                <p class="exec-value">
+                    {% if order.checkout_time %}{{ order.checkout_time|date:"H:i" }}{% else %}-{% endif %}
+                </p>
+            </td>
+            <td style="width: 25%;">
+                <p class="exec-label">Duração</p>
+                <p class="exec-value">{{ order.duration|default:"-" }}</p>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+
+    <!-- LAUDO FINAL -->
+    {% if order.solution %}
+    <div class="section-header">Laudo Final do Técnico</div>
+    <div class="report-box">
+        {{ order.solution|linebreaksbr }}
+    </div>
+    {% endif %}
+
+    <!-- FOTOS -->
+    {% if fotos_antes or fotos_depois or fotos_diagnostico %}
+    <div class="section-header">Registro Fotográfico</div>
+    <div class="photo-section">
+
+        {% if fotos_antes_b64 %}
+        <p class="photo-label">▸ Antes do Serviço</p>
+        <table class="photo-grid">
+            <tr>
+                {% for img_b64 in fotos_antes_b64 %}
+                <td><img src="{{ img_b64 }}"></td>
+                {% if forloop.counter|divisibleby:3 %}
+            </tr>
+            <tr>{% endif %}
+                {% endfor %}
+            </tr>
+        </table>
+        {% endif %}
+
+        {% if fotos_depois_b64 %}
+        <p class="photo-label">▸ Depois do Serviço</p>
+        <table class="photo-grid">
+            <tr>
+                {% for img_b64 in fotos_depois_b64 %}
+                <td><img src="{{ img_b64 }}"></td>
+                {% if forloop.counter|divisibleby:3 %}
+            </tr>
+            <tr>{% endif %}
+                {% endfor %}
+            </tr>
+        </table>
+        {% endif %}
+
+        {% if fotos_diagnostico_b64 %}
+        <p class="photo-label">▸ Diagnóstico</p>
+        <table class="photo-grid">
+            <tr>
+                {% for img_b64 in fotos_diagnostico_b64 %}
+                <td><img src="{{ img_b64 }}"></td>
+                {% if forloop.counter|divisibleby:3 %}
+            </tr>
+            <tr>{% endif %}
+                {% endfor %}
+            </tr>
+        </table>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+    <!-- ASSINATURA -->
+    <div class="signature-section">
+        {% if signature_b64 %}
+        <p style="font-size: 9px; color: #666;">Assinatura do Cliente:</p>
+        <div class="signature-box">
+            <img src="{{ signature_b64 }}" class="signature-img">
+        </div>
+        <p style="font-size: 8px; color: #999;">Assinado em: {{ order.updated_at|date:"d/m/Y H:i" }}</p>
+        {% else %}
+        <div class="signature-line"></div>
+        <p style="font-size: 9px; color: #666;">Assinatura do Cliente</p>
+        {% endif %}
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        {{ company.name|default:"G7 Serv" }} — OS #{{ order.id }} — Gerado em {{ now|date:"d/m/Y H:i" }}
+    </div>
 </body>
 
 </html>

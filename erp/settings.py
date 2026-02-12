@@ -213,17 +213,45 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise configuration for compressed and cached static files
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
-WHITENOISE_MANIFEST_STRICT = False
+# Google Cloud Storage for media files (uploads, signatures, photos)
+GCS_BUCKET_NAME = os.environ.get('GCS_BUCKET_NAME', '')
+GCS_CREDENTIALS_JSON = os.environ.get('GCS_CREDENTIALS', '')
 
-MEDIA_URL = '/media/'
+if GCS_BUCKET_NAME:
+    import json
+    from google.oauth2 import service_account
+    
+    GS_BUCKET_NAME = GCS_BUCKET_NAME
+    GS_DEFAULT_ACL = 'publicRead'
+    GS_QUERYSTRING_AUTH = False  # Public URLs without signed tokens
+    GS_FILE_OVERWRITE = False   # Don't overwrite files with same name
+    
+    if GCS_CREDENTIALS_JSON:
+        GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+            json.loads(GCS_CREDENTIALS_JSON)
+        )
+    
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    MEDIA_URL = f'https://storage.googleapis.com/{GCS_BUCKET_NAME}/'
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    MEDIA_URL = '/media/'
+
+WHITENOISE_MANIFEST_STRICT = False
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type

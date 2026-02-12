@@ -380,18 +380,67 @@ def service_order_finish_mobile(request, pk):
 @login_required
 def service_order_pdf(request, pk):
     order = get_object_or_404(ServiceOrder, pk=pk)
-    template_path = 'operacional/service_order_pdf.html'
-    context = {'order': order}
+    
+    # Load company settings
+    from core.models import CompanySettings
+    company = CompanySettings.objects.first()
+    
+    # Helper: convert a FileField/ImageField to base64 data URI
+    def _file_to_base64(file_field):
+        try:
+            file_field.open('rb')
+            data = file_field.read()
+            file_field.close()
+            import mimetypes
+            mime = mimetypes.guess_type(file_field.name)[0] or 'image/png'
+            import base64
+            return f"data:{mime};base64,{base64.b64encode(data).decode()}"
+        except Exception:
+            return None
+    
+    # Company logo
+    company_logo_b64 = None
+    if company and company.logo:
+        company_logo_b64 = _file_to_base64(company.logo)
+    
+    # Group photos and convert to base64
+    fotos_antes = order.anexos.filter(type='Antes')
+    fotos_depois = order.anexos.filter(type='Depois')
+    fotos_diagnostico = order.anexos.filter(type='Diagnostico')
+    
+    fotos_antes_b64 = [b64 for f in fotos_antes if (b64 := _file_to_base64(f.file))]
+    fotos_depois_b64 = [b64 for f in fotos_depois if (b64 := _file_to_base64(f.file))]
+    fotos_diagnostico_b64 = [b64 for f in fotos_diagnostico if (b64 := _file_to_base64(f.file))]
+    
+    # Signature
+    signature_b64 = None
+    if order.signature_image:
+        signature_b64 = _file_to_base64(order.signature_image)
+    
+    from django.utils import timezone
+    context = {
+        'order': order,
+        'company': company,
+        'company_logo_b64': company_logo_b64,
+        'fotos_antes': fotos_antes,
+        'fotos_depois': fotos_depois,
+        'fotos_diagnostico': fotos_diagnostico,
+        'fotos_antes_b64': fotos_antes_b64,
+        'fotos_depois_b64': fotos_depois_b64,
+        'fotos_diagnostico_b64': fotos_diagnostico_b64,
+        'signature_b64': signature_b64,
+        'now': timezone.now(),
+    }
+    
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="os_{order.id}.pdf"'
-    template = get_template(template_path)
+    response['Content-Disposition'] = f'inline; filename="os_{order.id}.pdf"'
+    template = get_template('operacional/service_order_pdf.html')
     html = template.render(context)
     
-    # Create PDF
     pisa_status = pisa.CreatePDF(html, dest=response)
     
     if pisa_status.err:
-       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+       return HttpResponse('Erro ao gerar PDF <pre>' + html + '</pre>')
     return response
 
 
