@@ -9,6 +9,11 @@
             <span class="badge bg-success bg-opacity-10 text-success fs-6">Concluído</span>
             {% elif order.status == 'PENDING' %}
             <span class="badge bg-warning bg-opacity-10 text-warning fs-6">Pendente</span>
+            {% elif order.status == 'INSTALLATION_PENDING' %}
+            <span class="badge fs-6" style="background-color: rgba(32,201,151,0.1); color: #20c997;">Instalação
+                Pendente</span>
+            {% elif order.status == 'IN_PROGRESS' %}
+            <span class="badge bg-primary bg-opacity-10 text-primary fs-6">Em Andamento</span>
             {% else %}
             <span class="badge bg-secondary bg-opacity-10 text-secondary fs-6">{{ order.get_status_display }}</span>
             {% endif %}
@@ -190,6 +195,32 @@
             <div class="card-body text-center">
                 <img src="{{ order.signature_image.url }}" class="img-fluid" alt="Assinatura do cliente"
                     style="max-height: 150px;">
+            </div>
+        </div>
+        {% endif %}
+
+        {% comment %} Painel de Faturamento Pós-Instalação {% endcomment %}
+        {% if order.order_type == 'Instalacao' and order.status == 'COMPLETED' %}
+        <hr class="my-4">
+        <div class="card border-0 shadow-sm" style="border-left: 4px solid #20c997 !important;">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-cash-stack fs-3 me-3" style="color: #20c997;"></i>
+                    <div>
+                        <h5 class="mb-0" style="color: #20c997;">Instalação Concluída — Pronta para Faturar</h5>
+                        <p class="text-muted mb-0 small">O serviço técnico foi finalizado. Utilize os botões abaixo para
+                            realizar a cobrança.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'faturamento:create_from_os' order.id %}" class="btn btn-success">
+                        <i class="bi bi-receipt me-1"></i> Gerar Fatura
+                    </a>
+                    <a href="{% url 'operacional:service_order_pdf' order.id %}" class="btn btn-info text-white"
+                        target="_blank">
+                        <i class="bi bi-printer me-1"></i> Imprimir OS
+                    </a>
+                </div>
             </div>
         </div>
         {% endif %}

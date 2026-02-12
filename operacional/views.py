@@ -240,6 +240,11 @@ def operational_progress(request):
 
     # --- NEW DASHBOARD COLUMNS AS REQUESTED ---
     
+    # 0. Instalações Pendentes (INSTALLATION_PENDING)
+    instalacoes_pendentes = ServiceOrder.objects.filter(
+        status='INSTALLATION_PENDING'
+    ).select_related('client', 'technician', 'budget').order_by('created_at')
+
     # 1. Pendentes OS (Aberto ou Agendado -> PENDING)
     # The user asked for 'OPEN' or 'SCHEDULED'. Our model has 'PENDING'.
     # We will treat PENDING as the bucket for these.
@@ -271,6 +276,7 @@ def operational_progress(request):
         'budgets_pending_os': budgets_pending_os,
         
         # New Context Variables
+        'instalacoes_pendentes': instalacoes_pendentes,
         'pendentes_os': pendentes_os,
         'em_execucao': em_execucao,
         'aguardando_material': aguardando_material,

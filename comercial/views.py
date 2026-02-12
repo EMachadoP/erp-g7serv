@@ -751,6 +751,26 @@ def budget_win(request, pk):
     budget.closing_date = timezone.now().date()
     budget.save()
     
+    # === Auto-criar OS de Instalação ===
+    from operacional.models import ServiceOrder
+    if not ServiceOrder.objects.filter(budget=budget).exists():
+        description_parts = []
+        for bp in budget.products.all():
+            description_parts.append(f"PRODUTO: {bp.product.name} (Qtd: {bp.quantity})")
+        for bs in budget.services.all():
+            description_parts.append(f"SERVIÇO: {bs.service.name} (Qtd: {bs.quantity})")
+        
+        ServiceOrder.objects.create(
+            client=budget.client,
+            budget=budget,
+            description="--- ITENS PARA INSTALAÇÃO ---\n" + "\n".join(description_parts),
+            value=budget.total_value,
+            status='INSTALLATION_PENDING',
+            order_type='Instalacao',
+            address=budget.address or budget.client.address or '',
+            contact=budget.contact or budget.client.phone or '',
+        )
+    
     messages.success(request, 'Orçamento marcado como Ganho e Comissões Registradas!')
     return redirect('comercial:budget_detail', pk=pk)
 

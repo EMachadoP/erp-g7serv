@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class ServiceOrder(BaseModel):
     STATUS_CHOICES = [
+        ('INSTALLATION_PENDING', 'Instalação Pendente'),
         ('PENDING', 'Pendente'),
         ('IN_PROGRESS', 'Em Andamento'),
         ('WAITING_MATERIAL', 'Aguardando Material'),
