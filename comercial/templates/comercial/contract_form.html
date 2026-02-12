@@ -22,7 +22,7 @@
                     <select name="client" id="client" class="form-select select2" required>
                         <option value="">Selecione um cliente...</option>
                         {% for client in clients %}
-                        <option value="{{ client.id }}" {% if contract and contract.client.id==c lient.id %}selected{%
+                        <option value="{{ client.id }}" {% if contract and contract.client.id==client.id %}selected{%
                             endif %}>
                             {{ client.name }}
                         </option>
