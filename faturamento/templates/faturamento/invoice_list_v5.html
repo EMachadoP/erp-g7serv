@@ -257,7 +257,7 @@
     </div>
 
     <!-- Invoice List -->
-    <div class="invoice-list-container mb-5">
+    <div class="invoice-list-container mb-4">
         {% for invoice in page_obj %}
         <div class="glass-card invoice-item mb-3 bg-white p-3 border-0">
             <div class="row align-items-center">
@@ -343,217 +343,214 @@
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="glass-card text-center py-5">
-                <i class="bi bi-inbox display-4 text-muted opacity-25 d-block mb-3"></i>
-                <h5 class="text-muted">Nenhuma fatura encontrada</h5>
-                <p class="text-muted small">Tente ajustar seus filtros de busca.</p>
-            </div>
-            {% endfor %}
         </div>
+        {% empty %}
+        <div class="glass-card text-center py-5">
+            <i class="bi bi-inbox display-4 text-muted opacity-25 d-block mb-3"></i>
+            <h5 class="text-muted">Nenhuma fatura encontrada</h5>
+            <p class="text-muted small">Tente ajustar seus filtros de busca.</p>
+        </div>
+        {% endfor %}
+    </div>
 
-        <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                        aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">&laquo;</span>
-                </li>
-                {% endif %}
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Navegação de páginas" class="mt-4 mb-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3"
+                    href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
 
-                {% for i in page_obj.paginator.page_range %}
-                {% if page_obj.number == i %}
-                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
-                {% else %}
-                <li class="page-item"><a class="page-link"
-                        href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{
-                        i }}</a></li>
+            {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active">
+                <span class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3 fw-bold">{{ i }}</span>
+            </li>
+            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item">
+                <a class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3"
+                    href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{
+                    i }}</a>
+                </li>
                 {% endif %}
                 {% endfor %}
 
                 {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                        aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
+                    <a class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3"
+                        href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">&raquo;</span>
-                </li>
                 {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 
-        <!-- Sticky Action Bar -->
-        <div class="sticky-bar">
-            <div class="container d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                        style="width: 40px; height: 40px;">
-                        <i class="bi bi-check-lg fw-bold"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0 fw-bold" id="selectedCountText">0 Selecionadas</h6>
-                        <span class="text-muted small">Ações em massa disponíveis</span>
-                    </div>
+    <!-- Espaçamento para o rodapé fixo -->
+    <div style="height: 120px;"></div>
+
+    <!-- Sticky Action Bar -->
+    <div class="sticky-bar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                    style="width: 40px; height: 40px;">
+                    <i class="bi bi-check-lg fw-bold"></i>
                 </div>
-                <div class="d-flex gap-3">
-                    <button type="button" class="btn btn-warning btn-lg rounded-pill fw-bold px-4 shadow-sm"
-                        id="btnGerarNota">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Emitir NFS-e
+                <div>
+                    <h6 class="mb-0 fw-bold" id="selectedCountText">0 Selecionadas</h6>
+                    <span class="text-muted small">Ações em massa disponíveis</span>
+                </div>
+            </div>
+            <div class="d-flex gap-3">
+                <button type="button" class="btn btn-warning btn-lg rounded-pill fw-bold px-4 shadow-sm"
+                    id="btnGerarNota">
+                    <i class="bi bi-file-earmark-plus me-2"></i>Emitir NFS-e
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-lg rounded-pill fw-bold px-4"
+                    id="btnGerarBoletos">
+                    <i class="bi bi-upc-scan me-2"></i>Gerar Boletos
+                </button>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-dark btn-lg rounded-pill fw-bold px-4 dropdown-toggle"
+                        data-bs-toggle="dropdown" id="btnEmail">
+                        <i class="bi bi-send me-2"></i>Enviar E-mail
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-lg rounded-pill fw-bold px-4"
-                        id="btnGerarBoletos">
-                        <i class="bi bi-upc-scan me-2"></i>Gerar Boletos
-                    </button>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-dark btn-lg rounded-pill fw-bold px-4 dropdown-toggle"
-                            data-bs-toggle="dropdown" id="btnEmail">
-                            <i class="bi bi-send me-2"></i>Enviar E-mail
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end p-2 rounded-4 border-0 shadow-lg mt-2">
-                            {% for t in email_templates %}
-                            <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
-                                    data-template-id="{{ t.id }}"><i class="bi bi-layout-text-sidebar me-2"></i>{{
-                                    t.name }}</a></li>
-                            {% empty %}
-                            <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
-                                    data-template-id=""><i class="bi bi-envelope me-2"></i>Template Padrão</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end p-2 rounded-4 border-0 shadow-lg mt-2">
+                        {% for t in email_templates %}
+                        <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
+                                data-template-id="{{ t.id }}"><i class="bi bi-layout-text-sidebar me-2"></i>{{
+                                t.name }}</a></li>
+                        {% empty %}
+                        <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
+                                data-template-id=""><i class="bi bi-envelope me-2"></i>Template Padrão</a></li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-    {% endblock %}
+</div>
+{% endblock %}
 
-    {% block extra_js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            function getCookie(name) {
-                if (!document.cookie) return null;
-                const token = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${name}=`));
-                return token ? decodeURIComponent(token.split('=')[1]) : null;
-            }
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function getCookie(name) {
+            if (!document.cookie) return null;
+            const token = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${name}=`));
+            return token ? decodeURIComponent(token.split('=')[1]) : null;
+        }
 
-            const selectedCountEl = document.getElementById('selectedCountText');
-            const checkboxes = document.querySelectorAll('.invoice-checkbox');
-            const masterCheckbox = document.getElementById('masterCheckbox');
+        const selectedCountEl = document.getElementById('selectedCountText');
+        const checkboxes = document.querySelectorAll('.invoice-checkbox');
+        const masterCheckbox = document.getElementById('masterCheckbox');
 
-            function updateSelectedCount() {
-                const count = document.querySelectorAll('.invoice-checkbox:checked').length;
-                selectedCountEl.textContent = count + (count === 1 ? ' Selecionada' : ' Selecionadas');
+        function updateSelectedCount() {
+            const count = document.querySelectorAll('.invoice-checkbox:checked').length;
+            selectedCountEl.textContent = count + (count === 1 ? ' Selecionada' : ' Selecionadas');
 
-                // Visual feedback on cards
-                checkboxes.forEach(cb => {
-                    const card = cb.closest('.invoice-item');
-                    if (cb.checked) card.classList.add('selected');
-                    else card.classList.remove('selected');
-                });
-            }
+            // Visual feedback on cards
+            checkboxes.forEach(cb => {
+                const card = cb.closest('.invoice-item');
+                if (cb.checked) card.classList.add('selected');
+                else card.classList.remove('selected');
+            });
+        }
 
-            checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedCount));
+        checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedCount));
 
-            if (masterCheckbox) {
-                masterCheckbox.addEventListener('change', function () {
-                    checkboxes.forEach(cb => cb.checked = this.checked);
-                    updateSelectedCount();
-                });
-            }
-
-            document.getElementById('selectAll').addEventListener('click', (e) => {
-                e.preventDefault();
-                checkboxes.forEach(cb => cb.checked = true);
-                if (masterCheckbox) masterCheckbox.checked = true;
+        if (masterCheckbox) {
+            masterCheckbox.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = this.checked);
                 updateSelectedCount();
             });
+        }
 
-            document.getElementById('deselectAll').addEventListener('click', (e) => {
-                e.preventDefault();
-                checkboxes.forEach(cb => cb.checked = false);
-                if (masterCheckbox) masterCheckbox.checked = false;
-                updateSelectedCount();
-            });
+        document.getElementById('selectAll').addEventListener('click', (e) => {
+            e.preventDefault();
+            checkboxes.forEach(cb => cb.checked = true);
+            if (masterCheckbox) masterCheckbox.checked = true;
+            updateSelectedCount();
+        });
 
-            function doBulkAction(url, btnId, extraData) {
-                const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
-                if (ids.length === 0) {
-                    alert('Por favor, selecione pelo menos uma fatura para realizar esta ação.');
-                    return;
-                }
+        document.getElementById('deselectAll').addEventListener('click', (e) => {
+            e.preventDefault();
+            checkboxes.forEach(cb => cb.checked = false);
+            if (masterCheckbox) masterCheckbox.checked = false;
+            updateSelectedCount();
+        });
 
-                const btn = document.getElementById(btnId);
-                const originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+        function doBulkAction(url, btnId, extraData) {
+            const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
+            if (ids.length === 0) {
+                alert('Por favor, selecione pelo menos uma fatura para realizar esta ação.');
+                return;
+            }
 
-                const payload = { invoice_ids: ids };
-                if (extraData) Object.assign(payload, extraData);
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
 
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify(payload)
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success' || (data.status === 'warning' && data.success_count > 0)) {
-                            let msg = data.message || 'Operação realizada com sucesso!';
-                            if (data.errors && data.errors.length > 0) {
-                                msg += '\n\nErros:\n' + data.errors.join('\n');
-                            }
-                            alert(msg);
-                            location.reload();
-                        } else {
-                            let msg = data.message || 'Erro ao processar solicitação.';
-                            if (data.errors && data.errors.length > 0) {
-                                msg += '\n\nDetalhes:\n' + data.errors.join('\n');
-                            }
-                            alert(msg);
-                            btn.disabled = false;
-                            btn.innerHTML = originalText;
+            const payload = { invoice_ids: ids };
+            if (extraData) Object.assign(payload, extraData);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' || (data.status === 'warning' && data.success_count > 0)) {
+                        let msg = data.message || 'Operação realizada com sucesso!';
+                        if (data.errors && data.errors.length > 0) {
+                            msg += '\n\nErros:\n' + data.errors.join('\n');
                         }
-                    })
-                    .catch(err => {
-                        alert('Erro de conexão: ' + err.message);
+                        alert(msg);
+                        location.reload();
+                    } else {
+                        let msg = data.message || 'Erro ao processar solicitação.';
+                        if (data.errors && data.errors.length > 0) {
+                            msg += '\n\nDetalhes:\n' + data.errors.join('\n');
+                        }
+                        alert(msg);
                         btn.disabled = false;
                         btn.innerHTML = originalText;
-                    });
-            }
+                    }
+                })
+                .catch(err => {
+                    alert('Erro de conexão: ' + err.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
 
-            document.getElementById('btnGerarBoletos').addEventListener('click', () =>
-                doBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos')
-            );
+        document.getElementById('btnGerarBoletos').addEventListener('click', () =>
+            doBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'btnGerarBoletos')
+        );
 
-            document.getElementById('btnGerarNota').addEventListener('click', () =>
-                doBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota')
-            );
+        document.getElementById('btnGerarNota').addEventListener('click', () =>
+            doBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'btnGerarNota')
+        );
 
-            document.querySelectorAll('.email-template-option').forEach(opt => {
-                opt.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    doBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', {
-                        template_id: this.getAttribute('data-template-id')
-                    });
+        document.querySelectorAll('.email-template-option').forEach(opt => {
+            opt.addEventListener('click', function (e) {
+                e.preventDefault();
+                doBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", 'btnEmail', {
+                    template_id: this.getAttribute('data-template-id')
                 });
             });
         });
-    </script>
-    {% endblock %}
+    });
+</script>
+{% endblock %}
