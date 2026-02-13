@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
 {% block title %}Faturas Geradas | G7Serv{% endblock %}
@@ -272,10 +272,12 @@
                                 #{{ invoice.number }} | {{ invoice.client.name|default:"Cliente não informado" }}
                             </h6>
                             <div class="d-flex flex-wrap gap-3 mt-1">
+                                <!-- Date Rendering Safe from Splitter -->
+                                {% with m=invoice.competence_month y=invoice.competence_year %}
                                 <span class="text-muted small">
-                                    <i class="bi bi-calendar3 me-1"></i>{{ invoice.competence_month }}/{{
-                                    invoice.competence_year }}
+                                    <i class="bi bi-calendar3 me-1"></i>{{ m }}/{{ y }}
                                 </span>
+                                {% endwith %}
                                 {% if invoice.contract %}
                                 <span class="text-muted small">
                                     <i class="bi bi-file-earmark-text me-1"></i>ID: {{ invoice.contract.id }}
@@ -354,14 +356,18 @@
             {% for i in page_obj.paginator.page_range %}
             {% if page_obj.number == i %}
             <li class="page-item active">
-                <span class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3 fw-bold bg-primary text-white">{{ i
-                    }}</span>
+                <span class="page-link glass-card border-0 px-3 py-2 ms-2 
+                             rounded-3 fw-bold bg-primary text-white">
+                    {{ i }}
+                </span>
             </li>
             {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item">
                 <a class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3"
-                    href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{
-                    i }}</a>
+                    href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    {{ i }}
+                </a>
                 </li>
+
                 {% endif %}
                 {% endfor %}
 
