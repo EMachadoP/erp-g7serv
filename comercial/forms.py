@@ -8,6 +8,20 @@ class BillingGroupForm(forms.ModelForm):
         fields = ['name', 'due_day', 'active']
 
 class ContractForm(forms.ModelForm):
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+        input_formats=['%Y-%m-%d', '%d/%m/%Y'],
+        localize=False,
+        label="Data de Início"
+    )
+    end_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+        input_formats=['%Y-%m-%d', '%d/%m/%Y'],
+        localize=False,
+        required=False,
+        label="Data de Término"
+    )
+
     class Meta:
         model = Contract
         fields = [
@@ -21,8 +35,6 @@ class ContractForm(forms.ModelForm):
             'modality': forms.Select(attrs={'class': 'form-select'}),
             'due_day': forms.NumberInput(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'maintenance_services': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         }
 
