@@ -21,8 +21,8 @@ class ContractForm(forms.ModelForm):
             'modality': forms.Select(attrs={'class': 'form-select'}),
             'due_day': forms.NumberInput(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'maintenance_services': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         }
 
