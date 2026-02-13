@@ -368,6 +368,9 @@ def contract_create(request):
             contract.value = total_value
             contract.save(update_fields=['value'])
             
+            # Save ManyToMany fields (maintenance_services)
+            form.save_m2m()
+            
             messages.success(request, 'Contrato criado com sucesso.')
             return redirect('comercial:contract_detail', pk=contract.pk)
     else:
@@ -406,6 +409,9 @@ def contract_update(request, pk):
             total_value = sum(item.total_price for item in contract.items.all())
             contract.value = total_value
             contract.save()
+            
+            # Save ManyToMany fields (maintenance_services)
+            form.save_m2m()
             
             messages.success(request, 'Contrato atualizado com sucesso.')
             return redirect('comercial:contract_detail', pk=contract.pk)
