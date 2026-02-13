@@ -103,16 +103,12 @@ def replace_contract_variables(content, contract):
     
     # Robust replacement for responsible name (accents, spaces, underscores, HTML entities)
     # Matches {{NOME...S...NDICO...OU...RESPONS...VEL}} with any chars in between
-    content = replace_ignore_case(content, r'{{NOME.*?S.*?NDICO.*?OU.*?RESPONS.*?VEL}}', resp_name)
-    
-    # Keep specific ones just in case
-    content = replace_ignore_case(content, r'{{NOME[_\s]S[IÍ]NDICO[_\s]OU[_\s]RESPONS[AÁ]VEL}}', resp_name)
-    content = content.replace('{{NOME_SÍNDICO_OU_RESPONSÁVEL}}', resp_name)
-    content = replace_ignore_case(content, r'{{NOME_RESPONSAVEL}}', resp_name)
+    content = replace_ignore_case(content, r'{{.*?NOME.*?S.*?NDICO.*?OU.*?RESPONS.*?VEL.*?}}', resp_name)
+    content = replace_ignore_case(content, r'{{.*?NOME.*?RESPONSAVEL.*?}}', resp_name)
     
     resp_cpf = contract.client.responsible_cpf or ''
-    content = replace_ignore_case(content, r'{{CPF}}', resp_cpf)
-    content = replace_ignore_case(content, r'{{CPF_RESPONSAVEL}}', resp_cpf)
+    content = replace_ignore_case(content, r'{{.*?CPF.*?}}', resp_cpf)
+    content = replace_ignore_case(content, r'{{.*?CPF.*?RESPONSAVEL.*?}}', resp_cpf)
     
     # Address
     address_parts = []
@@ -132,21 +128,21 @@ def replace_contract_variables(content, contract):
     # Contract Data
     formatted_value = f"{contract.value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     content = replace_ignore_case(content, r'{{valor}}', formatted_value)
-    content = replace_ignore_case(content, r'{{VALOR[_\s]MENSAL([_\s]DO[_\s]CONTRATO)?}}', formatted_value)
+    content = replace_ignore_case(content, r'{{VALOR.*?MENSAL(.*?DO.*?CONTRATO)?}}', formatted_value)
     
-    content = replace_ignore_case(content, r'{{DIA_VENCIMENTO}}', str(contract.due_day))
+    content = replace_ignore_case(content, r'{{DIA.*?VENCIMENTO}}', str(contract.due_day))
     
     if contract.start_date:
-        content = replace_ignore_case(content, r'{{DATA_INICIO}}', date_format(contract.start_date, "d/m/Y"))
-        content = replace_ignore_case(content, r'{{DIA}}', str(contract.start_date.day))
+        content = replace_ignore_case(content, r'{{.*?DATA.*?INICIO.*?}}', date_format(contract.start_date, "d/m/Y"))
+        content = replace_ignore_case(content, r'{{.*?DIA.*?}}', str(contract.start_date.day))
         month_name = date_format(contract.start_date, "F") 
-        content = replace_ignore_case(content, r'{{MÊS POR EXTENSO}}', month_name.lower())
-        content = replace_ignore_case(content, r'{{ANO}}', str(contract.start_date.year))
+        content = replace_ignore_case(content, r'{{.*?M[ÊE]S.*?POR.*?EXTENSO.*?}}', month_name.lower())
+        content = replace_ignore_case(content, r'{{.*?ANO.*?}}', str(contract.start_date.year))
     else:
-        content = replace_ignore_case(content, r'{{DATA_INICIO}}', '')
-        content = replace_ignore_case(content, r'{{DIA}}', '')
-        content = replace_ignore_case(content, r'{{MÊS POR EXTENSO}}', '')
-        content = replace_ignore_case(content, r'{{ANO}}', '')
+        content = replace_ignore_case(content, r'{{.*?DATA.*?INICIO.*?}}', '')
+        content = replace_ignore_case(content, r'{{.*?DIA.*?}}', '')
+        content = replace_ignore_case(content, r'{{.*?M[ÊE]S.*?POR.*?EXTENSO.*?}}', '')
+        content = replace_ignore_case(content, r'{{.*?ANO.*?}}', '')
 
     # Signature Date
     if contract.signed_at:
