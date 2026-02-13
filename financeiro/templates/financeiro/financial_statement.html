@@ -38,7 +38,7 @@
                     <select name="account" class="form-select">
                         <option value="">Todas as Contas</option>
                         {% for acc in accounts %}
-                        <option value="{{ acc.id }}" {% if selected_account.id==acc.id %}selected{% endif %}>{{ acc.name
+                        <option value="{{ acc.id }}" {% if selected_account.id == acc.id %}selected{% endif %}>{{ acc.name
                             }}</option>
                         {% endfor %}
                     </select>
