@@ -101,6 +101,9 @@ class NFSeNacionalClient:
                 }
                 
                 print(f"--- TENTANDO ENVIO PARA: {api_url} ---")
+                # DEBUG: Log XML content to help diagnose E999 errors
+                print(f"--- XML CONTENT START ---\n{signed_xml}\n--- XML CONTENT END ---")
+                
                 headers = {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'

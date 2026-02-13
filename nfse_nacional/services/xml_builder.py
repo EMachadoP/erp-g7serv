@@ -145,15 +145,24 @@ def renderizar_xml_dps(nfse_obj: NFSe) -> str:
         tomador_c_mun = nfse_obj.empresa.codigo_mun_ibge
 
     # Clean Phone (Tomador)
+    # Clean Phone (Tomador)
     tomador_fone = ''
     if nfse_obj.cliente.phone:
         tomador_fone = ''.join(filter(str.isdigit, nfse_obj.cliente.phone))
+        # Remove country code 55 if present and length > 11
+        if len(tomador_fone) > 11 and tomador_fone.startswith('55'):
+            tomador_fone = tomador_fone[2:]
+        # Take at most 11 chars (DDD + Number)
+        tomador_fone = tomador_fone[:11]
 
     # Clean Phone (Prestador)
     prest_fone = ''
     # Assuming 'phone' field exists in Empresa model, if not, handle gracefully
     if hasattr(nfse_obj.empresa, 'phone') and nfse_obj.empresa.phone:
          prest_fone = ''.join(filter(str.isdigit, nfse_obj.empresa.phone))
+         if len(prest_fone) > 11 and prest_fone.startswith('55'):
+            prest_fone = prest_fone[2:]
+         prest_fone = prest_fone[:11]
     
     prest_email = ''
     if hasattr(nfse_obj.empresa, 'email') and nfse_obj.empresa.email:
