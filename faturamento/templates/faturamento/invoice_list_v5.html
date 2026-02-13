@@ -259,7 +259,7 @@
     <!-- Invoice List -->
     <div class="invoice-list-container mb-4">
         {% for invoice in page_obj %}
-        <div class="glass-card invoice-item mb-3 bg-white p-3 border-0">
+        <div class="glass-card invoice-item mb-3 bg-white p-3 border-0 shadow-sm">
             <div class="row align-items-center">
                 <div class="col-auto">
                     <input type="checkbox" class="form-check-input invoice-checkbox custom-checkbox"
@@ -308,34 +308,20 @@
                         <div class="col-md-3 text-end">
                             <div class="amount-text mb-1">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
                             <div class="d-flex justify-content-end gap-2 mt-2">
-                                <!-- Botões NFS-e -->
                                 {% if invoice.nfse_status == 'EMITIDA' %}
                                 <a href="{% url 'faturamento:nfse_view' invoice.id %}"
                                     class="btn btn-outline-success btn-sm rounded-pill px-3" title="Visualizar NFS-e">
                                     <i class="bi bi-file-earmark-text"></i>
                                 </a>
-                                <a href="{% url 'faturamento:nfse_xml' invoice.id %}"
-                                    class="btn btn-outline-info btn-sm rounded-pill px-3" title="Baixar XML">
-                                    <i class="bi bi-file-earmark-code"></i>
-                                </a>
                                 {% endif %}
-
                                 {% if invoice.boleto_url %}
                                 <a href="{{ invoice.boleto_url }}" target="_blank"
                                     class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ver Boleto">
                                     <i class="bi bi-upc"></i>
                                 </a>
                                 {% endif %}
-
-                                {% if invoice.status == 'PD' %}
-                                <a href="{% url 'faturamento:cancel_invoice' invoice.id %}"
-                                    class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Cancelar"
-                                    onclick="return confirm('Confirmar cancelamento?')">
-                                    <i class="bi bi-x-circle"></i>
-                                </a>
-                                {% endif %}
                                 <a href="{% url 'faturamento:detail' pk=invoice.id %}"
-                                    class="btn btn-light btn-sm rounded-pill px-3" title="Detalhes">
+                                    class="btn btn-light btn-sm rounded-pill px-3" title="Ver Fatura">
                                     <i class="bi bi-chevron-right"></i>
                                 </a>
                             </div>
@@ -348,14 +334,13 @@
         <div class="glass-card text-center py-5">
             <i class="bi bi-inbox display-4 text-muted opacity-25 d-block mb-3"></i>
             <h5 class="text-muted">Nenhuma fatura encontrada</h5>
-            <p class="text-muted small">Tente ajustar seus filtros de busca.</p>
         </div>
         {% endfor %}
     </div>
 
     <!-- Pagination -->
     {% if page_obj.has_other_pages %}
-    <nav aria-label="Navegação de páginas" class="mt-4 mb-5">
+    <nav class="mt-4 mb-5">
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
@@ -369,7 +354,8 @@
             {% for i in page_obj.paginator.page_range %}
             {% if page_obj.number == i %}
             <li class="page-item active">
-                <span class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3 fw-bold">{{ i }}</span>
+                <span class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3 fw-bold bg-primary text-white">{{ i
+                    }}</span>
             </li>
             {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item">
                 <a class="page-link glass-card border-0 px-3 py-2 ms-2 rounded-3"
@@ -391,47 +377,45 @@
     </nav>
     {% endif %}
 
-    <!-- Espaçamento para o rodapé fixo -->
+    <!-- Spacer to ensure content isn't hidden by fixed footer -->
     <div style="height: 120px;"></div>
+</div> <!-- Closes .container py-4 -->
 
-    <!-- Sticky Action Bar -->
-    <div class="sticky-bar">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                    style="width: 40px; height: 40px;">
-                    <i class="bi bi-check-lg fw-bold"></i>
-                </div>
-                <div>
-                    <h6 class="mb-0 fw-bold" id="selectedCountText">0 Selecionadas</h6>
-                    <span class="text-muted small">Ações em massa disponíveis</span>
-                </div>
+<!-- Sticky Action Bar (Outside main container for true fixed behavior) -->
+<div class="sticky-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                style="width: 40px; height: 40px;">
+                <i class="bi bi-check-lg fw-bold"></i>
             </div>
-            <div class="d-flex gap-3">
-                <button type="button" class="btn btn-warning btn-lg rounded-pill fw-bold px-4 shadow-sm"
-                    id="btnGerarNota">
-                    <i class="bi bi-file-earmark-plus me-2"></i>Emitir NFS-e
+            <div>
+                <h6 class="mb-0 fw-bold" id="selectedCountText">0 Selecionadas</h6>
+                <span class="text-muted small">Ações em massa disponíveis</span>
+            </div>
+        </div>
+        <div class="d-flex gap-3">
+            <button type="button" class="btn btn-warning btn-lg rounded-pill fw-bold px-4 shadow-sm" id="btnGerarNota">
+                <i class="bi bi-file-earmark-plus me-2"></i>Emitir NFS-e
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-lg rounded-pill fw-bold px-4" id="btnGerarBoletos">
+                <i class="bi bi-upc-scan me-2"></i>Gerar Boletos
+            </button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-dark btn-lg rounded-pill fw-bold px-4 dropdown-toggle"
+                    data-bs-toggle="dropdown" id="btnEmail">
+                    <i class="bi bi-send me-2"></i>Enviar E-mail
                 </button>
-                <button type="button" class="btn btn-outline-primary btn-lg rounded-pill fw-bold px-4"
-                    id="btnGerarBoletos">
-                    <i class="bi bi-upc-scan me-2"></i>Gerar Boletos
-                </button>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-dark btn-lg rounded-pill fw-bold px-4 dropdown-toggle"
-                        data-bs-toggle="dropdown" id="btnEmail">
-                        <i class="bi bi-send me-2"></i>Enviar E-mail
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end p-2 rounded-4 border-0 shadow-lg mt-2">
-                        {% for t in email_templates %}
-                        <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
-                                data-template-id="{{ t.id }}"><i class="bi bi-layout-text-sidebar me-2"></i>{{
-                                t.name }}</a></li>
-                        {% empty %}
-                        <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
-                                data-template-id=""><i class="bi bi-envelope me-2"></i>Template Padrão</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                <ul class="dropdown-menu dropdown-menu-end p-2 rounded-4 border-0 shadow-lg mt-2">
+                    {% for t in email_templates %}
+                    <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#"
+                            data-template-id="{{ t.id }}"><i class="bi bi-layout-text-sidebar me-2"></i>{{ t.name }}</a>
+                    </li>
+                    {% empty %}
+                    <li><a class="dropdown-item email-template-option rounded-3 py-2" href="#" data-template-id=""><i
+                                class="bi bi-envelope me-2"></i>Template Padrão</a></li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
