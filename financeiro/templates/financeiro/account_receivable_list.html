@@ -100,8 +100,7 @@
                             {% endif %}
                         </td>
                         <td>{{ receivable.client.name|default:"-" }}</td>
-                        <td><span class="badge bg-light text-dark border fw-normal">{{
-                                receivable.category.nome|default:"-" }}</span></td>
+                        <td><span class="badge bg-light text-dark border fw-normal">{{ receivable.category.nome|default:"-" }}</span></td>
                         <td class="text-end fw-bold">R$ {{ receivable.amount }}</td>
                         <td class="text-center">
                             {% if receivable.status == 'PENDING' %}
@@ -303,3 +302,4 @@
     });
 </script>
 {% endblock %}
+
