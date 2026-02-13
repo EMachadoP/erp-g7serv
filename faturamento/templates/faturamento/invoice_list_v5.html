@@ -4,348 +4,407 @@
 {% block title %}Faturas Geradas | G7Serv{% endblock %}
 
 {% block extra_css %}
+<link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@600&display=swap"
+    rel="stylesheet">
 <style>
     :root {
-        --primary-teal: #0d9488;
-        --primary-navy: #1e293b;
-        --accent-blue: #0052cc;
-        --bg-main: #f8fafc;
-        --surface-white: #ffffff;
-        --border-soft: #e2e8f0;
-        --text-navy: #0f172a;
-        --text-slate: #475569;
+        --color-primary: #0052cc;
+        --color-teal: #0d9488;
+        --color-background: #f4f7fa;
+        --color-surface: #ffffff;
+        --color-text-navy: #0f172a;
+        --color-text-slate: #475569;
+        --color-border-soft: #e2e8f0;
 
-        --status-paid-bg: #ecfdf5;
-        --status-paid-text: #059669;
-        --status-pending-bg: #fff7ed;
-        --status-pending-text: #ea580c;
-        --status-error-bg: #fef2f2;
-        --status-error-text: #dc2626;
+        --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+        --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 
-        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --radius-lg: 12px;
     }
 
     body {
-        background-color: var(--bg-main);
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        color: var(--text-navy);
+        background-color: var(--color-background);
+        font-family: 'DM Sans', sans-serif;
+        color: var(--color-text-navy);
         -webkit-font-smoothing: antialiased;
     }
 
-    .saas-header {
-        background: var(--surface-white);
-        border-bottom: 1px solid var(--border-soft);
-        padding: 1.25rem 0;
-        margin-bottom: 1.5rem;
+    .premium-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
     }
 
+    /* Header Section */
+    .dashboard-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .btn-nova-fatura {
+        background-color: var(--color-primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 82, 204, 0.2);
+    }
+
+    .btn-nova-fatura:hover {
+        background-color: #0747a6;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 82, 204, 0.3);
+        color: white;
+    }
+
+    /* Horizontal Filter Bar (Glassmorphism) */
     .glass-filter-bar {
-        background: var(--surface-white);
-        border: 1px solid var(--border-soft);
-        border-radius: 1rem;
-        box-shadow: var(--shadow-sm);
-        padding: 0.5rem 0.75rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-soft);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem 1.25rem;
+        box-shadow: var(--shadow-subtle);
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
+        margin-bottom: 2rem;
     }
 
-    .btn-teal {
-        background-color: var(--primary-teal);
-        color: white;
-        border: none;
-        padding: 0.6rem 1.25rem;
-        border-radius: 0.75rem;
-        font-weight: 600;
+    .filter-input-wrapper {
+        position: relative;
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-input-wrapper i {
+        position: absolute;
+        left: 12px;
+        color: var(--color-text-slate);
+        opacity: 0.5;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: #f8fafc;
+        font-size: 0.9rem;
+        font-weight: 500;
         transition: all 0.2s ease;
     }
 
-    .btn-teal:hover {
-        background-color: #0f766e;
-        transform: translateY(-1px);
-        color: white;
+    .filter-input:focus {
+        background: white;
+        border-color: var(--color-primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
     }
 
+    .filter-select {
+        min-width: 120px;
+        padding: 0.6rem 2rem 0.6rem 1rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: #f8fafc;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+    }
+
+    .filter-select:focus {
+        background-color: white;
+        border-color: var(--color-primary);
+        outline: none;
+    }
+
+    /* Invoice Independent Cards */
     .invoice-card {
-        background: var(--surface-white);
-        border: 1px solid var(--border-soft);
-        border-radius: 1rem;
-        padding: 1rem 1.5rem;
-        margin-bottom: 0.75rem;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-soft);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem 1.75rem;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        position: relative;
     }
 
     .invoice-card:hover {
-        box-shadow: var(--shadow-md);
-        border-color: #cbd5e1;
-        transform: scale(1.002);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-premium);
+        border-left: 3px solid var(--color-primary);
     }
 
     .invoice-card.selected {
-        background-color: #f1f5f9;
-        border-color: var(--primary-teal);
+        background-color: #f1f7ff;
+        border-color: var(--color-primary);
+        border-left: 3px solid var(--color-primary);
     }
 
-    .pill-badge {
-        padding: 0.3rem 0.75rem;
+    /* Circular Checkbox */
+    .custom-checkbox {
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--color-border-soft);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .invoice-checkbox {
+        display: none;
+    }
+
+    .invoice-checkbox:checked+.custom-checkbox {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+    }
+
+    .invoice-checkbox:checked+.custom-checkbox::after {
+        content: '\F633';
+        font-family: 'bootstrap-icons';
+        color: white;
+        font-size: 12px;
+    }
+
+    /* Typography */
+    .invoice-id {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: var(--color-primary);
+        font-size: 0.85rem;
+    }
+
+    .client-name {
+        font-weight: 700;
+        color: #001f3f;
+        /* Azul Marinho */
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
         border-radius: 9999px;
-        font-size: 0.725rem;
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.025em;
+        letter-spacing: 0.05em;
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
     }
 
-    .pill-paid {
-        background: var(--status-paid-bg);
-        color: var(--status-paid-text);
+    .status-ok {
+        background: #d1fae5;
+        color: #065f46;
     }
 
-    .pill-pending {
-        background: var(--status-pending-bg);
-        color: var(--status-pending-text);
+    /* Verde claro/escuro */
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
     }
 
-    .pill-error {
-        background: var(--status-error-bg);
-        color: var(--status-error-text);
+    .status-error {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
-    .invoice-number-mono {
-        font-family: 'JetBrains Mono', 'Fira Code', monospace;
-        font-size: 0.8rem;
-        color: var(--primary-teal);
-        background: #f0fdfa;
-        padding: 0.15rem 0.4rem;
-        border-radius: 0.4rem;
-        font-weight: 700;
+    .amount-display {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-text-navy);
+        letter-spacing: -0.02em;
+    }
+
+    /* Action Buttons Group */
+    .action-group {
+        display: flex;
+        gap: 0.5rem;
     }
 
     .action-circle {
         width: 36px;
         height: 36px;
         border-radius: 50%;
+        background: #f1f5f9;
         display: flex;
         align-items: center;
         justify-content: center;
+        color: var(--color-text-slate);
         transition: all 0.2s ease;
-        background: #f1f5f9;
-        color: var(--text-slate);
-        border: 1px solid var(--border-soft);
         text-decoration: none;
     }
 
     .action-circle:hover {
-        background: var(--primary-navy);
+        background: var(--color-primary);
         color: white;
-        transform: translateY(-2px);
+        transform: scale(1.1);
     }
 
-    .action-circle.btn-nfse {
-        color: var(--status-paid-text);
-        background: #ecfdf5;
+    .btn-nfse-circle:hover {
+        background: var(--color-teal);
     }
 
-    .action-circle.btn-nfse:hover {
-        background: var(--status-paid-text);
-        color: white;
-    }
-
-    .action-circle.btn-boleto {
-        color: #e11d48;
-        background: #fff1f2;
-    }
-
-    .action-circle.btn-boleto:hover {
+    .btn-boleto-circle:hover {
         background: #e11d48;
-        color: white;
     }
 
-    .sticky-action-bar {
+    /* Sticky Bar Redesign */
+    .sticky-actions {
         position: fixed;
-        bottom: 2rem;
+        bottom: 1.5rem;
         left: 50%;
         transform: translateX(-50%);
-        background: var(--primary-navy);
+        background: #1e293b;
         color: white;
         padding: 0.75rem 1.5rem;
-        border-radius: 1.25rem;
-        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
-        z-index: 1050;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        z-index: 1060;
         display: flex;
         align-items: center;
         gap: 1.5rem;
-        width: max-content;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        display: none;
+        /* Initially hidden */
     }
 
-    .form-control-saas,
-    .form-select-saas {
-        border: none;
-        background: transparent;
-        font-size: 0.85rem;
-        font-weight: 500;
-        padding: 0.25rem 0.4rem;
-        color: var(--text-navy);
-    }
-
-    .form-control-saas:focus,
-    .form-select-saas:focus {
-        box-shadow: none;
-        outline: none;
-    }
-
-    .filter-divider {
-        width: 1px;
-        height: 18px;
-        background: var(--border-soft);
-    }
-
-    .search-group {
+    .sticky-actions .badge-count {
+        background: var(--color-primary);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
-        flex-grow: 1;
-        min-width: 300px;
-        gap: 0.5rem;
-    }
-
-    .pagination .page-link {
-        color: var(--text-slate);
-        font-weight: 500;
-    }
-
-    .pagination .page-item.active .page-link {
-        background-color: var(--primary-teal);
-        border-color: var(--primary-teal);
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.75rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="saas-header">
-    <div class="container d-flex justify-content-between align-items-center">
+<div class="premium-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header d-flex justify-content-between align-items-end">
         <div>
-            <h1 class="h4 fw-bold mb-0 text-navy">Faturas Geradas</h1>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 small mt-1">
-                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-slate">Comercial</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Faturamento</li>
+                <ol class="breadcrumb mb-1 small text-slate opacity-75">
+                    <li class="breadcrumb-item">Comercial</li>
+                    <li class="breadcrumb-item">Faturamento</li>
                 </ol>
             </nav>
+            <h1 class="fw-bold mb-0 text-navy h2">Faturas Geradas</h1>
         </div>
-        <a href="{% url 'faturamento:create' %}" class="btn-teal d-flex align-items-center">
-            <i class="bi bi-plus-circle me-2"></i>Nova Fatura
+        <a href="{% url 'faturamento:create' %}" class="btn-nova-fatura">
+            <i class="bi bi-plus-lg"></i>
+            Nova Fatura
         </a>
     </div>
-</div>
 
-<div class="container">
-    <!-- SaaS Filter Bar -->
-    <div class="glass-filter-bar mb-4">
-        <form method="get" class="d-flex align-items-center flex-grow-1">
-            <div class="search-group ps-2">
-                <i class="bi bi-search text-slate opacity-50"></i>
-                <input type="text" name="search" class="form-control-saas w-100"
-                    placeholder="Buscar cliente, NF ou grupo..." value="{{ search_query }}">
+    <!-- Advanced Filter Bar (Glassmorphism) -->
+    <div class="glass-filter-bar">
+        <form method="get" class="d-flex align-items-center w-100 gap-3">
+            <div class="filter-input-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" class="filter-input" placeholder="Buscar cliente, NF ou grupo..."
+                    value="{{ search_query }}">
             </div>
 
-            <div class="filter-divider"></div>
+            <select name="year" class="filter-select">
+                <option value="">Ano</option>
+                {% for y in years %}
+                <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
+                {% endfor %}
+            </select>
 
-            <div class="d-flex align-items-center px-2">
-                <select name="year" class="form-select-saas">
-                    <option value="">Ano</option>
-                    {% for y in years %}
-                    <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <select name="month" class="filter-select">
+                <option value="">Mês</option>
+                {% for m in months %}
+                <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
+                {% endfor %}
+            </select>
 
-            <div class="filter-divider"></div>
+            <select name="status" class="filter-select">
+                <option value="">Status</option>
+                {% for s in statuses %}
+                <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
+                {% endfor %}
+            </select>
 
-            <div class="d-flex align-items-center px-2">
-                <select name="month" class="form-select-saas">
-                    <option value="">Mês</option>
-                    {% for m in months %}
-                    <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="filter-divider"></div>
-
-            <div class="d-flex align-items-center px-2">
-                <select name="status" class="form-select-saas">
-                    <option value="">Status</option>
-                    {% for s in statuses %}
-                    <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-teal p-2 ms-2 rounded-3">
-                <i class="bi bi-funnel"></i>
+            <button type="submit" class="btn btn-nova-fatura p-2" style="border-radius: 8px;">
+                <i class="bi bi-funnel-fill"></i>
             </button>
-            <a href="{% url 'faturamento:list' %}" class="btn btn-light border-0 ms-1 action-circle p-0"
-                title="Limpar Filtros">
+            <a href="{% url 'faturamento:list' %}" class="action-circle bg-white border" title="Limpar">
                 <i class="bi bi-x-lg"></i>
             </a>
         </form>
     </div>
 
-    <!-- Selection Helper -->
+    <!-- Selection Assist -->
     <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="d-flex align-items-center gap-3">
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="masterCheckbox"
-                    style="cursor: pointer; width: 1.15rem; height: 1.15rem;">
-                <label class="form-check-label small fw-semibold text-slate ms-1 cursor-pointer"
-                    for="masterCheckbox">Selecionar Todos</label>
-            </div>
+            <label class="d-flex align-items-center gap-2 cursor-pointer small fw-bold text-slate">
+                <input type="checkbox" id="masterSelection" class="form-check-input" style="width: 1rem; height: 1rem;">
+                Selecionar Todos
+            </label>
         </div>
         <div class="text-slate small opacity-75">
             <strong>{{ page_obj.object_list|length }}</strong> faturas de {{ page_obj.paginator.count }}
         </div>
     </div>
 
-    <!-- Invoice Cards List -->
-    <div class="invoice-list">
+    <!-- Independent Cards List -->
+    <div class="dash-list">
         {% for invoice in page_obj %}
-        <div class="invoice-card" id="card-{{ invoice.id }}">
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input invoice-checkbox" value="{{ invoice.id }}"
-                    id="check-{{ invoice.id }}" style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
-            </div>
+        <div class="invoice-card" onclick="toggleCardSelection('{{ invoice.id }}')">
+            <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}" id="check-{{ invoice.id }}">
+            <div class="custom-checkbox"></div>
 
             <div class="flex-grow-1">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="invoice-number-mono">#{{ invoice.number }}</span>
-                    <span class="text-navy fw-semibold" style="font-size: 1.05rem;">
-                        {{ invoice.client.name|default:"Cliente não detalhado" }}
-                    </span>
+                <div class="d-flex align-items-center gap-3 mb-1">
+                    <span class="invoice-id">#FAT-{{ invoice.number|stringformat:"04d" }}</span>
+                    <h5 class="client-name">{{ invoice.client.name|default:"--" }}</h5>
                 </div>
-                <div class="d-flex align-items-center gap-4 text-slate small opacity-75">
+                <div class="d-flex align-items-center gap-4 text-slate small opacity-75 fw-medium">
                     <span>
                         <i class="bi bi-calendar3 me-1"></i>
                         {% with m=invoice.competence_month y=invoice.competence_year %}
-                        {{ m }}/{{ y }}
+                        {% if m and y %}{{ m }}/{{ y }}{% else %}--{% endif %}
                         {% endwith %}
                     </span>
                     {% if invoice.contract %}
                     <span><i class="bi bi-file-earmark-text me-1"></i>CTR #{{ invoice.contract.id }}</span>
+                    {% else %}
+                    <span><i class="bi bi-file-earmark-text me-1"></i>--</span>
                     {% endif %}
-                    <span><i class="bi bi-clock me-1"></i>{{ invoice.created_at|date:"d/m/Y" }}</span>
+                    <span><i class="bi bi-clock me-1"></i>{{ invoice.created_at|date:"d M Y" }}</span>
                 </div>
             </div>
 
-            <div class="text-center" style="min-width: 130px;">
+            <div class="text-center" style="min-width: 140px;">
                 <span
-                    class="pill-badge {% if invoice.status == 'PD' %}{% if invoice.nfse_status == 'EMITIDA' %}pill-paid{% else %}pill-pending{% endif %}{% elif invoice.status == 'PG' %}pill-paid{% else %}pill-error{% endif %} w-100 justify-content-center">
+                    class="status-badge {% if invoice.status == 'PD' %}{% if invoice.nfse_status == 'EMITIDA' %}status-ok{% else %}status-pending{% endif %}{% elif invoice.status == 'PG' %}status-ok{% else %}status-error{% endif %}">
                     {% if invoice.status == 'PD' and invoice.nfse_status == 'EMITIDA' %}
                     <i class="bi bi-check-circle-fill"></i> Fiscal OK
                     {% else %}
@@ -354,144 +413,113 @@
                 </span>
             </div>
 
-            <div class="text-end" style="min-width: 160px;">
-                <div class="fw-bold mb-0 text-navy h5 mb-0">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
-            </div>
-
-            <div class="d-flex gap-2 ms-2">
-                {% if invoice.nfse_status == 'EMITIDA' %}
-                <a href="{% url 'faturamento:nfse_view' invoice.id %}" class="action-circle btn-nfse" title="NFS-e">
-                    <i class="bi bi-file-earmark-text"></i>
-                </a>
-                {% endif %}
-                {% if invoice.boleto_url %}
-                <a href="{{ invoice.boleto_url }}" target="_blank" class="action-circle btn-boleto" title="Boleto">
-                    <i class="bi bi-upc-scan"></i>
-                </a>
-                {% endif %}
-                <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="action-circle" title="Detalhes">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
+            <div class="text-end" style="min-width: 180px;">
+                <div class="amount-display">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
+                <div class="action-group justify-content-end mt-2">
+                    {% if invoice.nfse_status == 'EMITIDA' %}
+                    <a href="{% url 'faturamento:nfse_view' invoice.id %}" class="action-circle btn-nfse-circle"
+                        title="Ver NFSe">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    {% endif %}
+                    {% if invoice.boleto_url %}
+                    <a href="{{ invoice.boleto_url }}" target="_blank" class="action-circle btn-boleto-circle"
+                        title="Boleto">
+                        <i class="bi bi-upc-scan"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="action-circle" title="Detalhes">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
         {% empty %}
-        <div class="text-center py-5 glass-card bg-white mt-4 border-0 shadow-sm" style="border-radius: 1.5rem;">
-            <i class="bi bi-inbox display-3 text-slate opacity-25"></i>
-            <h5 class="mt-3 text-navy fw-bold">Nenhuma fatura encontrada</h5>
-            <p class="text-slate small">Ajuste os filtros ou verifique se há novas faturas para gerar.</p>
+        <div class="text-center py-5 bg-white border-0 shadow-sm" style="border-radius: 20px;">
+            <i class="bi bi-inbox display-3 text-slate opacity-10"></i>
+            <h5 class="mt-3 text-navy fw-bold">Sem faturas para exibir</h5>
+            <p class="text-slate small">Refine seus filtros para encontrar o que busca.</p>
         </div>
         {% endfor %}
     </div>
 
     <!-- Pagination -->
     {% if page_obj.has_other_pages %}
-    <nav class="mt-4 mb-5 pb-5">
+    <nav class="mt-5 mb-5 pb-5">
         <ul class="pagination justify-content-center gap-2">
             {% if page_obj.has_previous %}
-            <li class="page-item">
-                <a class="page-link border-0 rounded-3"
-                    href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            </li>
+            <li class="page-item"><a class="page-link border-0 rounded-3 shadow-sm"
+                    href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><i
+                        class="bi bi-chevron-left"></i></a></li>
             {% endif %}
-
             {% for i in page_obj.paginator.page_range %}
             {% if page_obj.number == i %}
-            <li class="page-item active">
-                <span class="page-link border-0 rounded-3">{{ i }}</span>
-            </li>
-            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item">
-                <a class="page-link border-0 rounded-3"
+            <li class="page-item active"><span class="page-link border-0 rounded-3 shadow-sm">{{ i }}</span></li>
+            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item"><a
+                    class="page-link border-0 rounded-3 shadow-sm"
                     href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{
-                    i }}</a>
-                </li>
+                    i }}</a></li>
                 {% endif %}
                 {% endfor %}
-
                 {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link border-0 rounded-3"
-                        href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
+                <li class="page-item"><a class="page-link border-0 rounded-3 shadow-sm"
+                        href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><i
+                            class="bi bi-chevron-right"></i></a></li>
                 {% endif %}
         </ul>
     </nav>
     {% endif %}
 </div>
 
-<!-- SaaS Sticky Action Bar -->
-<div id="stickyBar" class="sticky-action-bar animate__animated animate__slideInUp" style="display: none;">
-    <div class="d-flex align-items-center gap-4">
-        <div class="d-flex align-items-center gap-2 text-white">
-            <span class="badge bg-primary-teal rounded-pill" id="selectedCountValue"
-                style="padding: 0.5rem 0.75rem;">0</span>
-            <span class="small fw-semibold">Faturas selecionadas</span>
-        </div>
-
-        <div class="filter-divider" style="background: rgba(255,255,255,0.15)"></div>
-
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-light rounded-pill px-3 border-secondary-subtle" id="bulkNota">
-                <i class="bi bi-receipt me-1"></i> Emitir NFS-e
-            </button>
-            <button class="btn btn-sm btn-outline-light rounded-pill px-3 border-secondary-subtle" id="bulkBoleto">
-                <i class="bi bi-upc-scan me-1"></i> Gerar Boletos
-            </button>
-            <div class="btn-group">
-                <button class="btn btn-sm btn-outline-light rounded-pill px-3 border-secondary-subtle dropdown-toggle"
-                    data-bs-toggle="dropdown" id="bulkEmail">
-                    <i class="bi bi-send me-1"></i> Enviar E-mail
-                </button>
-                <ul class="dropdown-menu dropdown-menu-dark p-2 rounded-4 border-0 shadow-lg mb-2">
-                    {% for t in email_templates %}
-                    <li><a class="dropdown-item email-template-option rounded-3" href="#"
-                            data-template-id="{{ t.id }}">{{ t.name }}</a></li>
-                    {% empty %}
-                    <li><a class="dropdown-item email-template-option rounded-3" href="#" data-template-id="">Template
-                            Padrão</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-
-        <button class="btn btn-link text-secondary p-0 ms-2" id="clearSelection">
-            <i class="bi bi-x-circle-fill fs-5"></i>
-        </button>
+<!-- Premium Sticky Actions -->
+<div id="stickyActions" class="sticky-actions animate__animated animate__slideInUp">
+    <div class="d-flex align-items-center gap-2 text-white border-end pe-4"
+        style="border-color: rgba(255,255,255,0.1) !important;">
+        <span class="badge-count" id="selectedBadgeCount">0</span>
+        <span class="small fw-bold">Selecionadas</span>
     </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-light rounded-pill px-4" id="bulkEmitir">
+            <i class="bi bi-receipt me-1"></i> Emitir NFS-e
+        </button>
+        <button class="btn btn-sm btn-outline-light rounded-pill px-4" id="bulkBoletos">
+            <i class="bi bi-upc-scan me-1"></i> Boletos
+        </button>
+        <div class="btn-group">
+            <button class="btn btn-sm btn-primary rounded-pill px-4 dropdown-toggle" data-bs-toggle="dropdown"
+                id="bulkEmailBtn">
+                <i class="bi bi-send-fill me-1"></i> Enviar E-mail
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark p-2 rounded-4 border-0 shadow-lg mb-2">
+                {% for t in email_templates %}
+                <li><a class="dropdown-item email-template-option rounded-3" href="#" data-template-id="{{ t.id }}">{{
+                        t.name }}</a></li>
+                {% empty %}
+                <li><a class="dropdown-item email-template-option rounded-3" href="#" data-template-id="">Template
+                        Padrão</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <button class="btn btn-link text-white-50 p-0 ms-2" id="deselectAllActions">
+        <i class="bi bi-x-circle-fill fs-5"></i>
+    </button>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        const stickyBar = document.getElementById('stickyBar');
-        const countSpan = document.getElementById('selectedCountValue');
+        const stickyBar = document.getElementById('stickyActions');
+        const badgeCount = document.getElementById('selectedBadgeCount');
         const checkboxes = document.querySelectorAll('.invoice-checkbox');
-        const masterCheckbox = document.getElementById('masterCheckbox');
+        const masterSelection = document.getElementById('masterSelection');
 
-        function updateUI() {
+        function updateDesign() {
             const checked = document.querySelectorAll('.invoice-checkbox:checked');
             const count = checked.length;
 
-            countSpan.textContent = count;
+            badgeCount.textContent = count;
             stickyBar.style.display = count > 0 ? 'flex' : 'none';
 
             checkboxes.forEach(cb => {
@@ -501,43 +529,54 @@
             });
         }
 
-        checkboxes.forEach(cb => cb.addEventListener('change', updateUI));
+        window.toggleCardSelection = function (id) {
+            const cb = document.getElementById('check-' + id);
+            cb.checked = !cb.checked;
+            updateDesign();
+        };
 
-        if (masterCheckbox) {
-            masterCheckbox.addEventListener('change', function () {
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                e.stopPropagation();
+                updateDesign();
+            });
+            // Prevent click bubbling for the checkbox itself
+            cb.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        if (masterSelection) {
+            masterSelection.addEventListener('change', function () {
                 checkboxes.forEach(cb => cb.checked = this.checked);
-                updateUI();
+                updateDesign();
             });
         }
 
-        document.getElementById('clearSelection')?.addEventListener('click', () => {
+        document.getElementById('deselectAllActions')?.addEventListener('click', () => {
             checkboxes.forEach(cb => cb.checked = false);
-            if (masterCheckbox) masterCheckbox.checked = false;
-            updateUI();
+            if (masterSelection) masterSelection.checked = false;
+            updateDesign();
         });
 
-        function performBulk(url, btnId, extra = {}) {
+        function doBulk(url, btnId, extra = {}) {
             const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
             if (ids.length === 0) return;
 
             const btn = document.getElementById(btnId);
             const original = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>...';
-
-            const payload = { ...extra, invoice_ids: ids };
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
 
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ ...extra, invoice_ids: ids })
             })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Operação concluída');
+                    alert(data.message || 'Operação finalizada');
                     if (data.status === 'success') location.reload();
                     else {
                         btn.disabled = false;
@@ -545,24 +584,24 @@
                     }
                 })
                 .catch(err => {
-                    alert('Erro: ' + err.message);
+                    alert('Erro na comunicação: ' + err.message);
                     btn.disabled = false;
                     btn.innerHTML = original;
                 });
         }
 
-        document.getElementById('bulkNota')?.addEventListener('click', () =>
-            performBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkNota')
+        document.getElementById('bulkEmitir')?.addEventListener('click', () =>
+            doBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkEmitir')
         );
 
-        document.getElementById('bulkBoleto')?.addEventListener('click', () =>
-            performBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoleto')
+        document.getElementById('bulkBoletos')?.addEventListener('click', () =>
+            doBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoletos')
         );
 
         document.querySelectorAll('.email-template-option').forEach(opt => {
             opt.addEventListener('click', function (e) {
                 e.preventDefault();
-                performBulk("{% url 'faturamento:invoice_bulk_send_emails' %}", 'bulkEmail', {
+                doBulk("{% url 'faturamento:invoice_bulk_send_emails' %}", 'bulkEmailBtn', {
                     template_id: this.getAttribute('data-template-id')
                 });
             });
