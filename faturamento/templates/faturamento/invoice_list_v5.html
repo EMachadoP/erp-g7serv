@@ -1,679 +1,567 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-{% block title %}Faturas Geradas | G7Serv Luxury{% endblock %}
+{% block title %}Faturas Geradas | G7Serv Enterprise{% endblock %}
 
 {% block extra_css %}
-<!-- Typography: Bodoni Moda (Luxury Serif) & Jost (Premium Sans) -->
-<link
-    href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
+<!-- Typography: Inter (Standard SaaS Font) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
-        /* Palette: Stone & Gold */
-        --color-primary: #1C1917;
-        /* Stone Black */
-        --color-secondary: #44403C;
-        /* Stone Gray */
-        --color-accent: #CA8A04;
-        /* Gold */
-        --color-accent-light: #FEF9C3;
-        --color-bg: #FAFAF9;
-        /* Stone White */
-        --color-surface: #FFFFFF;
-        --color-glass: rgba(255, 255, 255, 0.7);
+        --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+        --color-primary: #2563EB;
+        /* Royal Blue */
+        --color-primary-dark: #1E40AF;
+        --color-text: #111827;
+        /* Gray-900 */
+        --color-text-muted: #6B7280;
+        /* Gray-500 */
+        --color-border: #E5E7EB;
+        /* Gray-200 */
+        --color-bg-page: #F3F4F6;
+        /* Gray-100 */
+        --color-bg-surface: #FFFFFF;
 
-        --text-main: #0C0A09;
-        --text-muted: #57534E;
-        --border-refined: rgba(28, 25, 23, 0.08);
-
-        /* Shadows & Depth */
-        --shadow-layered: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03), 0 12px 24px rgba(0, 0, 0, 0.04);
-        --shadow-lifted: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
-
-        --radius-luxury: 16px;
-        --transition-lux: 450ms cubic-bezier(0.23, 1, 0.32, 1);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
 
     body {
-        background-color: var(--color-bg);
-        font-family: 'Jost', sans-serif;
-        color: var(--text-main);
+        background-color: var(--color-bg-page);
+        font-family: var(--font-main);
+        color: var(--color-text);
         -webkit-font-smoothing: antialiased;
-        background-image: radial-gradient(circle at 50% 0%, rgba(202, 138, 4, 0.03) 0%, transparent 50%);
     }
 
-    .luxury-container {
-        max-width: 1200px;
+    .saas-container {
+        max-width: 1440px;
         margin: 0 auto;
-        padding: 4rem 2rem;
+        padding: 2rem;
     }
 
-    /* ── Header ── */
-    .header-section {
-        margin-bottom: 4rem;
-        position: relative;
+    /* ── Header Area ── */
+    .saas-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
     }
 
-    .luxury-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.3em;
-        color: var(--color-accent);
-        margin-bottom: 0.75rem;
-        display: block;
-    }
-
-    .luxury-title {
-        font-family: 'Bodoni Moda', serif;
-        font-size: 3rem;
-        font-weight: 400;
-        letter-spacing: -0.01em;
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-text);
         margin: 0;
-        color: var(--color-primary);
     }
 
-    .luxury-subtitle {
-        font-size: 1rem;
-        color: var(--text-muted);
-        font-weight: 300;
-        margin-top: 0.5rem;
+    .page-subtitle {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
     }
 
-    .btn-gold {
-        background: var(--color-primary);
+    .btn-primary {
+        background-color: var(--color-primary);
         color: white;
-        padding: 1rem 2rem;
-        border-radius: var(--radius-luxury);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
         font-weight: 500;
         text-decoration: none;
-        transition: var(--transition-lux);
-        border: 1px solid var(--color-primary);
         display: inline-flex;
         align-items: center;
-        gap: 0.75rem;
-        box-shadow: 0 10px 20px -5px rgba(28, 25, 23, 0.2);
+        gap: 0.5rem;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        box-shadow: var(--shadow-sm);
     }
 
-    .btn-gold:hover {
-        background: var(--color-secondary);
-        transform: translateY(-4px);
+    .btn-primary:hover {
+        background-color: var(--color-primary-dark);
         color: white;
     }
 
-    /* ── Liquid Glass Filter ── */
-    .liquid-filter-bar {
-        background: var(--color-glass);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid white;
-        border-radius: var(--radius-luxury);
+    /* ── Filter Panel ── */
+    .filter-panel {
+        background: var(--color-bg-surface);
         padding: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1rem;
         display: flex;
         gap: 1rem;
         align-items: center;
-        margin-bottom: 2.5rem;
-        box-shadow: var(--shadow-layered);
+        flex-wrap: wrap;
     }
 
-    .filter-group {
-        position: relative;
-        flex: 1;
+    .form-control-saas {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        color: var(--color-text);
+        background-color: #F9FAFB;
+        transition: border-color 0.15s;
     }
 
-    .luxury-input {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.4);
-        border: 1px solid transparent;
-        border-radius: 12px;
-        padding: 0.75rem 1rem 0.75rem 2.5rem;
-        font-family: 'Jost', sans-serif;
-        font-size: 0.9rem;
-        transition: var(--transition-lux);
-    }
-
-    .luxury-input:focus {
-        background: white;
-        border-color: var(--color-accent);
+    .form-control-saas:focus {
+        border-color: var(--color-primary);
         outline: none;
-        box-shadow: 0 0 0 4px var(--color-accent-light);
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    .filter-group i {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-muted);
-        opacity: 0.6;
-    }
-
-    .luxury-select {
-        background: rgba(255, 255, 255, 0.4);
-        border: 1px solid transparent;
-        border-radius: 12px;
-        padding: 0.75rem 2.5rem 0.75rem 1rem;
-        font-family: 'Jost', sans-serif;
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23CA8A04' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-        transition: var(--transition-lux);
-    }
-
-    .luxury-select:focus {
+    .filter-icon-btn {
         background: white;
-        border-color: var(--color-accent);
-        outline: none;
-    }
-
-    /* ── Luxury Cards ── */
-    .luxury-card {
-        background: var(--color-surface);
-        border: 1px solid white;
-        border-radius: var(--radius-luxury);
-        padding: 2rem;
-        margin-bottom: 1.5rem;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
-        gap: 2rem;
-        transition: var(--transition-lux);
+        justify-content: center;
+        border-radius: var(--radius-sm);
         cursor: pointer;
-        box-shadow: var(--shadow-layered);
-        position: relative;
+        transition: all 0.2s;
+    }
+
+    .filter-icon-btn:hover {
+        background: #F3F4F6;
+        color: var(--color-text);
+        border-color: #D1D5DB;
+    }
+
+    /* ── Data Table ── */
+    .table-container {
+        background: var(--color-bg-surface);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
         overflow: hidden;
     }
 
-    .luxury-card::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
+    .saas-table {
         width: 100%;
-        height: 4px;
-        background: linear-gradient(to right, transparent, var(--color-accent), transparent);
-        transform: scaleX(0);
-        transition: transform var(--transition-lux);
+        border-collapse: collapse;
+        font-size: 0.875rem;
     }
 
-    .luxury-card:hover {
-        transform: translateY(-8px) scale(1.01);
-        box-shadow: var(--shadow-lifted);
-        border-color: var(--color-accent-light);
+    .saas-table thead {
+        background-color: #F8FAFC;
+        border-bottom: 1px solid var(--color-border);
     }
 
-    .luxury-card:hover::after {
-        transform: scaleX(1);
-    }
-
-    .luxury-card.selected {
-        background: #FFFEF9;
-        border-color: var(--color-accent);
-    }
-
-    /* Checkbox Luxury */
-    .lux-check-container {
-        width: 24px;
-        height: 24px;
-        border: 1px solid var(--color-accent);
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: var(--transition-lux);
-    }
-
-    .invoice-checkbox {
-        display: none;
-    }
-
-    .invoice-checkbox:checked+.lux-check-container {
-        background: var(--color-accent);
-    }
-
-    .invoice-checkbox:checked+.lux-check-container::after {
-        content: '\F633';
-        font-family: 'bootstrap-icons';
-        color: white;
-        font-size: 14px;
-    }
-
-    /* Content Typography */
-    .lux-id {
-        font-family: 'Jost', sans-serif;
-        font-weight: 300;
-        color: var(--color-accent);
+    .saas-table th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 0.15em;
+        letter-spacing: 0.05em;
         font-size: 0.75rem;
-        margin-bottom: 0.5rem;
+        color: var(--color-text-muted);
+    }
+
+    .saas-table tbody tr {
+        border-bottom: 1px solid var(--color-border);
+        transition: background-color 0.1s;
+    }
+
+    .saas-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .saas-table tbody tr:hover {
+        background-color: #F9FAFB;
+    }
+
+    .saas-table td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        color: var(--color-text);
+    }
+
+    /* Column Specifics */
+    .col-check {
+        width: 40px;
+        text-align: center;
+    }
+
+    .col-actions {
+        width: 100px;
+        text-align: right;
+    }
+
+    .col-amount {
+        text-align: right;
+        font-weight: 600;
+        font-feature-settings: "tnum";
+    }
+
+    .cell-primary {
+        font-weight: 500;
+        color: var(--color-text);
         display: block;
     }
 
-    .lux-client {
-        font-family: 'Bodoni Moda', serif;
-        font-size: 1.5rem;
-        font-weight: 400;
-        color: var(--color-primary);
-        margin: 0;
+    .cell-secondary {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        display: block;
+        margin-top: 0.1rem;
     }
 
-    .lux-meta {
-        display: flex;
-        gap: 1.5rem;
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        font-weight: 400;
-        margin-top: 0.5rem;
-    }
-
-    .lux-meta i {
-        color: var(--color-accent);
-        margin-right: 0.4rem;
-    }
-
-    /* Performance & Logic */
-    .lux-amount {
-        font-family: 'Bodoni Moda', serif;
-        font-size: 2rem;
-        font-weight: 400;
-        color: var(--color-primary);
-        letter-spacing: -0.02em;
-    }
-
-    /* Status Pills */
-    .lux-status {
-        padding: 0.5rem 1.25rem;
-        border-radius: 100px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-    }
-
-    .lux-status-ok {
-        background: #F0FDFA;
-        color: #134E4A;
-        border: 1px solid #CCFBF1;
-    }
-
-    .lux-status-pending {
-        background: #FEFCE8;
-        color: #713F12;
-        border: 1px solid #FEF9C3;
-    }
-
-    .lux-status-error {
-        background: #FEF2F2;
-        color: #7F1D1D;
-        border: 1px solid #FEE2E2;
-    }
-
-    /* Actions */
-    .lux-action-btn {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        display: flex;
+    /* Badge Pills */
+    .badge-pill {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        border: 1px solid var(--border-refined);
-        background: transparent;
-        color: var(--color-primary);
-        transition: var(--transition-lux);
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    .badge-success {
+        background-color: #ECFDF5;
+        color: #047857;
+    }
+
+    /* Green */
+    .badge-warning {
+        background-color: #FFFBEB;
+        color: #B45309;
+    }
+
+    /* Yellow */
+    .badge-danger {
+        background-color: #FEF2F2;
+        color: #B91C1C;
+    }
+
+    /* Red */
+    .badge-gray {
+        background-color: #F3F4F6;
+        color: #4B5563;
+    }
+
+    /* Gray */
+
+    /* Action Buttons (Table) */
+    .table-action-btn {
+        color: var(--color-text-muted);
+        padding: 0.4rem;
+        border-radius: var(--radius-sm);
+        transition: all 0.2s;
         text-decoration: none;
+        display: inline-block;
     }
 
-    .lux-action-btn:hover {
-        background: var(--color-primary);
+    .table-action-btn:hover {
+        background-color: #F3F4F6;
+        color: var(--color-primary);
+    }
+
+    /* Footer / Pagination */
+    .table-footer {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #F8FAFC;
+    }
+
+    .pagination-btn {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--color-border);
+        background: white;
+        border-radius: var(--radius-sm);
+        color: var(--color-text);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(.disabled) {
+        border-color: var(--color-text-muted);
+        background-color: #F3F4F6;
+    }
+
+    .pagination-btn.active {
+        background-color: var(--color-primary);
         color: white;
-        transform: rotate(15deg) scale(1.1);
+        border-color: var(--color-primary);
     }
 
-    /* ── Sticky Luxury ── */
-    .lux-sticky {
+    /* Bulk Actions Bar (Sticky) */
+    .bulk-actions-bar {
         position: fixed;
-        bottom: 2rem;
+        bottom: 1.5rem;
         left: 50%;
         transform: translateX(-50%) translateY(150%);
-        background: var(--color-primary);
-        padding: 1rem 2.5rem;
-        border-radius: 100px;
+        background: var(--color-text);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
         display: flex;
         align-items: center;
-        gap: 2rem;
-        color: white;
-        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4);
-        z-index: 1000;
-        transition: var(--transition-lux);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        gap: 1.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        z-index: 50;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .lux-sticky.visible {
+    .bulk-actions-bar.visible {
         transform: translateX(-50%) translateY(0);
     }
 
-    .lux-btn-white {
-        background: white;
-        color: var(--color-primary);
-        padding: 0.6rem 1.5rem;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-decoration: none;
+    .btn-bulk {
+        background: rgba(255, 255, 255, 0.1);
         border: none;
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: var(--transition-lux);
+        transition: all 0.2s;
     }
 
-    .lux-btn-white:hover {
-        background: var(--color-accent);
-        color: white;
-    }
-
-    /* Pagination */
-    .pagination-lux {
-        margin-top: 4rem;
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .page-lux {
-        width: 45px;
-        height: 45px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        border: 1px solid var(--border-refined);
-        text-decoration: none;
-        color: var(--text-muted);
-        transition: var(--transition-lux);
-    }
-
-    .page-lux:hover,
-    .page-lux.active {
-        background: var(--color-accent);
-        color: white;
-        border-color: var(--color-accent);
-    }
-
-    /* Animations */
-    @keyframes entryLux {
-        from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.98);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-
-    .luxury-card {
-        animation: entryLux 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+    .btn-bulk:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="luxury-container">
-    <!-- Luxury Header -->
-    <div class="header-section d-flex justify-content-between align-items-end">
+<div class="saas-container">
+    <!-- Header -->
+    <div class="saas-header">
         <div>
-            <span class="luxury-label">Portfólio de Gestão</span>
-            <h1 class="luxury-title">Faturas Geradas</h1>
-            <p class="luxury-subtitle">Documentos fiscais e faturas com curadoria de dados.</p>
+            <h1 class="page-title">Faturas Geradas</h1>
+            <p class="page-subtitle">Gerencie e emita faturas de serviço</p>
         </div>
-        <a href="{% url 'faturamento:create' %}" class="btn-gold">
-            <i class="bi bi-plus-lg"></i>
-            Nova Emissão
+        <a href="{% url 'faturamento:create' %}" class="btn-primary">
+            <i class="bi bi-plus-lg"></i> Nova Fatura
         </a>
     </div>
 
-    <!-- Liquid Filter Bar -->
-    <div class="liquid-filter-bar">
-        <form method="get" class="d-flex w-100 gap-3 align-items-center">
-            <div class="filter-group">
-                <i class="bi bi-search"></i>
-                <input type="text" name="search" class="luxury-input" placeholder="Pesquisar registros..."
-                    value="{{ search_query }}">
-            </div>
-
-            <select name="year" class="luxury-select">
-                <option value="">Ano</option>
-                {% for y in years %}
-                <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
-                {% endfor %}
-            </select>
-
-            <select name="month" class="luxury-select">
-                <option value="">Mês</option>
-                {% for m in months %}
-                <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
-                {% endfor %}
-            </select>
-
-            <select name="status" class="luxury-select">
-                <option value="">Status</option>
-                {% for s in statuses %}
-                <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
-                {% endfor %}
-            </select>
-
-            <button type="submit" class="lux-action-btn" title="Filtrar">
-                <i class="bi bi-stars"></i>
-            </button>
-            <a href="{% url 'faturamento:list' %}" class="lux-action-btn" title="Resetar">
-                <i class="bi bi-arrow-counterclockwise"></i>
-            </a>
-        </form>
-    </div>
-
-    <!-- Selection Helper -->
-    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
-        <label class="d-flex align-items-center gap-3 cursor-pointer fw-medium" style="font-size: 0.9rem;">
-            <input type="checkbox" id="masterSelection"
-                style="width: 18px; height: 18px; accent-color: var(--color-accent);">
-            Selecionar Acervo
-        </label>
-        <span style="font-size: 0.8rem; letter-spacing: 0.05em; color: var(--text-muted);">
-            REGISTROS: <strong>{{ page_obj.object_list|length }}</strong> DE {{ page_obj.paginator.count }}
-        </span>
-    </div>
-
-    <!-- Luxury Inventory -->
-    <div class="dash-inventory">
-        {% for invoice in page_obj %}
-        <div class="luxury-card" onclick="toggleLuxSelection('{{ invoice.id }}')">
-            <div class="checkbox-area">
-                <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}" id="check-{{ invoice.id }}">
-                <div class="lux-check-container"></div>
-            </div>
-
-            <div class="flex-grow-1">
-                <span class="lux-id">DOC Ref. FAT-{{ invoice.number|stringformat:"04d" }}</span>
-                <h3 class="lux-client">{{ invoice.client.name|default:"Proprietário Não Identificado" }}</h3>
-                <div class="lux-meta">
-                    <span><i class="bi bi-calendar-event"></i>{{ invoice.created_at|date:"d M Y" }}</span>
-                    <span><i class="bi bi-stack"></i>Comp: {{ invoice.competence_month|default:"--" }}/{{
-                        invoice.competence_year|default:"--" }}</span>
-                    {% if invoice.contract %}
-                    <span><i class="bi bi-fingerprint"></i>CTR-{{ invoice.contract.id }}</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="text-center" style="min-width: 150px;">
-                <span
-                    class="lux-status {% if invoice.status == 'PD' %}{% if invoice.nfse_status == 'EMITIDA' %}lux-status-ok{% else %}lux-status-pending{% endif %}{% elif invoice.status == 'PG' %}lux-status-ok{% else %}lux-status-error{% endif %}">
-                    {% if invoice.status == 'PD' and invoice.nfse_status == 'EMITIDA' %}
-                    <i class="bi bi-award me-1"></i> Autenticada
-                    {% else %}
-                    {{ invoice.get_status_display }}
-                    {% endif %}
-                </span>
-            </div>
-
-            <div class="text-end" style="min-width: 200px;">
-                <div class="lux-amount">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
-                <div class="d-flex gap-2 justify-content-end mt-3">
-                    {% if invoice.nfse_status == 'EMITIDA' %}
-                    <a href="{% url 'faturamento:nfse_view' invoice.id %}" class="lux-action-btn" title="Ver NFSe"
-                        onclick="event.stopPropagation()">
-                        <i class="bi bi-file-earmark-pdf"></i>
-                    </a>
-                    {% endif %}
-                    {% if invoice.boleto_url %}
-                    <a href="{{ invoice.boleto_url }}" target="_blank" class="lux-action-btn" title="Boleto"
-                        onclick="event.stopPropagation()">
-                        <i class="bi bi-credit-card"></i>
-                    </a>
-                    {% endif %}
-                    <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="lux-action-btn" title="Detalhes"
-                        onclick="event.stopPropagation()">
-                        <i class="bi bi-eye"></i>
-                    </a>
-                </div>
-            </div>
+    <!-- Filter Panel -->
+    <form method="get" class="filter-panel">
+        <div style="position: relative; flex: 1; min-width: 250px;">
+            <i class="bi bi-search"
+                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);"></i>
+            <input type="text" name="search" class="form-control-saas"
+                placeholder="Buscar por cliente, ID ou contrato..." value="{{ search_query }}"
+                style="padding-left: 2.25rem; width: 100%;">
         </div>
-        {% empty %}
-        <div class="text-center py-5">
-            <i class="bi bi-feather display-1 opacity-10"></i>
-            <h4 class="mt-4 fw-light">O acervo está vazio</h4>
-            <p class="text-muted">Inicie uma nova jornada de emissão.</p>
-        </div>
-        {% endfor %}
-    </div>
 
-    <!-- Luxury Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="pagination-lux">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-            class="page-lux">
-            <i class="bi bi-chevron-left"></i>
-        </a>
-        {% endif %}
-
-        {% for i in page_obj.paginator.page_range %}
-        {% if page_obj.number == i %}
-        <a href="#" class="page-lux active">{{ i }}</a>
-        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <a
-            href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-            class="page-lux">{{ i }}</a>
-            {% endif %}
+        <select name="year" class="form-control-saas" style="width: 100px;">
+            <option value="">Ano</option>
+            {% for y in years %}
+            <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
             {% endfor %}
+        </select>
 
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                class="page-lux">
-                <i class="bi bi-chevron-right"></i>
-            </a>
-            {% endif %}
-    </div>
-    {% endif %}
-</div>
+        <select name="month" class="form-control-saas" style="width: 140px;">
+            <option value="">Mês</option>
+            {% for m in months %}
+            <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
+            {% endfor %}
+        </select>
 
-<!-- Luxury Sticky Actions -->
-<div id="luxSticky" class="lux-sticky">
-    <div class="d-flex align-items-center gap-3 pe-4 border-end border-white border-opacity-10">
-        <span style="font-size: 1.25rem; font-family: 'Bodoni Moda', serif;" id="luxCount">0</span>
-        <span class="small opacity-50 text-uppercase fw-bold"
-            style="font-size: 0.65rem; letter-spacing: 0.2em;">Selecionadas</span>
-    </div>
-    <div class="d-flex gap-2">
-        <button class="lux-btn-white" id="bulkEmitir">Documentar Fiscal</button>
-        <button class="lux-btn-white" id="bulkBoletos">Gerar Boletos</button>
-        <div class="btn-group">
-            <button class="lux-btn-white dropdown-toggle" data-bs-toggle="dropdown" id="bulkEmailBtn">Notificar
-                Cliente</button>
-            <ul class="dropdown-menu dropdown-menu-dark border-0 shadow-lg rounded-4 p-2 mt-2">
-                {% for t in email_templates %}
-                <li><a class="dropdown-item rounded-3 py-2" href="#" data-template-id="{{ t.id }}">{{ t.name }}</a></li>
+        <select name="status" class="form-control-saas" style="width: 160px;">
+            <option value="">Status</option>
+            {% for s in statuses %}
+            <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="filter-icon-btn" title="Aplicar Filtros">
+            <i class="bi bi-funnel"></i>
+        </button>
+        <a href="{% url 'faturamento:list' %}" class="filter-icon-btn" title="Limpar">
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </form>
+
+    <!-- Data Table -->
+    <div class="table-container">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th class="col-check">
+                        <input type="checkbox" id="masterSelection">
+                    </th>
+                    <th>Fatura</th>
+                    <th>Cliente</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th class="col-amount">Valor</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in page_obj %}
+                <tr>
+                    <td class="col-check">
+                        <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}">
+                    </td>
+                    <td>
+                        <span class="cell-primary">#{{ invoice.number|stringformat:"04d" }}</span>
+                        <span class="cell-secondary">{{ invoice.created_at|date:"d/m/Y" }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-primary text-truncate" style="max-width: 300px;">
+                            {{ invoice.client.name|default:"-- Non Identified --" }}
+                        </span>
+                        {% if invoice.contract %}
+                        <span class="cell-secondary">
+                            <i class="bi bi-file-text"></i> CTR-{{ invoice.contract.id }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="cell-primary">{{ invoice.due_date|date:"d M Y"|default:"--" }}</span>
+                        <span class="cell-secondary">Comp: {{ invoice.competence_month }}/{{ invoice.competence_year
+                            }}</span>
+                    </td>
+                    <td>
+                        {% if invoice.status == 'PD' %}
+                        {% if invoice.nfse_status == 'EMITIDA' %}
+                        <span class="badge-pill badge-success">Fiscal OK</span>
+                        {% else %}
+                        <span class="badge-pill badge-warning">Pendente</span>
+                        {% endif %}
+                        {% elif invoice.status == 'PG' %}
+                        <span class="badge-pill badge-success">Pago</span>
+                        {% elif invoice.status == 'CN' %}
+                        <span class="badge-pill badge-danger">Cancelada</span>
+                        {% else %}
+                        <span class="badge-pill badge-gray">{{ invoice.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-amount">
+                        R$ {{ invoice.amount|floatformat:2|intcomma }}
+                    </td>
+                    <td class="col-actions">
+                        <div class="d-flex justify-content-end gap-1">
+                            <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="table-action-btn"
+                                title="Ver Detalhes">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if invoice.nfse_status == 'EMITIDA' %}
+                            <a href="{% url 'faturamento:nfse_view' invoice.id %}" target="_blank"
+                                class="table-action-btn" title="PDF NFSe">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                            {% endif %}
+                            {% if invoice.boleto_url %}
+                            <a href="{{ invoice.boleto_url }}" target="_blank" class="table-action-btn" title="Boleto">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
                 {% empty %}
-                <li><a class="dropdown-item rounded-3 py-2" href="#" data-template-id="">Template Padrão</a></li>
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <p class="text-muted mb-0">Nenhuma fatura encontrada.</p>
+                    </td>
+                </tr>
                 {% endfor %}
-            </ul>
+            </tbody>
+        </table>
+
+        <!-- Footer / Pagination -->
+        <div class="table-footer">
+            <div class="text-muted" style="font-size: 0.8rem;">
+                Mostrando <strong>{{ page_obj.object_list|length }}</strong> de <strong>{{ page_obj.paginator.count
+                    }}</strong> resultados
+            </div>
+            <div class="d-flex gap-1">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                    class="pagination-btn">Anterior</a>
+                {% endif %}
+
+                {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                <span class="pagination-btn active">{{ i }}</span>
+                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <a
+                    href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                    class="pagination-btn">{{ i }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                        class="pagination-btn">Próxima</a>
+                    {% endif %}
+            </div>
         </div>
     </div>
-    <button class="lux-action-btn border-white border-opacity-20 text-white" id="luxResetAll">
-        <i class="bi bi-x-lg"></i>
-    </button>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<!-- Bulk Actions Sticky Bar -->
+<div id="bulkBar" class="bulk-actions-bar">
+    <span class="fw-medium"><span id="selectedCount">0</span> Selecionados</span>
+    <div style="height: 20px; width: 1px; background: rgba(255,255,255,0.2);"></div>
+    <button class="btn-bulk" id="bulkEmitir">
+        <i class="bi bi-cursor me-2"></i>Emitir NFSe
+    </button>
+    <button class="btn-bulk" id="bulkBoletos">
+        <i class="bi bi-upc-scan me-2"></i>Gerar Boletos
+    </button>
+    <div class="btn-group dropup">
+        <button class="btn-bulk dropdown-toggle" data-bs-toggle="dropdown" id="bulkEmailBtn">
+            <i class="bi bi-envelope me-2"></i>Email
+        </button>
+        <ul class="dropdown-menu shadow-lg p-2">
+            {% for t in email_templates %}
+            <li><a class="dropdown-item rounded" href="#" data-template-id="{{ t.id }}">{{ t.name }}</a></li>
+            {% empty %}
+            <li><a class="dropdown-item rounded" href="#" data-template-id="">Padrão</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const sticky = document.getElementById('luxSticky');
-        const countDisplay = document.getElementById('luxCount');
-        const checkboxes = document.querySelectorAll('.invoice-checkbox');
+        // Selection Logic
         const master = document.getElementById('masterSelection');
+        const checkboxes = document.querySelectorAll('.invoice-checkbox');
+        const bulkBar = document.getElementById('bulkBar');
+        const countSpan = document.getElementById('selectedCount');
 
-        // Apply staggered animation delays via JS to avoid template errors
-        const cards = document.querySelectorAll('.luxury-card');
-        cards.forEach((card, index) => {
-            card.style.animationDelay = `${(index + 1) * 0.05}s`;
-        });
-
-        function refreshLux() {
-            const selected = document.querySelectorAll('.invoice-checkbox:checked');
-            const total = selected.length;
-
-            countDisplay.textContent = total;
-
-            if (total > 0) sticky.classList.add('visible');
-            else sticky.classList.remove('visible');
-
-            checkboxes.forEach(cb => {
-                const card = cb.closest('.luxury-card');
-                if (cb.checked) card.classList.add('selected');
-                else card.classList.remove('selected');
-            });
+        function updateBulkBar() {
+            const count = document.querySelectorAll('.invoice-checkbox:checked').length;
+            countSpan.textContent = count;
+            if (count > 0) bulkBar.classList.add('visible');
+            else bulkBar.classList.remove('visible');
         }
 
-        window.toggleLuxSelection = function (id) {
-            const cb = document.getElementById('check-' + id);
-            cb.checked = !cb.checked;
-            refreshLux();
-        };
+        master.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkBar();
+        });
 
         checkboxes.forEach(cb => {
-            cb.addEventListener('change', (e) => {
-                e.stopPropagation();
-                refreshLux();
-            });
-            cb.addEventListener('click', (e) => e.stopPropagation());
+            cb.addEventListener('change', updateBulkBar);
         });
 
-        if (master) {
-            master.addEventListener('change', function () {
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                refreshLux();
-            });
-        }
-
-        document.getElementById('luxResetAll')?.addEventListener('click', () => {
-            checkboxes.forEach(cb => cb.checked = false);
-            if (master) master.checked = false;
-            refreshLux();
-        });
-
-        // Bulk Actions
-        function executeLuxBulk(url, btnId, extra = {}) {
+        // Async Bulk Actions Logic
+        function executeBulk(url, btnId, extra = {}) {
             const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
             if (!ids.length) return;
 
             const btn = document.getElementById(btnId);
-            const original = btn.innerHTML;
+            const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
 
             fetch(url, {
                 method: 'POST',
@@ -686,28 +574,29 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        alert('Operação bem-sucedida');
+                        // Show toast/alert
+                        alert('Processo iniciado com sucesso!');
                         location.reload();
                     } else {
                         alert('Erro: ' + data.message);
                         btn.disabled = false;
-                        btn.innerHTML = original;
+                        btn.innerHTML = originalHtml;
                     }
                 })
                 .catch(err => {
-                    alert('Erro na conexão: ' + err.message);
+                    console.error(err);
+                    alert('Erro na comunicação com o servidor.');
                     btn.disabled = false;
-                    btn.innerHTML = original;
+                    btn.innerHTML = originalHtml;
                 });
         }
 
-        document.getElementById('bulkEmitir')?.addEventListener('click', () =>
-            executeLuxBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkEmitir')
-        );
+        // Bind Buttons
+        if (document.getElementById('bulkEmitir'))
+            document.getElementById('bulkEmitir').addEventListener('click', () => executeBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkEmitir'));
 
-        document.getElementById('bulkBoletos')?.addEventListener('click', () =>
-            executeLuxBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoletos')
-        );
+        if (document.getElementById('bulkBoletos'))
+            document.getElementById('bulkBoletos').addEventListener('click', () => executeBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoletos'));
     });
 </script>
 {% endblock %}
