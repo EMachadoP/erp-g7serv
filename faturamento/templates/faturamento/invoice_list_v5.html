@@ -490,8 +490,7 @@
     <!-- Luxury Inventory -->
     <div class="dash-inventory">
         {% for invoice in page_obj %}
-        <div class="luxury-card" onclick="toggleLuxSelection('{{ invoice.id }}')"
-            style="animation-delay: {{ forloop.counter0|add:1|multiply:0.05 }}s">
+        <div class="luxury-card" onclick="toggleLuxSelection('{{ invoice.id }}')">
             <div class="checkbox-area">
                 <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}" id="check-{{ invoice.id }}">
                 <div class="lux-check-container"></div>
@@ -616,6 +615,12 @@
         const countDisplay = document.getElementById('luxCount');
         const checkboxes = document.querySelectorAll('.invoice-checkbox');
         const master = document.getElementById('masterSelection');
+
+        // Apply staggered animation delays via JS to avoid template errors
+        const cards = document.querySelectorAll('.luxury-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${(index + 1) * 0.05}s`;
+        });
 
         function refreshLux() {
             const selected = document.querySelectorAll('.invoice-checkbox:checked');
