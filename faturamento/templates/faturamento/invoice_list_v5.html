@@ -1,567 +1,288 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-{% block title %}Faturas Geradas | G7Serv Enterprise{% endblock %}
-
-{% block extra_css %}
-<!-- Typography: Inter (Standard SaaS Font) -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-        --color-primary: #2563EB;
-        /* Royal Blue */
-        --color-primary-dark: #1E40AF;
-        --color-text: #111827;
-        /* Gray-900 */
-        --color-text-muted: #6B7280;
-        /* Gray-500 */
-        --color-border: #E5E7EB;
-        /* Gray-200 */
-        --color-bg-page: #F3F4F6;
-        /* Gray-100 */
-        --color-bg-surface: #FFFFFF;
-
-        --radius-sm: 6px;
-        --radius-md: 8px;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    }
-
-    body {
-        background-color: var(--color-bg-page);
-        font-family: var(--font-main);
-        color: var(--color-text);
-        -webkit-font-smoothing: antialiased;
-    }
-
-    .saas-container {
-        max-width: 1440px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-
-    /* ── Header Area ── */
-    .saas-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .page-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--color-text);
-        margin: 0;
-    }
-
-    .page-subtitle {
-        font-size: 0.875rem;
-        color: var(--color-text-muted);
-        margin-top: 0.25rem;
-    }
-
-    .btn-primary {
-        background-color: var(--color-primary);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        border: 1px solid transparent;
-        transition: all 0.2s;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .btn-primary:hover {
-        background-color: var(--color-primary-dark);
-        color: white;
-    }
-
-    /* ── Filter Panel ── */
-    .filter-panel {
-        background: var(--color-bg-surface);
-        padding: 1rem;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow-sm);
-        margin-bottom: 1rem;
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .form-control-saas {
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        color: var(--color-text);
-        background-color: #F9FAFB;
-        transition: border-color 0.15s;
-    }
-
-    .form-control-saas:focus {
-        border-color: var(--color-primary);
-        outline: none;
-        background-color: white;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-
-    .filter-icon-btn {
-        background: white;
-        border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .filter-icon-btn:hover {
-        background: #F3F4F6;
-        color: var(--color-text);
-        border-color: #D1D5DB;
-    }
-
-    /* ── Data Table ── */
-    .table-container {
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-    }
-
-    .saas-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.875rem;
-    }
-
-    .saas-table thead {
-        background-color: #F8FAFC;
-        border-bottom: 1px solid var(--color-border);
-    }
-
-    .saas-table th {
-        text-align: left;
-        padding: 0.75rem 1rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
-    }
-
-    .saas-table tbody tr {
-        border-bottom: 1px solid var(--color-border);
-        transition: background-color 0.1s;
-    }
-
-    .saas-table tbody tr:last-child {
-        border-bottom: none;
-    }
-
-    .saas-table tbody tr:hover {
-        background-color: #F9FAFB;
-    }
-
-    .saas-table td {
-        padding: 0.75rem 1rem;
-        vertical-align: middle;
-        color: var(--color-text);
-    }
-
-    /* Column Specifics */
-    .col-check {
-        width: 40px;
-        text-align: center;
-    }
-
-    .col-actions {
-        width: 100px;
-        text-align: right;
-    }
-
-    .col-amount {
-        text-align: right;
-        font-weight: 600;
-        font-feature-settings: "tnum";
-    }
-
-    .cell-primary {
-        font-weight: 500;
-        color: var(--color-text);
-        display: block;
-    }
-
-    .cell-secondary {
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
-        display: block;
-        margin-top: 0.1rem;
-    }
-
-    /* Badge Pills */
-    .badge-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.6rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        line-height: 1;
-    }
-
-    .badge-success {
-        background-color: #ECFDF5;
-        color: #047857;
-    }
-
-    /* Green */
-    .badge-warning {
-        background-color: #FFFBEB;
-        color: #B45309;
-    }
-
-    /* Yellow */
-    .badge-danger {
-        background-color: #FEF2F2;
-        color: #B91C1C;
-    }
-
-    /* Red */
-    .badge-gray {
-        background-color: #F3F4F6;
-        color: #4B5563;
-    }
-
-    /* Gray */
-
-    /* Action Buttons (Table) */
-    .table-action-btn {
-        color: var(--color-text-muted);
-        padding: 0.4rem;
-        border-radius: var(--radius-sm);
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .table-action-btn:hover {
-        background-color: #F3F4F6;
-        color: var(--color-primary);
-    }
-
-    /* Footer / Pagination */
-    .table-footer {
-        padding: 0.75rem 1rem;
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #F8FAFC;
-    }
-
-    .pagination-btn {
-        padding: 0.25rem 0.5rem;
-        border: 1px solid var(--color-border);
-        background: white;
-        border-radius: var(--radius-sm);
-        color: var(--color-text);
-        text-decoration: none;
-        font-size: 0.875rem;
-        transition: all 0.2s;
-    }
-
-    .pagination-btn:hover:not(.disabled) {
-        border-color: var(--color-text-muted);
-        background-color: #F3F4F6;
-    }
-
-    .pagination-btn.active {
-        background-color: var(--color-primary);
-        color: white;
-        border-color: var(--color-primary);
-    }
-
-    /* Bulk Actions Bar (Sticky) */
-    .bulk-actions-bar {
-        position: fixed;
-        bottom: 1.5rem;
-        left: 50%;
-        transform: translateX(-50%) translateY(150%);
-        background: var(--color-text);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        z-index: 50;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .bulk-actions-bar.visible {
-        transform: translateX(-50%) translateY(0);
-    }
-
-    .btn-bulk {
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: white;
-        padding: 0.4rem 1rem;
-        border-radius: 4px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-bulk:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-</style>
-{% endblock %}
 
 {% block content %}
-<div class="saas-container">
-    <!-- Header -->
-    <div class="saas-header">
-        <div>
-            <h1 class="page-title">Faturas Geradas</h1>
-            <p class="page-subtitle">Gerencie e emita faturas de serviço</p>
-        </div>
-        <a href="{% url 'faturamento:create' %}" class="btn-primary">
-            <i class="bi bi-plus-lg"></i> Nova Fatura
-        </a>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Faturas Geradas</h2>
     </div>
-
-    <!-- Filter Panel -->
-    <form method="get" class="filter-panel">
-        <div style="position: relative; flex: 1; min-width: 250px;">
-            <i class="bi bi-search"
-                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);"></i>
-            <input type="text" name="search" class="form-control-saas"
-                placeholder="Buscar por cliente, ID ou contrato..." value="{{ search_query }}"
-                style="padding-left: 2.25rem; width: 100%;">
-        </div>
-
-        <select name="year" class="form-control-saas" style="width: 100px;">
-            <option value="">Ano</option>
-            {% for y in years %}
-            <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
-            {% endfor %}
-        </select>
-
-        <select name="month" class="form-control-saas" style="width: 140px;">
-            <option value="">Mês</option>
-            {% for m in months %}
-            <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
-            {% endfor %}
-        </select>
-
-        <select name="status" class="form-control-saas" style="width: 160px;">
-            <option value="">Status</option>
-            {% for s in statuses %}
-            <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit" class="filter-icon-btn" title="Aplicar Filtros">
-            <i class="bi bi-funnel"></i>
-        </button>
-        <a href="{% url 'faturamento:list' %}" class="filter-icon-btn" title="Limpar">
-            <i class="bi bi-x-lg"></i>
+    <div class="col-md-6 text-end d-flex justify-content-end gap-2">
+        <a href="{% url 'faturamento:create' %}" class="btn btn-success text-white fw-bold">
+            <i class="bi bi-plus-lg me-2"></i>Nova Emissão
         </a>
-    </form>
-
-    <!-- Data Table -->
-    <div class="table-container">
-        <table class="saas-table">
-            <thead>
-                <tr>
-                    <th class="col-check">
-                        <input type="checkbox" id="masterSelection">
-                    </th>
-                    <th>Fatura</th>
-                    <th>Cliente</th>
-                    <th>Vencimento</th>
-                    <th>Status</th>
-                    <th class="col-amount">Valor</th>
-                    <th class="col-actions"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for invoice in page_obj %}
-                <tr>
-                    <td class="col-check">
-                        <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}">
-                    </td>
-                    <td>
-                        <span class="cell-primary">#{{ invoice.number|stringformat:"04d" }}</span>
-                        <span class="cell-secondary">{{ invoice.created_at|date:"d/m/Y" }}</span>
-                    </td>
-                    <td>
-                        <span class="cell-primary text-truncate" style="max-width: 300px;">
-                            {{ invoice.client.name|default:"-- Non Identified --" }}
-                        </span>
-                        {% if invoice.contract %}
-                        <span class="cell-secondary">
-                            <i class="bi bi-file-text"></i> CTR-{{ invoice.contract.id }}
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span class="cell-primary">{{ invoice.due_date|date:"d M Y"|default:"--" }}</span>
-                        <span class="cell-secondary">Comp: {{ invoice.competence_month }}/{{ invoice.competence_year
-                            }}</span>
-                    </td>
-                    <td>
-                        {% if invoice.status == 'PD' %}
-                        {% if invoice.nfse_status == 'EMITIDA' %}
-                        <span class="badge-pill badge-success">Fiscal OK</span>
-                        {% else %}
-                        <span class="badge-pill badge-warning">Pendente</span>
-                        {% endif %}
-                        {% elif invoice.status == 'PG' %}
-                        <span class="badge-pill badge-success">Pago</span>
-                        {% elif invoice.status == 'CN' %}
-                        <span class="badge-pill badge-danger">Cancelada</span>
-                        {% else %}
-                        <span class="badge-pill badge-gray">{{ invoice.get_status_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="col-amount">
-                        R$ {{ invoice.amount|floatformat:2|intcomma }}
-                    </td>
-                    <td class="col-actions">
-                        <div class="d-flex justify-content-end gap-1">
-                            <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="table-action-btn"
-                                title="Ver Detalhes">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            {% if invoice.nfse_status == 'EMITIDA' %}
-                            <a href="{% url 'faturamento:nfse_view' invoice.id %}" target="_blank"
-                                class="table-action-btn" title="PDF NFSe">
-                                <i class="bi bi-file-earmark-pdf"></i>
-                            </a>
-                            {% endif %}
-                            {% if invoice.boleto_url %}
-                            <a href="{{ invoice.boleto_url }}" target="_blank" class="table-action-btn" title="Boleto">
-                                <i class="bi bi-upc-scan"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center py-5">
-                        <p class="text-muted mb-0">Nenhuma fatura encontrada.</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Footer / Pagination -->
-        <div class="table-footer">
-            <div class="text-muted" style="font-size: 0.8rem;">
-                Mostrando <strong>{{ page_obj.object_list|length }}</strong> de <strong>{{ page_obj.paginator.count
-                    }}</strong> resultados
-            </div>
-            <div class="d-flex gap-1">
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                    class="pagination-btn">Anterior</a>
-                {% endif %}
-
-                {% for i in page_obj.paginator.page_range %}
-                {% if page_obj.number == i %}
-                <span class="pagination-btn active">{{ i }}</span>
-                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <a
-                    href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                    class="pagination-btn">{{ i }}</a>
-                    {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                        class="pagination-btn">Próxima</a>
-                    {% endif %}
-            </div>
-        </div>
     </div>
 </div>
 
-<!-- Bulk Actions Sticky Bar -->
-<div id="bulkBar" class="bulk-actions-bar">
-    <span class="fw-medium"><span id="selectedCount">0</span> Selecionados</span>
-    <div style="height: 20px; width: 1px; background: rgba(255,255,255,0.2);"></div>
-    <button class="btn-bulk" id="bulkEmitir">
-        <i class="bi bi-cursor me-2"></i>Emitir NFSe
-    </button>
-    <button class="btn-bulk" id="bulkBoletos">
-        <i class="bi bi-upc-scan me-2"></i>Gerar Boletos
-    </button>
-    <div class="btn-group dropup">
-        <button class="btn-bulk dropdown-toggle" data-bs-toggle="dropdown" id="bulkEmailBtn">
-            <i class="bi bi-envelope me-2"></i>Email
-        </button>
-        <ul class="dropdown-menu shadow-lg p-2">
-            {% for t in email_templates %}
-            <li><a class="dropdown-item rounded" href="#" data-template-id="{{ t.id }}">{{ t.name }}</a></li>
-            {% empty %}
-            <li><a class="dropdown-item rounded" href="#" data-template-id="">Padrão</a></li>
-            {% endfor %}
-        </ul>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Buscar / Pesquisar</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Cliente, ID ou contrato..."
+                        value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="year" class="form-label">Ano</label>
+                <select name="year" class="form-select">
+                    <option value="">Todos</option>
+                    {% for y in years %}
+                    <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="month" class="form-label">Mês</label>
+                <select name="month" class="form-select">
+                    <option value="">Todos</option>
+                    {% for m in months %}
+                    <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for s in statuses %}
+                    <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-filter me-2"></i>Filtrar
+                </button>
+                <a href="{% url 'faturamento:list' %}" class="btn btn-outline-secondary" title="Limpar Filtros">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-premium table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4" style="width: 40px;">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                        </th>
+                        <th style="width: 100px;">Fatura</th>
+                        <th>Cliente</th>
+                        <th>Vencimento</th>
+                        <th>Status</th>
+                        <th class="text-end" style="width: 150px;">Valor</th>
+                        <th class="text-end pe-4" style="width: 80px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in page_obj %}
+                    <tr>
+                        <td class="ps-4">
+                            <input type="checkbox" class="form-check-input select-invoice" value="{{ invoice.id }}">
+                        </td>
+                        <td>
+                            <span class="fw-bold">#{{ invoice.number|stringformat:"04d" }}</span>
+                            {% if invoice.contract %}
+                            <div class="small text-muted">CTR-{{ invoice.contract.id }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-medium">{{ invoice.client.name|default:"-- Não Identificado --" }}</div>
+                            <small class="text-muted">Comp: {{ invoice.competence_month }}/{{ invoice.competence_year
+                                }}</small>
+                        </td>
+                        <td>
+                            {% if invoice.due_date %}
+                            {{ invoice.due_date|date:"d/m/Y" }}
+                            {% else %}
+                            <span class="text-muted">--</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if invoice.status == 'PD' %}
+                            {% if invoice.nfse_status == 'EMITIDA' %}
+                            <span
+                                class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3">Fiscal
+                                OK</span>
+                            {% else %}
+                            <span
+                                class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3">Pendente</span>
+                            {% endif %}
+                            {% elif invoice.status == 'PG' %}
+                            <span class="badge bg-success px-3">Pago</span>
+                            {% elif invoice.status == 'CN' %}
+                            <span class="badge bg-danger px-3">Cancelada</span>
+                            {% else %}
+                            <span class="badge bg-secondary px-3">{{ invoice.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold">R$ {{ invoice.amount|floatformat:2|intcomma }}</td>
+                        <td class="text-end pe-4">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown"
+                                    data-bs-boundary="viewport" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <li><a class="dropdown-item py-2"
+                                            href="{% url 'faturamento:detail' pk=invoice.id %}"><i
+                                                class="bi bi-eye me-2"></i>Detalhes</a></li>
+
+                                    {% if invoice.nfse_status == 'EMITIDA' %}
+                                    <li><a class="dropdown-item py-2"
+                                            href="{% url 'faturamento:nfse_view' invoice.id %}" target="_blank"><i
+                                                class="bi bi-file-earmark-pdf me-2"></i>Ver NFSe</a></li>
+                                    {% endif %}
+
+                                    {% if invoice.boleto_url %}
+                                    <li><a class="dropdown-item py-2" href="{{ invoice.boleto_url }}" target="_blank"><i
+                                                class="bi bi-upc-scan me-2"></i>Ver Boleto</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                            Nenhuma fatura encontrada.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-3 py-3 border-top d-flex justify-content-between align-items-center bg-light bg-opacity-25">
+            <div class="small text-muted">
+                Mostrando <strong>{{ page_obj.object_list|length }}</strong> de <strong>{{ page_obj.paginator.count
+                    }}</strong>
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item"><a
+                            class="page-link"
+                            href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{
+                            i }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+                        {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Barra de Ações em Massa (Fixa no rodapé quando selecionado) -->
+<div id="bulkActionsBar" class="bg-white border-top shadow p-3 fixed-bottom d-none">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+        <div>
+            <span class="fw-bold me-3"><span id="selectedCount">0</span> itens selecionados</span>
+            <button class="btn btn-outline-secondary btn-sm" id="clearSelection">Limpar</button>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" id="bulkEmitirBtn">
+                <i class="bi bi-cursor me-2"></i>Emitir NFSe
+            </button>
+            <button class="btn btn-success btn-sm" id="bulkBoletoBtn">
+                <i class="bi bi-qr-code me-2"></i>Gerar Boletos
+            </button>
+            <div class="btn-group dropup">
+                <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <i class="bi bi-envelope me-2"></i>Enviar E-mail
+                </button>
+                <ul class="dropdown-menu shadow-sm">
+                    <li>
+                        <h6 class="dropdown-header">Escolha o Template</h6>
+                    </li>
+                    {% for template in email_templates %}
+                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="{{ template.id }}">{{
+                            template.name }}</a></li>
+                    {% empty %}
+                    <li><a class="dropdown-item bulk-email-btn" href="#" data-template-id="">Padrão</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Selection Logic
-        const master = document.getElementById('masterSelection');
-        const checkboxes = document.querySelectorAll('.invoice-checkbox');
-        const bulkBar = document.getElementById('bulkBar');
-        const countSpan = document.getElementById('selectedCount');
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.select-invoice');
+        const bulkBar = document.getElementById('bulkActionsBar');
+        const countDisplay = document.getElementById('selectedCount');
+        const clearBtn = document.getElementById('clearSelection');
 
-        function updateBulkBar() {
-            const count = document.querySelectorAll('.invoice-checkbox:checked').length;
-            countSpan.textContent = count;
-            if (count > 0) bulkBar.classList.add('visible');
-            else bulkBar.classList.remove('visible');
+        function updateBar() {
+            const count = document.querySelectorAll('.select-invoice:checked').length;
+            countDisplay.innerText = count;
+
+            if (count > 0) bulkBar.classList.remove('d-none');
+            else bulkBar.classList.add('d-none');
         }
 
-        master.addEventListener('change', function () {
-            checkboxes.forEach(cb => cb.checked = this.checked);
-            updateBulkBar();
-        });
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateBar();
+            });
+        }
 
         checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateBulkBar);
+            cb.addEventListener('change', updateBar);
         });
 
-        // Async Bulk Actions Logic
-        function executeBulk(url, btnId, extra = {}) {
-            const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
-            if (!ids.length) return;
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                checkboxes.forEach(cb => cb.checked = false);
+                if (selectAll) selectAll.checked = false;
+                updateBar();
+            });
+        }
 
-            const btn = document.getElementById(btnId);
-            const originalHtml = btn.innerHTML;
+        // Generic Bulk Action Handler
+        function handleBulkAction(url, btn, extra = {}) {
+            const ids = Array.from(document.querySelectorAll('.select-invoice:checked')).map(cb => cb.value);
+            if (!ids.length) return;
+            if (!confirm('Confirmar operação em massa?')) return;
+
+            const originalContent = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
 
             fetch(url, {
                 method: 'POST',
@@ -573,30 +294,36 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.status === 'success') {
-                        // Show toast/alert
-                        alert('Processo iniciado com sucesso!');
-                        location.reload();
-                    } else {
-                        alert('Erro: ' + data.message);
-                        btn.disabled = false;
-                        btn.innerHTML = originalHtml;
-                    }
+                    alert(data.message || 'Operação realizada com sucesso');
+                    location.reload();
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('Erro na comunicação com o servidor.');
+                    alert('Erro ao processar solicitação.');
                     btn.disabled = false;
-                    btn.innerHTML = originalHtml;
+                    btn.innerHTML = originalContent;
                 });
         }
 
-        // Bind Buttons
-        if (document.getElementById('bulkEmitir'))
-            document.getElementById('bulkEmitir').addEventListener('click', () => executeBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkEmitir'));
+        // Bind Actions
+        document.getElementById('bulkEmitirBtn')?.addEventListener('click', function () {
+            handleBulkAction("{% url 'faturamento:invoice_bulk_generate_nfse' %}", this);
+        });
 
-        if (document.getElementById('bulkBoletos'))
-            document.getElementById('bulkBoletos').addEventListener('click', () => executeBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoletos'));
+        document.getElementById('bulkBoletoBtn')?.addEventListener('click', function () {
+            handleBulkAction("{% url 'faturamento:invoice_bulk_generate_boletos' %}", this);
+        });
+
+        document.querySelectorAll('.bulk-email-btn').forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                const templateId = this.getAttribute('data-template-id');
+                // Find parent button to show loading state if needed, or just use a overlay
+                // stick to simple alert flow for now or use the dropup button
+                const btn = this.closest('.btn-group').querySelector('button');
+                handleBulkAction("{% url 'faturamento:invoice_bulk_send_emails' %}", btn, { template_id: templateId });
+            });
+        });
     });
 </script>
 {% endblock %}
