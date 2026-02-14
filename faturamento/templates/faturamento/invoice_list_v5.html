@@ -1,970 +1,610 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-{% block title %}Faturas Geradas | G7Serv{% endblock %}
+{% block title %}Faturas Geradas | G7Serv Luxury{% endblock %}
 
 {% block extra_css %}
+<!-- Typography: Bodoni Moda (Luxury Serif) & Jost (Premium Sans) -->
 <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 <style>
     :root {
-        --color-primary: #2563eb;
-        --color-primary-hover: #1d4ed8;
-        --color-primary-light: #dbeafe;
-        --color-primary-glow: rgba(37, 99, 235, 0.15);
-        --color-teal: #0d9488;
-        --color-teal-light: #ccfbf1;
-        --color-rose: #e11d48;
-        --color-rose-light: #ffe4e6;
-        --color-background: #f8fafc;
-        --color-surface: #ffffff;
-        --color-surface-hover: #fafbff;
-        --color-text-primary: #0f172a;
-        --color-text-secondary: #475569;
-        --color-text-tertiary: #94a3b8;
-        --color-border: #e2e8f0;
-        --color-border-hover: #cbd5e1;
-        --color-success-bg: #ecfdf5;
-        --color-success-text: #065f46;
-        --color-warning-bg: #fffbeb;
-        --color-warning-text: #92400e;
-        --color-error-bg: #fef2f2;
-        --color-error-text: #991b1b;
+        /* Palette: Stone & Gold */
+        --color-primary: #1C1917;
+        /* Stone Black */
+        --color-secondary: #44403C;
+        /* Stone Gray */
+        --color-accent: #CA8A04;
+        /* Gold */
+        --color-accent-light: #FEF9C3;
+        --color-bg: #FAFAF9;
+        /* Stone White */
+        --color-surface: #FFFFFF;
+        --color-glass: rgba(255, 255, 255, 0.7);
 
-        --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-        --shadow-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
-        --shadow-primary: 0 4px 14px -3px rgba(37, 99, 235, 0.35);
-        --shadow-sticky: 0 -4px 30px rgba(0, 0, 0, 0.15), 0 20px 40px rgba(0, 0, 0, 0.3);
+        --text-main: #0C0A09;
+        --text-muted: #57534E;
+        --border-refined: rgba(28, 25, 23, 0.08);
 
-        --radius-sm: 8px;
-        --radius-md: 12px;
-        --radius-lg: 16px;
-        --radius-xl: 20px;
-        --radius-full: 9999px;
+        /* Shadows & Depth */
+        --shadow-layered: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03), 0 12px 24px rgba(0, 0, 0, 0.04);
+        --shadow-lifted: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
 
-        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-spring: 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    * {
-        box-sizing: border-box;
+        --radius-luxury: 16px;
+        --transition-lux: 450ms cubic-bezier(0.23, 1, 0.32, 1);
     }
 
     body {
-        background-color: var(--color-background);
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: var(--color-text-primary);
+        background-color: var(--color-bg);
+        font-family: 'Jost', sans-serif;
+        color: var(--text-main);
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        background-image: radial-gradient(circle at 50% 0%, rgba(202, 138, 4, 0.03) 0%, transparent 50%);
     }
 
-    .premium-container {
-        max-width: 1140px;
+    .luxury-container {
+        max-width: 1200px;
         margin: 0 auto;
-        padding: 2.5rem 1.5rem 6rem;
+        padding: 4rem 2rem;
     }
 
     /* ── Header ── */
-    .dashboard-header {
-        margin-bottom: 2rem;
-    }
-
-    .breadcrumb-nav {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--color-text-tertiary);
-    }
-
-    .breadcrumb-nav span {
-        opacity: 0.5;
-    }
-
-    .page-title {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: var(--color-text-primary);
-        letter-spacing: -0.025em;
-        line-height: 1.2;
-        margin: 0;
-    }
-
-    .page-subtitle {
-        font-size: 0.9rem;
-        color: var(--color-text-secondary);
-        margin-top: 0.25rem;
-        font-weight: 400;
-    }
-
-    .btn-nova-fatura {
-        background: var(--color-primary);
-        color: white;
-        padding: 0.7rem 1.4rem;
-        border-radius: var(--radius-md);
-        font-weight: 700;
-        font-size: 0.875rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all var(--transition-base);
-        text-decoration: none;
-        box-shadow: var(--shadow-primary);
-        border: none;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
-    .btn-nova-fatura:hover {
-        background: var(--color-primary-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.45);
-        color: white;
-    }
-
-    .btn-nova-fatura:active {
-        transform: translateY(0);
-    }
-
-    /* ── Filter Bar ── */
-    .filter-bar {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        padding: 0.875rem 1rem;
-        box-shadow: var(--shadow-xs);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-    }
-
-    .filter-input-wrapper {
-        position: relative;
-        flex: 1 1 260px;
-        display: flex;
-        align-items: center;
-    }
-
-    .filter-input-wrapper i {
-        position: absolute;
-        left: 12px;
-        color: var(--color-text-tertiary);
-        font-size: 0.9rem;
-        pointer-events: none;
-    }
-
-    .filter-input {
-        width: 100%;
-        padding: 0.6rem 1rem 0.6rem 2.4rem;
-        border: 1.5px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        background: var(--color-background);
-        font-size: 0.85rem;
-        font-weight: 500;
-        font-family: inherit;
-        color: var(--color-text-primary);
-        transition: all var(--transition-fast);
-    }
-
-    .filter-input::placeholder {
-        color: var(--color-text-tertiary);
-    }
-
-    .filter-input:focus {
-        background: var(--color-surface);
-        border-color: var(--color-primary);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--color-primary-glow);
-    }
-
-    .filter-select {
-        min-width: 110px;
-        padding: 0.6rem 2.2rem 0.6rem 0.85rem;
-        border: 1.5px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        background-color: var(--color-background);
-        font-size: 0.85rem;
-        font-weight: 500;
-        font-family: inherit;
-        color: var(--color-text-primary);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.6rem center;
-    }
-
-    .filter-select:focus {
-        background-color: var(--color-surface);
-        border-color: var(--color-primary);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--color-primary-glow);
-    }
-
-    .btn-filter {
-        width: 38px;
-        height: 38px;
-        border-radius: var(--radius-sm);
-        background: var(--color-primary);
-        color: white;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        flex-shrink: 0;
-    }
-
-    .btn-filter:hover {
-        background: var(--color-primary-hover);
-    }
-
-    .btn-clear {
-        width: 38px;
-        height: 38px;
-        border-radius: var(--radius-sm);
-        background: var(--color-surface);
-        border: 1.5px solid var(--color-border);
-        color: var(--color-text-tertiary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: all var(--transition-fast);
-        flex-shrink: 0;
-    }
-
-    .btn-clear:hover {
-        background: var(--color-error-bg);
-        border-color: var(--color-rose);
-        color: var(--color-rose);
-    }
-
-    /* ── Selection Bar ── */
-    .selection-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-        padding: 0 0.25rem;
-    }
-
-    .selection-bar label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .selection-bar label input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        accent-color: var(--color-primary);
-        cursor: pointer;
-    }
-
-    .count-label {
-        font-size: 0.8rem;
-        color: var(--color-text-tertiary);
-        font-weight: 500;
-    }
-
-    .count-label strong {
-        color: var(--color-text-secondary);
-    }
-
-    /* ── Invoice Cards ── */
-    .invoice-card {
-        background: var(--color-surface);
-        border: 1.5px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: 1.1rem 1.5rem;
-        margin-bottom: 0.625rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: all var(--transition-base);
-        cursor: pointer;
+    .header-section {
+        margin-bottom: 4rem;
         position: relative;
     }
 
-    .invoice-card::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 3px;
-        height: 0;
-        background: var(--color-primary);
-        border-radius: 0 2px 2px 0;
-        transition: height var(--transition-spring);
-    }
-
-    .invoice-card:hover {
-        border-color: var(--color-border-hover);
-        box-shadow: var(--shadow-md);
-        background: var(--color-surface-hover);
-    }
-
-    .invoice-card:hover::before {
-        height: 60%;
-    }
-
-    .invoice-card.selected {
-        background: var(--color-primary-light);
-        border-color: var(--color-primary);
-    }
-
-    .invoice-card.selected::before {
-        height: 70%;
-        background: var(--color-primary);
-    }
-
-    /* Checkbox */
-    .checkbox-wrapper {
-        position: relative;
-        flex-shrink: 0;
-    }
-
-    .invoice-checkbox {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .custom-checkbox {
-        width: 20px;
-        height: 20px;
-        border: 2px solid var(--color-border);
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        background: var(--color-surface);
-    }
-
-    .invoice-card:hover .custom-checkbox {
-        border-color: var(--color-primary);
-    }
-
-    .invoice-checkbox:checked+.custom-checkbox {
-        background: var(--color-primary);
-        border-color: var(--color-primary);
-    }
-
-    .invoice-checkbox:checked+.custom-checkbox::after {
-        content: '';
-        width: 5px;
-        height: 9px;
-        border: 2px solid white;
-        border-top: none;
-        border-left: none;
-        transform: rotate(45deg) translateY(-1px);
-    }
-
-    /* Typography */
-    .invoice-id {
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 700;
-        color: var(--color-primary);
-        font-size: 0.75rem;
-        background: var(--color-primary-light);
-        padding: 0.15rem 0.5rem;
-        border-radius: var(--radius-sm);
-        letter-spacing: -0.01em;
-    }
-
-    .client-name {
-        font-weight: 700;
-        color: var(--color-text-primary);
-        font-size: 0.95rem;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-    .invoice-meta {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 0.35rem;
-        font-size: 0.78rem;
-        color: var(--color-text-tertiary);
-        font-weight: 500;
-    }
-
-    .invoice-meta i {
-        margin-right: 0.2rem;
-        font-size: 0.72rem;
-    }
-
-    /* Status Badge */
-    .status-badge {
-        padding: 0.35rem 0.75rem;
-        border-radius: var(--radius-full);
+    .luxury-label {
         font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.3em;
+        color: var(--color-accent);
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .luxury-title {
+        font-family: 'Bodoni Moda', serif;
+        font-size: 3rem;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        margin: 0;
+        color: var(--color-primary);
+    }
+
+    .luxury-subtitle {
+        font-size: 1rem;
+        color: var(--text-muted);
+        font-weight: 300;
+        margin-top: 0.5rem;
+    }
+
+    .btn-gold {
+        background: var(--color-primary);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-luxury);
+        font-weight: 500;
+        text-decoration: none;
+        transition: var(--transition-lux);
+        border: 1px solid var(--color-primary);
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        white-space: nowrap;
+        gap: 0.75rem;
+        box-shadow: 0 10px 20px -5px rgba(28, 25, 23, 0.2);
     }
 
-    .status-ok {
-        background: var(--color-success-bg);
-        color: var(--color-success-text);
+    .btn-gold:hover {
+        background: var(--color-secondary);
+        transform: translateY(-4px);
+        color: white;
     }
 
-    .status-pending {
-        background: var(--color-warning-bg);
-        color: var(--color-warning-text);
-    }
-
-    .status-error {
-        background: var(--color-error-bg);
-        color: var(--color-error-text);
-    }
-
-    .amount-display {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--color-text-primary);
-        letter-spacing: -0.02em;
-        font-variant-numeric: tabular-nums;
-    }
-
-    /* Action Buttons */
-    .action-group {
+    /* ── Liquid Glass Filter ── */
+    .liquid-filter-bar {
+        background: var(--color-glass);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid white;
+        border-radius: var(--radius-luxury);
+        padding: 1rem;
         display: flex;
-        gap: 0.35rem;
-        margin-top: 0.5rem;
-        justify-content: flex-end;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        box-shadow: var(--shadow-layered);
     }
 
-    .action-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: var(--radius-sm);
-        background: var(--color-background);
+    .filter-group {
+        position: relative;
+        flex: 1;
+    }
+
+    .luxury-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid transparent;
+        border-radius: 12px;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        font-family: 'Jost', sans-serif;
+        font-size: 0.9rem;
+        transition: var(--transition-lux);
+    }
+
+    .luxury-input:focus {
+        background: white;
+        border-color: var(--color-accent);
+        outline: none;
+        box-shadow: 0 0 0 4px var(--color-accent-light);
+    }
+
+    .filter-group i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+
+    .luxury-select {
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid transparent;
+        border-radius: 12px;
+        padding: 0.75rem 2.5rem 0.75rem 1rem;
+        font-family: 'Jost', sans-serif;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23CA8A04' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        transition: var(--transition-lux);
+    }
+
+    .luxury-select:focus {
+        background: white;
+        border-color: var(--color-accent);
+        outline: none;
+    }
+
+    /* ── Luxury Cards ── */
+    .luxury-card {
+        background: var(--color-surface);
+        border: 1px solid white;
+        border-radius: var(--radius-luxury);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        transition: var(--transition-lux);
+        cursor: pointer;
+        box-shadow: var(--shadow-layered);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .luxury-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, transparent, var(--color-accent), transparent);
+        transform: scaleX(0);
+        transition: transform var(--transition-lux);
+    }
+
+    .luxury-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: var(--shadow-lifted);
+        border-color: var(--color-accent-light);
+    }
+
+    .luxury-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .luxury-card.selected {
+        background: #FFFEF9;
+        border-color: var(--color-accent);
+    }
+
+    /* Checkbox Luxury */
+    .lux-check-container {
+        width: 24px;
+        height: 24px;
+        border: 1px solid var(--color-accent);
+        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--color-text-tertiary);
-        transition: all var(--transition-fast);
-        text-decoration: none;
-        border: 1px solid transparent;
-        font-size: 0.85rem;
+        flex-shrink: 0;
+        transition: var(--transition-lux);
     }
 
-    .action-circle:hover {
+    .invoice-checkbox {
+        display: none;
+    }
+
+    .invoice-checkbox:checked+.lux-check-container {
+        background: var(--color-accent);
+    }
+
+    .invoice-checkbox:checked+.lux-check-container::after {
+        content: '\F633';
+        font-family: 'bootstrap-icons';
+        color: white;
+        font-size: 14px;
+    }
+
+    /* Content Typography */
+    .lux-id {
+        font-family: 'Jost', sans-serif;
+        font-weight: 300;
+        color: var(--color-accent);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .lux-client {
+        font-family: 'Bodoni Moda', serif;
+        font-size: 1.5rem;
+        font-weight: 400;
         color: var(--color-primary);
-        background: var(--color-primary-light);
-        border-color: var(--color-primary);
-        transform: scale(1.05);
-    }
-
-    .btn-nfse-circle:hover {
-        color: var(--color-teal);
-        background: var(--color-teal-light);
-        border-color: var(--color-teal);
-    }
-
-    .btn-boleto-circle:hover {
-        color: var(--color-rose);
-        background: var(--color-rose-light);
-        border-color: var(--color-rose);
-    }
-
-    /* ── Empty State ── */
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: var(--color-surface);
-        border: 1.5px dashed var(--color-border);
-        border-radius: var(--radius-lg);
-    }
-
-    .empty-state i {
-        font-size: 3rem;
-        color: var(--color-text-tertiary);
-        opacity: 0.3;
-    }
-
-    .empty-state h5 {
-        margin-top: 1rem;
-        font-weight: 700;
-        color: var(--color-text-primary);
-    }
-
-    .empty-state p {
-        color: var(--color-text-tertiary);
-        font-size: 0.875rem;
-    }
-
-    /* ── Pagination ── */
-    .pagination-wrapper {
-        margin-top: 2.5rem;
-        display: flex;
-        justify-content: center;
-    }
-
-    .pagination-wrapper .pagination {
-        display: flex;
-        gap: 0.35rem;
-        list-style: none;
-        padding: 0;
         margin: 0;
     }
 
-    .pagination-wrapper .page-link {
-        width: 38px;
-        height: 38px;
+    .lux-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 400;
+        margin-top: 0.5rem;
+    }
+
+    .lux-meta i {
+        color: var(--color-accent);
+        margin-right: 0.4rem;
+    }
+
+    /* Performance & Logic */
+    .lux-amount {
+        font-family: 'Bodoni Moda', serif;
+        font-size: 2rem;
+        font-weight: 400;
+        color: var(--color-primary);
+        letter-spacing: -0.02em;
+    }
+
+    /* Status Pills */
+    .lux-status {
+        padding: 0.5rem 1.25rem;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .lux-status-ok {
+        background: #F0FDFA;
+        color: #134E4A;
+        border: 1px solid #CCFBF1;
+    }
+
+    .lux-status-pending {
+        background: #FEFCE8;
+        color: #713F12;
+        border: 1px solid #FEF9C3;
+    }
+
+    .lux-status-error {
+        background: #FEF2F2;
+        color: #7F1D1D;
+        border: 1px solid #FEE2E2;
+    }
+
+    /* Actions */
+    .lux-action-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: var(--radius-sm);
-        border: 1.5px solid var(--color-border);
-        background: var(--color-surface);
-        color: var(--color-text-secondary);
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: all var(--transition-fast);
-    }
-
-    .pagination-wrapper .page-link:hover {
-        border-color: var(--color-primary);
+        border: 1px solid var(--border-refined);
+        background: transparent;
         color: var(--color-primary);
-        background: var(--color-primary-light);
+        transition: var(--transition-lux);
+        text-decoration: none;
     }
 
-    .pagination-wrapper .page-item.active .page-link {
+    .lux-action-btn:hover {
         background: var(--color-primary);
-        border-color: var(--color-primary);
         color: white;
-        box-shadow: var(--shadow-primary);
+        transform: rotate(15deg) scale(1.1);
     }
 
-    /* ── Sticky Actions ── */
-    .sticky-actions {
+    /* ── Sticky Luxury ── */
+    .lux-sticky {
         position: fixed;
-        bottom: 1.5rem;
+        bottom: 2rem;
         left: 50%;
-        transform: translateX(-50%) translateY(120%);
-        background: var(--color-text-primary);
-        color: white;
-        padding: 0.75rem 1.25rem;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sticky);
-        z-index: 1060;
+        transform: translateX(-50%) translateY(150%);
+        background: var(--color-primary);
+        padding: 1rem 2.5rem;
+        border-radius: 100px;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(20px);
-        transition: transform 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        gap: 2rem;
+        color: white;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        transition: var(--transition-lux);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .sticky-actions.visible {
+    .lux-sticky.visible {
         transform: translateX(-50%) translateY(0);
     }
 
-    .sticky-actions .badge-count {
-        background: var(--color-primary);
-        min-width: 26px;
-        height: 26px;
-        border-radius: var(--radius-full);
+    .lux-btn-white {
+        background: white;
+        color: var(--color-primary);
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition-lux);
+    }
+
+    .lux-btn-white:hover {
+        background: var(--color-accent);
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination-lux {
+        margin-top: 4rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .page-lux {
+        width: 45px;
+        height: 45px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 800;
-        font-size: 0.75rem;
-        padding: 0 0.35rem;
+        border-radius: 50%;
+        border: 1px solid var(--border-refined);
+        text-decoration: none;
+        color: var(--text-muted);
+        transition: var(--transition-lux);
     }
 
-    .sticky-actions .divider {
-        width: 1px;
-        height: 24px;
-        background: rgba(255, 255, 255, 0.12);
-    }
-
-    .sticky-actions .btn {
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.45rem 1rem;
-        border-radius: var(--radius-sm);
-        transition: all var(--transition-fast);
-    }
-
-    .sticky-actions .btn-outline-light {
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: rgba(255, 255, 255, 0.85);
-        background: transparent;
-    }
-
-    .sticky-actions .btn-outline-light:hover {
-        background: rgba(255, 255, 255, 0.1);
+    .page-lux:hover,
+    .page-lux.active {
+        background: var(--color-accent);
         color: white;
-        border-color: rgba(255, 255, 255, 0.3);
+        border-color: var(--color-accent);
     }
 
-    .sticky-actions .btn-primary {
-        background: var(--color-primary);
-        border: none;
-        color: white;
-    }
-
-    .sticky-actions .btn-primary:hover {
-        background: var(--color-primary-hover);
-    }
-
-    .btn-dismiss {
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.4);
-        cursor: pointer;
-        padding: 0.25rem;
-        display: flex;
-        transition: color var(--transition-fast);
-    }
-
-    .btn-dismiss:hover {
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-        .premium-container {
-            padding: 1.5rem 1rem 6rem;
-        }
-
-        .page-title {
-            font-size: 1.35rem;
-        }
-
-        .filter-bar {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .filter-input-wrapper {
-            flex: 1 1 100%;
-        }
-
-        .filter-select {
-            width: 100%;
-        }
-
-        .invoice-card {
-            flex-wrap: wrap;
-            padding: 1rem 1.25rem;
-            gap: 0.75rem;
-        }
-
-        .invoice-card .text-center,
-        .invoice-card .text-end {
-            min-width: auto !important;
-        }
-
-        .sticky-actions {
-            left: 1rem;
-            right: 1rem;
-            transform: translateX(0) translateY(120%);
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .sticky-actions.visible {
-            transform: translateX(0) translateY(0);
-        }
-    }
-
-    /* ── Animations ── */
-    @keyframes fadeInUp {
+    /* Animations */
+    @keyframes entryLux {
         from {
             opacity: 0;
-            transform: translateY(12px);
+            transform: translateY(30px) scale(0.98);
         }
 
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
     }
 
-    .invoice-card {
-        animation: fadeInUp 0.4s ease both;
-    }
-
-    .invoice-card:nth-child(1) {
-        animation-delay: 0.02s;
-    }
-
-    .invoice-card:nth-child(2) {
-        animation-delay: 0.04s;
-    }
-
-    .invoice-card:nth-child(3) {
-        animation-delay: 0.06s;
-    }
-
-    .invoice-card:nth-child(4) {
-        animation-delay: 0.08s;
-    }
-
-    .invoice-card:nth-child(5) {
-        animation-delay: 0.10s;
-    }
-
-    .invoice-card:nth-child(6) {
-        animation-delay: 0.12s;
-    }
-
-    .invoice-card:nth-child(7) {
-        animation-delay: 0.14s;
-    }
-
-    .invoice-card:nth-child(8) {
-        animation-delay: 0.16s;
-    }
-
-    .invoice-card:nth-child(9) {
-        animation-delay: 0.18s;
-    }
-
-    .invoice-card:nth-child(10) {
-        animation-delay: 0.20s;
+    .luxury-card {
+        animation: entryLux 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="premium-container">
-    <!-- Header -->
-    <div class="dashboard-header d-flex justify-content-between align-items-end">
+<div class="luxury-container">
+    <!-- Luxury Header -->
+    <div class="header-section d-flex justify-content-between align-items-end">
         <div>
-            <div class="breadcrumb-nav">
-                <span>Comercial</span>
-                <span>/</span>
-                <span>Faturamento</span>
-            </div>
-            <h1 class="page-title">Faturas Geradas</h1>
-            <p class="page-subtitle">Gerencie e acompanhe todas as faturas emitidas.</p>
+            <span class="luxury-label">Portfólio de Gestão</span>
+            <h1 class="luxury-title">Faturas Geradas</h1>
+            <p class="luxury-subtitle">Documentos fiscais e faturas com curadoria de dados.</p>
         </div>
-        <a href="{% url 'faturamento:create' %}" class="btn-nova-fatura">
+        <a href="{% url 'faturamento:create' %}" class="btn-gold">
             <i class="bi bi-plus-lg"></i>
-            Nova Fatura
+            Nova Emissão
         </a>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <form method="get" class="d-flex align-items-center w-100 gap-2" style="flex-wrap: wrap;">
-            <div class="filter-input-wrapper">
+    <!-- Liquid Filter Bar -->
+    <div class="liquid-filter-bar">
+        <form method="get" class="d-flex w-100 gap-3 align-items-center">
+            <div class="filter-group">
                 <i class="bi bi-search"></i>
-                <input type="text" name="search" class="filter-input" placeholder="Buscar cliente, NF ou grupo..."
+                <input type="text" name="search" class="luxury-input" placeholder="Pesquisar registros..."
                     value="{{ search_query }}">
             </div>
 
-            <select name="year" class="filter-select">
+            <select name="year" class="luxury-select">
                 <option value="">Ano</option>
                 {% for y in years %}
                 <option value="{{ y.value }}" {% if y.selected %}selected{% endif %}>{{ y.label }}</option>
                 {% endfor %}
             </select>
 
-            <select name="month" class="filter-select">
+            <select name="month" class="luxury-select">
                 <option value="">Mês</option>
                 {% for m in months %}
                 <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
                 {% endfor %}
             </select>
 
-            <select name="status" class="filter-select">
+            <select name="status" class="luxury-select">
                 <option value="">Status</option>
                 {% for s in statuses %}
                 <option value="{{ s.value }}" {% if s.selected %}selected{% endif %}>{{ s.label }}</option>
                 {% endfor %}
             </select>
 
-            <button type="submit" class="btn-filter" title="Filtrar">
-                <i class="bi bi-funnel-fill"></i>
+            <button type="submit" class="lux-action-btn" title="Filtrar">
+                <i class="bi bi-stars"></i>
             </button>
-            <a href="{% url 'faturamento:list' %}" class="btn-clear" title="Limpar filtros">
-                <i class="bi bi-x-lg"></i>
+            <a href="{% url 'faturamento:list' %}" class="lux-action-btn" title="Resetar">
+                <i class="bi bi-arrow-counterclockwise"></i>
             </a>
         </form>
     </div>
 
-    <!-- Selection -->
-    <div class="selection-bar">
-        <label>
-            <input type="checkbox" id="masterSelection">
-            Selecionar todos
+    <!-- Selection Helper -->
+    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+        <label class="d-flex align-items-center gap-3 cursor-pointer fw-medium" style="font-size: 0.9rem;">
+            <input type="checkbox" id="masterSelection"
+                style="width: 18px; height: 18px; accent-color: var(--color-accent);">
+            Selecionar Acervo
         </label>
-        <span class="count-label">
-            <strong>{{ page_obj.object_list|length }}</strong> de {{ page_obj.paginator.count }} faturas
+        <span style="font-size: 0.8rem; letter-spacing: 0.05em; color: var(--text-muted);">
+            REGISTROS: <strong>{{ page_obj.object_list|length }}</strong> DE {{ page_obj.paginator.count }}
         </span>
     </div>
 
-    <!-- Cards -->
-    <div class="dash-list">
+    <!-- Luxury Inventory -->
+    <div class="dash-inventory">
         {% for invoice in page_obj %}
-        <div class="invoice-card" onclick="toggleCardSelection('{{ invoice.id }}')">
-            <div class="checkbox-wrapper">
+        <div class="luxury-card" onclick="toggleLuxSelection('{{ invoice.id }}')"
+            style="animation-delay: {{ forloop.counter0|add:1|multiply:0.05 }}s">
+            <div class="checkbox-area">
                 <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}" id="check-{{ invoice.id }}">
-                <div class="custom-checkbox"></div>
+                <div class="lux-check-container"></div>
             </div>
 
             <div class="flex-grow-1">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="invoice-id">#FAT-{{ invoice.number|stringformat:"04d" }}</span>
-                    <h5 class="client-name">{{ invoice.client.name|default:"--" }}</h5>
-                </div>
-                <div class="invoice-meta">
-                    <span>
-                        <i class="bi bi-calendar3"></i>
-                        {% with m=invoice.competence_month y=invoice.competence_year %}
-                        {% if m and y %}{{ m }}/{{ y }}{% else %}--{% endif %}
-                        {% endwith %}
-                    </span>
+                <span class="lux-id">DOC Ref. FAT-{{ invoice.number|stringformat:"04d" }}</span>
+                <h3 class="lux-client">{{ invoice.client.name|default:"Proprietário Não Identificado" }}</h3>
+                <div class="lux-meta">
+                    <span><i class="bi bi-calendar-event"></i>{{ invoice.created_at|date:"d M Y" }}</span>
+                    <span><i class="bi bi-stack"></i>Comp: {{ invoice.competence_month|default:"--" }}/{{
+                        invoice.competence_year|default:"--" }}</span>
                     {% if invoice.contract %}
-                    <span><i class="bi bi-file-earmark-text"></i> CTR #{{ invoice.contract.id }}</span>
-                    {% else %}
-                    <span><i class="bi bi-file-earmark-text"></i> --</span>
+                    <span><i class="bi bi-fingerprint"></i>CTR-{{ invoice.contract.id }}</span>
                     {% endif %}
-                    <span><i class="bi bi-clock"></i> {{ invoice.created_at|date:"d M Y" }}</span>
                 </div>
             </div>
 
-            <div class="text-center" style="min-width: 130px;">
+            <div class="text-center" style="min-width: 150px;">
                 <span
-                    class="status-badge {% if invoice.status == 'PD' %}{% if invoice.nfse_status == 'EMITIDA' %}status-ok{% else %}status-pending{% endif %}{% elif invoice.status == 'PG' %}status-ok{% else %}status-error{% endif %}">
+                    class="lux-status {% if invoice.status == 'PD' %}{% if invoice.nfse_status == 'EMITIDA' %}lux-status-ok{% else %}lux-status-pending{% endif %}{% elif invoice.status == 'PG' %}lux-status-ok{% else %}lux-status-error{% endif %}">
                     {% if invoice.status == 'PD' and invoice.nfse_status == 'EMITIDA' %}
-                    <i class="bi bi-check-circle-fill"></i> Fiscal OK
+                    <i class="bi bi-award me-1"></i> Autenticada
                     {% else %}
-                    <i class="bi bi-info-circle-fill"></i> {{ invoice.get_status_display }}
+                    {{ invoice.get_status_display }}
                     {% endif %}
                 </span>
             </div>
 
-            <div class="text-end" style="min-width: 170px;">
-                <div class="amount-display">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
-                <div class="action-group">
+            <div class="text-end" style="min-width: 200px;">
+                <div class="lux-amount">R$ {{ invoice.amount|floatformat:2|intcomma }}</div>
+                <div class="d-flex gap-2 justify-content-end mt-3">
                     {% if invoice.nfse_status == 'EMITIDA' %}
-                    <a href="{% url 'faturamento:nfse_view' invoice.id %}" class="action-circle btn-nfse-circle"
-                        title="Ver NFSe" onclick="event.stopPropagation()">
-                        <i class="bi bi-file-earmark-text"></i>
+                    <a href="{% url 'faturamento:nfse_view' invoice.id %}" class="lux-action-btn" title="Ver NFSe"
+                        onclick="event.stopPropagation()">
+                        <i class="bi bi-file-earmark-pdf"></i>
                     </a>
                     {% endif %}
                     {% if invoice.boleto_url %}
-                    <a href="{{ invoice.boleto_url }}" target="_blank" class="action-circle btn-boleto-circle"
-                        title="Boleto" onclick="event.stopPropagation()">
-                        <i class="bi bi-upc-scan"></i>
+                    <a href="{{ invoice.boleto_url }}" target="_blank" class="lux-action-btn" title="Boleto"
+                        onclick="event.stopPropagation()">
+                        <i class="bi bi-credit-card"></i>
                     </a>
                     {% endif %}
-                    <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="action-circle" title="Detalhes"
+                    <a href="{% url 'faturamento:detail' pk=invoice.id %}" class="lux-action-btn" title="Detalhes"
                         onclick="event.stopPropagation()">
-                        <i class="bi bi-chevron-right"></i>
+                        <i class="bi bi-eye"></i>
                     </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="empty-state">
-            <i class="bi bi-inbox"></i>
-            <h5>Nenhuma faturas encontrada</h5>
-            <p>Ajuste os filtros ou crie uma nova fatura para começar.</p>
+        <div class="text-center py-5">
+            <i class="bi bi-feather display-1 opacity-10"></i>
+            <h4 class="mt-4 fw-light">O acervo está vazio</h4>
+            <p class="text-muted">Inicie uma nova jornada de emissão.</p>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Pagination -->
+    <!-- Luxury Pagination -->
     {% if page_obj.has_other_pages %}
-    <div class="pagination-wrapper">
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-            <li class="page-item">
-                <a class="page-link"
-                    href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            </li>
+    <div class="pagination-lux">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+            class="page-lux">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        {% endif %}
+
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <a href="#" class="page-lux active">{{ i }}</a>
+        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <a
+            href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+            class="page-lux">{{ i }}</a>
             {% endif %}
-            {% for i in page_obj.paginator.page_range %}
-            {% if page_obj.number == i %}
-            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %} <li class="page-item">
-                <a class="page-link"
-                    href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{
-                    i }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-                {% endif %}
-        </ul>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                class="page-lux">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
     </div>
     {% endif %}
 </div>
 
-<!-- Sticky Actions -->
-<div id="stickyActions" class="sticky-actions">
-    <div class="d-flex align-items-center gap-2">
-        <span class="badge-count" id="selectedBadgeCount">0</span>
-        <span class="small fw-bold" style="opacity: 0.8;">Selecionadas</span>
+<!-- Luxury Sticky Actions -->
+<div id="luxSticky" class="lux-sticky">
+    <div class="d-flex align-items-center gap-3 pe-4 border-end border-white border-opacity-10">
+        <span style="font-size: 1.25rem; font-family: 'Bodoni Moda', serif;" id="luxCount">0</span>
+        <span class="small opacity-50 text-uppercase fw-bold"
+            style="font-size: 0.65rem; letter-spacing: 0.2em;">Selecionadas</span>
     </div>
-    <div class="divider"></div>
     <div class="d-flex gap-2">
-        <button class="btn btn-sm btn-outline-light" id="bulkEmitir">
-            <i class="bi bi-receipt me-1"></i> Emitir NFS-e
-        </button>
-        <button class="btn btn-sm btn-outline-light" id="bulkBoletos">
-            <i class="bi bi-upc-scan me-1"></i> Boletos
-        </button>
+        <button class="lux-btn-white" id="bulkEmitir">Documentar Fiscal</button>
+        <button class="lux-btn-white" id="bulkBoletos">Gerar Boletos</button>
         <div class="btn-group">
-            <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" id="bulkEmailBtn">
-                <i class="bi bi-send-fill me-1"></i> Enviar E-mail
-            </button>
-            <ul class="dropdown-menu dropdown-menu-dark p-2 rounded-3 border-0 shadow-lg mb-2">
+            <button class="lux-btn-white dropdown-toggle" data-bs-toggle="dropdown" id="bulkEmailBtn">Notificar
+                Cliente</button>
+            <ul class="dropdown-menu dropdown-menu-dark border-0 shadow-lg rounded-4 p-2 mt-2">
                 {% for t in email_templates %}
-                <li><a class="dropdown-item email-template-option rounded-2" href="#" data-template-id="{{ t.id }}">{{
-                        t.name }}</a></li>
+                <li><a class="dropdown-item rounded-3 py-2" href="#" data-template-id="{{ t.id }}">{{ t.name }}</a></li>
                 {% empty %}
-                <li><a class="dropdown-item email-template-option rounded-2" href="#" data-template-id="">Template
-                        Padrão</a></li>
+                <li><a class="dropdown-item rounded-3 py-2" href="#" data-template-id="">Template Padrão</a></li>
                 {% endfor %}
             </ul>
         </div>
     </div>
-    <button class="btn-dismiss" id="deselectAllActions">
-        <i class="bi bi-x-circle-fill fs-5"></i>
+    <button class="lux-action-btn border-white border-opacity-20 text-white" id="luxResetAll">
+        <i class="bi bi-x-lg"></i>
     </button>
 </div>
 {% endblock %}
@@ -972,65 +612,63 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const stickyBar = document.getElementById('stickyActions');
-        const badgeCount = document.getElementById('selectedBadgeCount');
+        const sticky = document.getElementById('luxSticky');
+        const countDisplay = document.getElementById('luxCount');
         const checkboxes = document.querySelectorAll('.invoice-checkbox');
-        const masterSelection = document.getElementById('masterSelection');
+        const master = document.getElementById('masterSelection');
 
-        function updateDesign() {
-            const checked = document.querySelectorAll('.invoice-checkbox:checked');
-            const count = checked.length;
+        function refreshLux() {
+            const selected = document.querySelectorAll('.invoice-checkbox:checked');
+            const total = selected.length;
 
-            badgeCount.textContent = count;
+            countDisplay.textContent = total;
 
-            if (count > 0) {
-                stickyBar.classList.add('visible');
-            } else {
-                stickyBar.classList.remove('visible');
-            }
+            if (total > 0) sticky.classList.add('visible');
+            else sticky.classList.remove('visible');
 
             checkboxes.forEach(cb => {
-                const card = cb.closest('.invoice-card');
+                const card = cb.closest('.luxury-card');
                 if (cb.checked) card.classList.add('selected');
                 else card.classList.remove('selected');
             });
         }
 
-        window.toggleCardSelection = function (id) {
+        window.toggleLuxSelection = function (id) {
             const cb = document.getElementById('check-' + id);
             cb.checked = !cb.checked;
-            updateDesign();
+            refreshLux();
         };
 
         checkboxes.forEach(cb => {
             cb.addEventListener('change', (e) => {
                 e.stopPropagation();
-                updateDesign();
+                refreshLux();
             });
             cb.addEventListener('click', (e) => e.stopPropagation());
         });
 
-        if (masterSelection) {
-            masterSelection.addEventListener('change', function () {
+        if (master) {
+            master.addEventListener('change', function () {
                 checkboxes.forEach(cb => cb.checked = this.checked);
-                updateDesign();
+                refreshLux();
             });
         }
 
-        document.getElementById('deselectAllActions')?.addEventListener('click', () => {
+        document.getElementById('luxResetAll')?.addEventListener('click', () => {
             checkboxes.forEach(cb => cb.checked = false);
-            if (masterSelection) masterSelection.checked = false;
-            updateDesign();
+            if (master) master.checked = false;
+            refreshLux();
         });
 
-        function doBulk(url, btnId, extra = {}) {
+        // Bulk Actions
+        function executeLuxBulk(url, btnId, extra = {}) {
             const ids = Array.from(document.querySelectorAll('.invoice-checkbox:checked')).map(cb => cb.value);
-            if (ids.length === 0) return;
+            if (!ids.length) return;
 
             const btn = document.getElementById(btnId);
             const original = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+            btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
 
             fetch(url, {
                 method: 'POST',
@@ -1042,36 +680,29 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Operação finalizada');
-                    if (data.status === 'success') location.reload();
-                    else {
+                    if (data.status === 'success') {
+                        alert('Operação bem-sucedida');
+                        location.reload();
+                    } else {
+                        alert('Erro: ' + data.message);
                         btn.disabled = false;
                         btn.innerHTML = original;
                     }
                 })
                 .catch(err => {
-                    alert('Erro na comunicação: ' + err.message);
+                    alert('Erro na conexão: ' + err.message);
                     btn.disabled = false;
                     btn.innerHTML = original;
                 });
         }
 
         document.getElementById('bulkEmitir')?.addEventListener('click', () =>
-            doBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkEmitir')
+            executeLuxBulk("{% url 'faturamento:invoice_bulk_generate_nfse' %}", 'bulkEmitir')
         );
 
         document.getElementById('bulkBoletos')?.addEventListener('click', () =>
-            doBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoletos')
+            executeLuxBulk("{% url 'faturamento:invoice_bulk_generate_boletos' %}", 'bulkBoletos')
         );
-
-        document.querySelectorAll('.email-template-option').forEach(opt => {
-            opt.addEventListener('click', function (e) {
-                e.preventDefault();
-                doBulk("{% url 'faturamento:invoice_bulk_send_emails' %}", 'bulkEmailBtn', {
-                    template_id: this.getAttribute('data-template-id')
-                });
-            });
-        });
     });
 </script>
 {% endblock %}
